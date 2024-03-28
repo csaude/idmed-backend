@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PacientesReferidosPara" pageWidth="695" pageHeight="842" columnWidth="635" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="cc48a430-4019-4436-9e48-d28540ebe920">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.6963904734899635"/>
+	<property name="ireport.x" value="131"/>
+	<property name="ireport.y" value="16"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<parameter name="date" class="java.util.Date">
+		<parameterDescription><![CDATA[Date for Report]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Date("15/01/2006")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\eclipse.OLD\\wp\\idart\\Reports\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="dateEnd" class="java.util.Date"/>
+	<parameter name="path" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C://Users//colaco.nhango//Documents//GitHub//IdartHarmonized//Reports"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="mainfacilityname" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="nid" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="age" class="java.lang.Integer"/>
+	<field name="referralPharmacy" class="java.lang.String"/>
+	<field name="referrenceDate" class="java.sql.Timestamp"/>
+	<field name="lastPickUpDate" class="java.sql.Timestamp"/>
+	<field name="notes" class="java.lang.String"/>
+	<field name="dateBackUs" class="java.sql.Timestamp"/>
+	<variable name="test" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA["test"]]></variableExpression>
+		<initialValueExpression><![CDATA["test"]]></initialValueExpression>
+	</variable>
+	<group name="nilnil">
+		<groupExpression><![CDATA[null]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<group name="d">
+		<groupExpression><![CDATA[null]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="212" splitType="Stretch">
+			<staticText>
+				<reportElement key="st_facilityName" mode="Transparent" x="4" y="125" width="95" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="c47dd2ba-3fab-4231-93bc-82432b99912e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Unidade Sanitária:]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-2" mode="Opaque" x="0" y="0" width="1" height="211" forecolor="#000000" backcolor="#000000" uuid="f2f8c67a-2b6d-41a3-8b0f-42d67f9ccde1"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="0.75"/>
+				</graphicElement>
+			</line>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="tf_date" mode="Opaque" x="48" y="149" width="485" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="b13c9a3e-8748-4de2-a153-15e9597a38ed"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Justified" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(new SimpleDateFormat("dd-MM-yyyy")).format($P{date})+ "  à  "+ (new SimpleDateFormat("dd-MM-yyyy")).format($P{dateEnd})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="124" width="633" height="1" uuid="51550501-9ed7-4c2a-be0b-2bac07d6c1bf"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="0" y="140" width="633" height="1" uuid="5d98560a-83b6-4318-80f8-cf2bccaf1e24"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="0" y="164" width="633" height="1" uuid="9b004a6b-c498-4af0-a7c8-1f036e45e469"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="st_facilityName" mode="Transparent" x="5" y="149" width="42" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="71e525c5-6004-4038-93ab-a874b4e3d486"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Periodo:]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="0" width="634" height="1" uuid="78642f31-1262-402f-9fc1-e260b90fc1ce"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-2" mode="Opaque" x="633" y="0" width="1" height="211" forecolor="#000000" backcolor="#000000" uuid="6fad0dce-eba9-4c5d-b2eb-634a55ada76b"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="0.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="0" y="178" width="633" height="1" uuid="b1ea2654-227e-425a-bd5a-3267ff10cd09"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="1" y="211" width="633" height="1" uuid="c2bf8bfc-7c29-4f07-89f7-befdf8b43930"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement x="5" y="180" width="63" height="30" uuid="79023437-10ce-4be9-aaf8-3ec879c46dec"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[NID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="75" y="180" width="107" height="30" uuid="3fc119dc-5a92-40d4-bc89-f1cca416f43b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nome]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="247" y="180" width="61" height="30" uuid="3713a614-4def-441a-82ca-41ad3d3003e5"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[  Data de Referência]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="tf_date" mode="Opaque" x="5" y="71" width="122" height="26" forecolor="#000000" backcolor="#FFFFFF" uuid="605fb7ba-de6f-42b0-bb9b-bd106e02cb45"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="7" isBold="false" isItalic="true" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["REPÚBLICA DE MOÇAMBIQUE \n"+
+"MINISTÉRIO DA SAÚDE \n"+
+"SERVIÇO NACIONAL DE SAÚDE"]]></textFieldExpression>
+			</textField>
+			<image scaleImage="FillFrame" hAlign="Left" vAlign="Top" isUsingCache="false">
+				<reportElement key="image-1" mode="Opaque" x="33" y="15" width="75" height="56" forecolor="#000000" backcolor="#FFFFFF" uuid="4b4531ac-c2a1-4f87-a2bd-4436a5ccde52"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<graphicElement fill="Solid"/>
+				<imageExpression><![CDATA[$P{path}+ java.io.File.separator + "Simbolo_Moz.jpg"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement key="staticText" mode="Transparent" x="210" y="41" width="323" height="41" forecolor="#000000" backcolor="#FFFFFF" uuid="e24fe032-d8e7-4210-9c4c-d04eb19a598c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="14" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Relatório de Pacientes Referenciados que Regressaram à Unidade Sanitária]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="377" y="182" width="61" height="28" uuid="36f0069a-67ed-496b-9db7-5d6b68497f22"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Farmácia de Referência]]></text>
+			</staticText>
+			<line>
+				<reportElement x="72" y="179" width="1" height="32" uuid="7a496211-d448-49fe-a5ff-23d0ac274b23"/>
+			</line>
+			<line>
+				<reportElement x="182" y="179" width="1" height="32" uuid="605a53a1-a908-4604-855d-6b435187bb85"/>
+			</line>
+			<line>
+				<reportElement x="243" y="179" width="1" height="32" uuid="b19e1429-46c6-491e-a4b8-a0c32c8ef970"/>
+			</line>
+			<line>
+				<reportElement x="312" y="179" width="1" height="32" uuid="9082143b-b0aa-4141-9c03-82863dac3040"/>
+			</line>
+			<line>
+				<reportElement x="374" y="179" width="1" height="32" uuid="3a758984-ef64-41b7-aec3-01c8740ea196"/>
+			</line>
+			<staticText>
+				<reportElement x="187" y="182" width="53" height="27" uuid="b3f77b61-1d4e-45c9-8194-473203a1b8bf"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Idade]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="99" y="125" width="214" height="15" uuid="5fa5b386-e7d6-4543-9b0a-64d5b1e27960"/>
+				<textElement verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$P{mainfacilityname}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="504" y="179" width="1" height="32" uuid="89b79bfc-18c2-410a-9c98-54b68e9c9c69"/>
+			</line>
+			<staticText>
+				<reportElement x="440" y="180" width="61" height="30" uuid="861702ee-039f-43d1-ad46-1f626eeeba09"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[  Data de retorno a US]]></text>
+			</staticText>
+			<line>
+				<reportElement x="437" y="179" width="1" height="32" uuid="582f6d18-ec00-41c1-9f5b-e0d482dd95e2"/>
+			</line>
+			<staticText>
+				<reportElement x="313" y="180" width="61" height="30" uuid="c486506f-6ea7-40d7-9931-690b7b05923c"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[  Data do Último Levantamento]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="507" y="180" width="124" height="30" uuid="f2bba7b5-5039-4882-8460-8b753f10b623"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Notas]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="24">
+			<textField>
+				<reportElement x="3" y="1" width="69" height="20" uuid="45386523-e371-43de-9245-25cdac16c982"/>
+				<textElement verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nid}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="74" y="1" width="108" height="20" uuid="f58ba7bf-50b3-4f46-a9e5-a4087f6496d6"/>
+				<textElement verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="23" width="633" height="1" uuid="426e083e-8a47-4aa1-b4f4-0064b9f68557"/>
+			</line>
+			<line>
+				<reportElement key="line-28" x="0" y="0" width="1" height="24" backcolor="#000000" uuid="6f505ecf-06e2-47f2-904a-befd08e0c356"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-28" x="633" y="0" width="1" height="24" backcolor="#000000" uuid="a8189286-1ecf-4b7c-84f3-3b59c9e39c89"/>
+				<graphicElement>
+					<pen lineWidth="0.75"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="312" y="0" width="1" height="23" uuid="ec34db4a-f4a4-4628-941c-1d3479dc4558"/>
+			</line>
+			<line>
+				<reportElement x="72" y="0" width="1" height="23" uuid="4fcd2bab-a02c-4a02-8dac-a9f8ca8a8ed3"/>
+			</line>
+			<line>
+				<reportElement x="182" y="0" width="1" height="23" uuid="9f29ef94-1fd3-43d0-a850-59b9b2be3ea4"/>
+			</line>
+			<line>
+				<reportElement x="243" y="0" width="1" height="23" uuid="ece9b6e1-e9e6-496e-be42-db553b9bfa9c"/>
+			</line>
+			<line>
+				<reportElement x="374" y="0" width="1" height="23" uuid="105ead6c-39c6-422a-9ee2-cc43ae18a42d"/>
+			</line>
+			<textField>
+				<reportElement x="247" y="2" width="61" height="18" uuid="36384c7b-5353-4d10-a947-e01f29fedf24"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd-MM-yyyy").format($F{referrenceDate})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="187" y="1" width="52" height="20" uuid="b34798b7-1c34-48e4-8d48-400e7f291c1e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{age}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="504" y="0" width="1" height="23" uuid="eded80fc-8877-4e33-9f84-127a37ee8bc9"/>
+			</line>
+			<line>
+				<reportElement x="437" y="0" width="1" height="23" uuid="ad26ef1e-b386-4e43-a1e4-fdcdbd5b37e8"/>
+			</line>
+			<textField>
+				<reportElement x="440" y="1" width="61" height="20" uuid="96dd729e-1f89-4639-bde6-ca850f5db4c3"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd-MM-yyyy").format($F{dateBackUs})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="316" y="2" width="55" height="18" uuid="d72b0fcf-833d-4b50-bc9b-04d3ee67989b"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd-MM-yyyy").format($F{lastPickUpDate})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="507" y="1" width="124" height="20" uuid="a9cff2c9-d402-42b2-83d8-17fc8ce9d2c3"/>
+				<textElement verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="377" y="1" width="60" height="20" uuid="dd7e8248-b47f-4926-a541-8d1002c83fce"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{referralPharmacy}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="23" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-1" mode="Transparent" x="3" y="3" width="209" height="19" forecolor="#000000" backcolor="#FFFFFF" uuid="308802d1-c440-4824-a488-fa431a432263"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd-MM-yyyy").format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="458" y="4" width="75" height="15" uuid="93fa49a3-091b-4fc4-8965-081a58161bb4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA[" " + String.valueOf($V{PAGE_NUMBER})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-3" x="377" y="4" width="80" height="15" uuid="2d260759-152c-49ee-92ee-54f1f8c51cbf"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Página " + String.valueOf($V{PAGE_NUMBER}) + " de "]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="26" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-6" mode="Transparent" x="1" y="2" width="209" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="e2de722a-4d46-43ad-88d8-11ab01d5409f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd-MM-yyyy").format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-7" x="459" y="4" width="75" height="15" uuid="7db2e320-962f-468e-9cf5-8943a999242d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA[" " + String.valueOf($V{PAGE_NUMBER})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-8" x="378" y="4" width="80" height="15" uuid="41c47065-d479-46d9-8ec0-3fc254e8944c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Página " + String.valueOf($V{PAGE_NUMBER}) + " de "]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="21" splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="LivroRegistoDiarioARV_Sub" pageWidth="151" pageHeight="20" columnWidth="151" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="0b9d4247-55db-4630-98f7-cef30e0ec676">
+	<property name="ireport.zoom" value="2.8531167061100056"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter1.xml"/>
+	<parameter name="id" class="java.lang.String">
+		<defaultValueExpression><![CDATA["ff80818180adc3720180adc3be270002"]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select drug_name, quantity  
+					 from drug_quantity_temp
+					 where arv_daily_register_report_temp_id="ff80818180adc3720180adc3be270002"]]>
+	</queryString>
+	<field name="drug_name" class="java.lang.String"/>
+	<field name="quantity" class="java.lang.Long"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band/>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band/>
+	</columnHeader>
+	<detail>
+		<band height="13">
+			<textField isBlankWhenNull="true">
+				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="0" y="0" width="116" height="13" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="c7dc07fb-4317-40aa-9e91-4a868b34f5ea"/>
+				<textElement verticalAlignment="Middle">
+					<font size="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{drug_name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="116" y="0" width="35" height="13" uuid="8f631457-2dc9-4181-8900-ffad25295756"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{quantity}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band/>
+	</columnFooter>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

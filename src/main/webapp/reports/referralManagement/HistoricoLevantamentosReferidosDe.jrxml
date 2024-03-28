@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.17.0-6d93193241dd8cc42629e188b94f9e0bc5722efd  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="HistoricoLevantamentos" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="782" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="0f4ab190-2419-4850-9667-3e3c974942f6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.4641000000000006"/>
+	<property name="ireport.x" value="685"/>
+	<property name="ireport.y" value="0"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="table">
+		<box>
+			<pen lineWidth="1.0" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TH" mode="Opaque" backcolor="#F0F8FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_CH" mode="Opaque" backcolor="#BFE1FF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<style name="table_TD" mode="Opaque" backcolor="#FFFFFF">
+		<box>
+			<pen lineWidth="0.5" lineColor="#000000"/>
+		</box>
+	</style>
+	<parameter name="path" class="java.lang.String">
+		<parameterDescription><![CDATA[Path for the report files]]></parameterDescription>
+		<defaultValueExpression><![CDATA["D://development//workspace//Pharmacy//Reports"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="date" class="java.util.Date">
+		<parameterDescription><![CDATA[Date for Report]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Date("15/01/2009")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="mainfacilityname" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Desmond Tutu Centre Pharmacy"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="dateFormat" class="java.lang.String">
+		<parameterDescription><![CDATA[Exact same value as date, but formatted]]></parameterDescription>
+		<defaultValueExpression><![CDATA["2005-09-01"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="monthStart" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="monthEnd" class="java.lang.String" isForPrompting="false"/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["C:\\eclipse.OLD\\wp\\idart\\Reports\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="dateEnd" class="java.util.Date"/>
+	<parameter name="mes" class="java.lang.String"/>
+	<parameter name="mes2" class="java.lang.String"/>
+	<parameter name="query" class="java.lang.String"/>
+	<parameter name="provincia" class="java.lang.String"/>
+	<parameter name="parameter1" class="java.lang.String"/>
+	<parameter name="distrito" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select distinct spt.patientid as nid,
+		spt.patientfirstname ||' '|| spt.patientlastname as nome,
+		spt.reasonforupdate as tipoPaciente,
+		spt.regimenome as regimeTerapeutico,
+		CASE
+			WHEN spt.dispensatrimestral = 1 THEN 'DT'
+			WHEN spt.dispensasemestral = 1 THEN 'DS'
+			ELSE 'DM'
+        END AS tipodispensa,
+		pg_catalog.date(spt.pickupdate) as dataLevantamento,
+		to_date(spt.dateexpectedstring, 'DD-Mon-YYYY') as dataProximoLev,
+		c.clinicname as referencia
+from sync_temp_dispense spt
+inner join patient p on p.uuidopenmrs = spt.uuidopenmrs
+inner join clinic c on c.id = p.clinic
+where pg_catalog.date(spt.pickupdate) >= $P{date}::date
+AND pg_catalog.date(spt.pickupdate) < ($P{dateEnd}::date + INTERVAL '1 day')
+GROUP BY 1,2,3,4,5,6,7,8
+order by 6 asc]]>
+	</queryString>
+	<field name="nid" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="tarvType" class="java.lang.String"/>
+	<field name="therapeuticalRegimen" class="java.lang.String"/>
+	<field name="dispenseType" class="java.lang.String"/>
+	<field name="nextPickUpDate" class="java.sql.Timestamp"/>
+	<field name="pickUpDate" class="java.sql.Timestamp"/>
+	<field name="referralPharmacy" class="java.lang.String"/>
+	<variable name="test" class="java.lang.String" resetType="None">
+		<variableExpression><![CDATA["test"]]></variableExpression>
+		<initialValueExpression><![CDATA["test"]]></initialValueExpression>
+	</variable>
+	<group name="nilnil">
+		<groupExpression><![CDATA[null]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<group name="d">
+		<groupExpression><![CDATA[null]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="140" splitType="Stretch">
+			<staticText>
+				<reportElement key="st_heading" mode="Transparent" x="276" y="18" width="241" height="23" forecolor="#000000" backcolor="#FFFFFF" uuid="28cada15-174c-429d-8922-8e094b791326"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[HISTÓRICO DE LEVANTAMENTOS PARA PACIENTES REFERIDOS]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="tf_facilityName" mode="Opaque" x="102" y="63" width="264" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="ac56e3e2-c8a7-467b-a2a6-b4197ba6d4aa"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{mainfacilityname}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="st_date" mode="Opaque" x="372" y="82" width="27" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="a601d06a-dedd-4355-8035-60c630430d26"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Ano:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="tf_date" mode="Opaque" x="397" y="82" width="277" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="1b9508fa-301c-4aae-8df8-a9c0a418aab5"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(new SimpleDateFormat("yyyy")).format($P{date})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-1" mode="Opaque" x="1" y="100" width="780" height="1" forecolor="#000000" backcolor="#000000" uuid="c5d04a39-d246-4b1c-b331-27bf46c5e486"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="st_drug" mode="Opaque" x="168" y="105" width="144" height="30" forecolor="#000000" backcolor="#FFFFFF" uuid="58cafd95-beeb-4dd7-b250-75bc07743121">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[NOME]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="st_facilityName" mode="Transparent" x="7" y="63" width="95" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="b24a0047-423c-4c84-bf83-47df0a25d6dd"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Unidade Sanitária:]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-2" mode="Opaque" x="0" y="-2" width="1" height="140" forecolor="#000000" backcolor="#000000" uuid="71f07a61-dda1-45bd-9792-7dca28d05238"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-3" mode="Opaque" x="315" y="100" width="1" height="40" forecolor="#000000" backcolor="#000000" uuid="bf26eb75-7d48-49dc-af03-64cc021d9320"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-8" mode="Opaque" x="1" y="138" width="780" height="1" forecolor="#000000" backcolor="#000000" uuid="4869d102-b41b-4c97-84a3-2eb6195af1c6"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="st_openingBalance-2" mode="Transparent" x="317" y="103" width="62" height="32" forecolor="#000000" backcolor="#FFFFFF" uuid="d182e103-6f3d-4823-ab68-0523ecb73503"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[TIPO TARV]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="st_date" mode="Opaque" x="371" y="63" width="44" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="a9e1ffb0-0118-449e-bd9c-ffb06e220687"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Justified" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Período:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="tf_date" mode="Opaque" x="416" y="63" width="277" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="118a60b2-799b-4ddf-99e2-bbc04e28ef51"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Justified" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[(new SimpleDateFormat("dd-MM-yyyy")).format($P{date})+ "  à  "+ (new SimpleDateFormat("dd-MM-yyyy")).format($P{dateEnd})]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="1" y="54" width="780" height="1" uuid="b54e8eee-36f0-4b81-8389-67cf1c6ca52c"/>
+				<graphicElement>
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="1" y="78" width="780" height="1" uuid="d9424803-0590-4c1c-896c-006961e338c5"/>
+				<graphicElement>
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="1" y="97" width="780" height="1" uuid="6e6c04c3-b3f9-475b-b7e0-de24ac6a0dd0"/>
+				<graphicElement>
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-28" x="366" y="55" width="1" height="42" backcolor="#000000" uuid="960224bc-5ba8-4cee-9fb7-0b0531577f6c"/>
+				<graphicElement>
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="st_facilityName" mode="Transparent" x="5" y="82" width="42" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="cdd285cc-9411-41b9-8848-a0b257bc2418"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Distrito:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="st_facilityName" mode="Transparent" x="218" y="82" width="58" height="15" forecolor="#000000" backcolor="#FFFFFF" uuid="23c440a5-e447-4d25-bc1a-9fc704cd64a7"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[Província:]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-28" x="214" y="79" width="1" height="18" backcolor="#000000" uuid="e7916507-0f12-4603-a729-033b2b72661e"/>
+				<graphicElement>
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-2" mode="Opaque" x="166" y="100" width="1" height="38" forecolor="#000000" backcolor="#000000" uuid="e4ba29c1-0255-42af-85e0-326435c6ea1a"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="st_drug" mode="Opaque" x="32" y="105" width="132" height="30" forecolor="#000000" backcolor="#FFFFFF" uuid="a455a7b5-b74d-48a4-9afe-f101c2c925bc"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[NID]]></text>
+			</staticText>
+			<line>
+				<reportElement x="1" y="-2" width="780" height="1" uuid="31ee64fd-40bf-4eb7-9737-7296bfd44835"/>
+				<graphicElement>
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-2" mode="Opaque" x="781" y="-2" width="1" height="140" forecolor="#000000" backcolor="#000000" uuid="b2e507cf-aa79-49ed-a410-a41224f3bf87"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-2" mode="Opaque" x="30" y="101" width="1" height="38" forecolor="#000000" backcolor="#000000" uuid="a3aa4419-2ebd-412e-8ac3-65724073cc48"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement x="2" y="114" width="25" height="20" uuid="0a10a5be-d3e1-4f17-85d0-4b04efa9ea45"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[ORD]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="st_openingBalance-2" mode="Transparent" x="383" y="103" width="75" height="32" forecolor="#000000" backcolor="#FFFFFF" uuid="d65258a2-41ed-4f0f-95be-388f0f319aec">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[REGIME TERAPÉUTICO]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-2" mode="Opaque" x="381" y="101" width="1" height="38" forecolor="#000000" backcolor="#000000" uuid="cff5c15b-6074-48e0-9cb5-5b3eb7fcb4c3"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-2" mode="Opaque" x="523" y="102" width="1" height="36" forecolor="#000000" backcolor="#000000" uuid="a4931d44-dd57-4edc-b22c-fee8b4f116e5"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-2" mode="Opaque" x="610" y="102" width="1" height="38" forecolor="#000000" backcolor="#000000" uuid="390bbfb0-8933-490e-b418-b873ea24bb99"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="st_openingBalance-2" mode="Transparent" x="528" y="105" width="80" height="32" forecolor="#000000" backcolor="#FFFFFF" uuid="1ddd81e5-d5a3-41de-92f0-f14f4fc38d51">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[DATA LEVANT.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="st_openingBalance-2" mode="Transparent" x="612" y="104" width="81" height="32" forecolor="#000000" backcolor="#FFFFFF" uuid="2a98b664-0f76-4089-9916-42f437f54f9e">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[DATA PRÓX. LEVANT.]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-2" mode="Opaque" x="460" y="101" width="1" height="38" forecolor="#000000" backcolor="#000000" uuid="87328fa8-a722-4d89-b961-76367b23ef71"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="st_openingBalance-2" mode="Transparent" x="461" y="104" width="60" height="32" forecolor="#000000" backcolor="#FFFFFF" uuid="e641ddec-28fd-493f-872a-a42e007bc5b7">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[TIPO DE DISPENSA]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-2" mode="Opaque" x="693" y="100" width="1" height="38" forecolor="#000000" backcolor="#000000" uuid="2b6bb0fb-f856-46d4-b5c9-56df3debac28"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement key="st_openingBalance-2" mode="Transparent" x="694" y="103" width="86" height="32" forecolor="#000000" backcolor="#FFFFFF" uuid="83ec91a5-ddd5-4d09-a347-02ae81274008">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle" rotation="None">
+					<font fontName="Arial" size="10" isBold="true" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="Cp1252" isPdfEmbedded="false"/>
+				</textElement>
+				<text><![CDATA[FARMACIA]]></text>
+			</staticText>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="23">
+			<line>
+				<reportElement key="line-22" mode="Opaque" x="0" y="22" width="780" height="1" forecolor="#000000" backcolor="#FFFFFF" uuid="9ff4481a-3a18-437b-8c18-c371fc33071e"/>
+				<graphicElement fill="Solid"/>
+			</line>
+			<line>
+				<reportElement key="line-6" mode="Opaque" x="0" y="-5" width="1" height="26" forecolor="#000000" backcolor="#FFFFFF" uuid="329232e7-13aa-451e-aa0f-895f211b044c"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-8" mode="Opaque" x="166" y="-3" width="1" height="26" forecolor="#000000" backcolor="#FFFFFF" uuid="1e6d8d46-3609-45fb-9642-bd463d7a5fce"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-8" mode="Opaque" x="781" y="-4" width="1" height="26" forecolor="#000000" backcolor="#FFFFFF" uuid="f34c0026-4a88-4380-b20f-ec75fcb43449"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-20" mode="Opaque" x="315" y="-4" width="1" height="26" forecolor="#000000" backcolor="#FFFFFF" uuid="fbe61f34-bd2f-4e7a-b7c8-29e3b88b8604"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-6" mode="Opaque" x="30" y="-4" width="1" height="26" forecolor="#000000" backcolor="#FFFFFF" uuid="892e78cf-9415-497c-b52a-48cbaf6198b2"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-20" mode="Opaque" x="381" y="-5" width="1" height="26" forecolor="#000000" backcolor="#FFFFFF" uuid="8aeea785-a4a2-4208-9a7d-1ca5a7ba728d"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="2" y="2" width="27" height="17" uuid="7c7d7dbe-1f68-4faa-a2ae-a1a5717c20bf">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-20" mode="Opaque" x="523" y="0" width="1" height="22" forecolor="#000000" backcolor="#FFFFFF" uuid="aa9e5d36-32fb-44f4-be7a-7a86b166c572"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-20" mode="Opaque" x="460" y="0" width="1" height="22" forecolor="#000000" backcolor="#FFFFFF" uuid="e25d37b5-54d5-4e8b-b66f-2732f875f4a7"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-20" mode="Opaque" x="610" y="0" width="1" height="22" forecolor="#000000" backcolor="#FFFFFF" uuid="3c8c5f60-6076-415d-bc09-21a669580b60"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-20" mode="Opaque" x="693" y="0" width="1" height="22" forecolor="#000000" backcolor="#FFFFFF" uuid="49614e45-318f-4a90-af1b-78b7c6377d04"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0" lineStyle="Solid"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="32" y="1" width="132" height="20" uuid="413bd8cf-80df-4092-80f2-b967686e928e"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{nid}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="168" y="1" width="144" height="20" uuid="fe46cfee-c899-4268-a7f4-c796a1cb4122"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="317" y="2" width="60" height="19" uuid="02e1317f-7af2-4942-963d-625e1ab7817e"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tarvType}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="383" y="1" width="74" height="20" uuid="f1611f4a-0195-4d41-8f2f-37ce213c84b0"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{therapeuticalRegimen}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="461" y="1" width="60" height="20" uuid="d3160420-1071-4ef3-958a-a93879a8c891"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dispenseType}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="524" y="0" width="84" height="20" uuid="7c0fb5b4-80ad-487c-ab87-1ce1b46c5956"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd-MM-yyyy").format($F{pickUpDate})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="612" y="1" width="81" height="19" uuid="ec2e7284-8017-4031-a47c-4955e04fbb36"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd-MM-yyyy").format($F{nextPickUpDate})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="694" y="1" width="86" height="20" uuid="81a9005a-295c-43e1-be18-165bf9b73231"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{referralPharmacy}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band/>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="28" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-1" mode="Transparent" x="3" y="4" width="209" height="19" forecolor="#000000" backcolor="#FFFFFF" uuid="e9b0d018-c5bf-4dea-b0c2-38ec841fc942"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd-MM-yyyy").format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="458" y="6" width="75" height="15" uuid="e3d2b47d-5fe3-4f36-97d0-0fd7bc26184c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA[" " + String.valueOf($V{PAGE_NUMBER})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-3" x="377" y="6" width="80" height="15" uuid="75191e91-415e-49a0-9ffc-3c0d2d45867e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Página " + String.valueOf($V{PAGE_NUMBER}) + " de "]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<lastPageFooter>
+		<band height="17" splitType="Stretch">
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-6" mode="Transparent" x="2" y="0" width="209" height="14" forecolor="#000000" backcolor="#FFFFFF" uuid="f9be157d-5b2e-4b92-b467-30b27f210827"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" rotation="None">
+					<font fontName="Arial" size="10" isBold="false" isItalic="false" isUnderline="false" isStrikeThrough="false" pdfEncoding="CP1252" isPdfEmbedded="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new SimpleDateFormat("dd-MM-yyyy").format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="457" y="1" width="75" height="15" uuid="09aefdec-8efa-4986-9c6e-40a94570b966"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA[" " + String.valueOf($V{PAGE_NUMBER})]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-3" x="376" y="1" width="80" height="15" uuid="bb59ed04-ac72-4e2d-929b-cd3991a5698f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Página " + String.valueOf($V{PAGE_NUMBER}) + " de "]]></textFieldExpression>
+			</textField>
+		</band>
+	</lastPageFooter>
+	<summary>
+		<band height="9" splitType="Stretch"/>
+	</summary>
+</jasperReport>

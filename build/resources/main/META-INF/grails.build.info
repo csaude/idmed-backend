@@ -1,0 +1,6 @@
+#Tue, 26 Mar 2024 15:07:49 +0200
+
+info.app.version=0.1
+info.app.name=idmed-backend
+grails.env=development
+info.app.grailsVersion=6.1.2

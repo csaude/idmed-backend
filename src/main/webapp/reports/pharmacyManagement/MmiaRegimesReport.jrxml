@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.19.1.final using JasperReports Library version 6.19.1-867c00bf88cd4d784d404379d6c05e1b419e8a4c  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="MmiaRegimesReportNovaVersao" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" whenResourceMissingType="Error" isIgnorePagination="true" uuid="bde376ab-cee0-4b6b-9d07-70e43e7a2dc9">
+	<property name="ireport.zoom" value="1.4483218986834392"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter.jrdax"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="reportId" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select * from mmia_regimen_sub_report where report_id=$P{reportId}]]>
+	</queryString>
+	<field name="id" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="id"/>
+		<property name="com.jaspersoft.studio.field.label" value="id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="mmia_regimen_sub_report"/>
+	</field>
+	<field name="version" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="version"/>
+		<property name="com.jaspersoft.studio.field.label" value="version"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="mmia_regimen_sub_report"/>
+	</field>
+	<field name="regimen" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="regimen"/>
+		<property name="com.jaspersoft.studio.field.label" value="regimen"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="mmia_regimen_sub_report"/>
+	</field>
+	<field name="code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="code"/>
+		<property name="com.jaspersoft.studio.field.label" value="code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="mmia_regimen_sub_report"/>
+	</field>
+	<field name="line" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="line"/>
+		<property name="com.jaspersoft.studio.field.label" value="line"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="mmia_regimen_sub_report"/>
+	</field>
+	<field name="total_patients" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="total_patients"/>
+		<property name="com.jaspersoft.studio.field.label" value="total_patients"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="mmia_regimen_sub_report"/>
+	</field>
+	<field name="line_code" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="line_code"/>
+		<property name="com.jaspersoft.studio.field.label" value="line_code"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="mmia_regimen_sub_report"/>
+	</field>
+	<field name="cumunitary_clinic" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="cumunitary_clinic"/>
+		<property name="com.jaspersoft.studio.field.label" value="cumunitary_clinic"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="mmia_regimen_sub_report"/>
+	</field>
+	<field name="report_id" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="report_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="report_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="mmia_regimen_sub_report"/>
+	</field>
+	<variable name="totalPaciente" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{total_patients}]]></variableExpression>
+	</variable>
+	<variable name="totalPrimeiraLinha" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{line_code}.equals( "1" )? $F{total_patients} : 0]]></variableExpression>
+	</variable>
+	<variable name="totalSegundaLinha" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{line_code}.equals("2") ? $F{total_patients} : 0]]></variableExpression>
+	</variable>
+	<variable name="totalTerceiraLinha" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{line_code}.equals( "3" ) ? $F{total_patients} : 0]]></variableExpression>
+	</variable>
+	<variable name="totalEmLinhas" class="java.lang.Integer">
+		<variableExpression><![CDATA[$V{totalPrimeiraLinha}+$V{totalSegundaLinha}+$V{totalTerceiraLinha}]]></variableExpression>
+	</variable>
+	<variable name="totalPacientesDC" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{cumunitary_clinic}]]></variableExpression>
+	</variable>
+	<variable name="totalPrimeiraLinhaDC" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{line_code}.equals( "1" ) ? $F{cumunitary_clinic} : 0]]></variableExpression>
+	</variable>
+	<variable name="totalSegundaLinhaDC" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{line_code}.equals( "2" ) ? $F{cumunitary_clinic} : 0]]></variableExpression>
+	</variable>
+	<variable name="totalTerceiraLinhaDC" class="java.lang.Integer" calculation="Sum">
+		<variableExpression><![CDATA[$F{line_code}.equals( "3" ) ? $F{cumunitary_clinic} : 0]]></variableExpression>
+	</variable>
+	<group name="total_pacientes">
+		<groupExpression><![CDATA[null]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="95">
+				<staticText>
+					<reportElement mode="Opaque" x="141" y="0" width="123" height="23" backcolor="#D0D8FC" uuid="f0acc2a5-d26f-4adf-a310-15821a0bd26a"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Total:]]></text>
+				</staticText>
+				<line>
+					<reportElement key="line-3" mode="Opaque" x="314" y="0" width="1" height="24" forecolor="#000000" backcolor="#000000" uuid="053ea311-a8bb-4e67-b1c3-e1302e8418cd"/>
+					<graphicElement fill="Solid">
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<line>
+					<reportElement x="140" y="23" width="225" height="1" uuid="274a47b4-582f-48e1-a12f-c7d38120abe8"/>
+					<graphicElement>
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<line>
+					<reportElement key="line-3" mode="Opaque" x="140" y="0" width="1" height="23" forecolor="#000000" backcolor="#000000" uuid="111e8846-fd3d-46d8-818c-1d09d7c3fcbc"/>
+					<graphicElement fill="Solid">
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<line>
+					<reportElement key="line-3" mode="Opaque" x="365" y="0" width="1" height="24" forecolor="#000000" backcolor="#000000" uuid="21bf5f82-b81b-4f64-9ddb-1d77b41ee4f9"/>
+					<graphicElement fill="Solid">
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<line>
+					<reportElement key="line-3" mode="Opaque" x="264" y="0" width="1" height="23" forecolor="#000000" backcolor="#000000" uuid="886ac311-aa33-4d92-a950-619b94d7ce9b"/>
+					<graphicElement fill="Solid">
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<textField>
+					<reportElement mode="Opaque" x="265" y="0" width="48" height="23" backcolor="#D0D8FC" uuid="aa82c68c-32d3-41cd-9f64-91545559bab0"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{totalPaciente}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement mode="Opaque" x="263" y="75" width="51" height="16" backcolor="#E4E4F4" uuid="59bebd1d-2e6a-47f8-9cf5-201b53fef60d"/>
+					<text><![CDATA[]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="267" y="35" width="43" height="13" uuid="378d151f-5fc0-493d-811d-6217f3b89cb0"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{totalPrimeiraLinha}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement mode="Opaque" x="1" y="62" width="263" height="12" backcolor="#AFCAF5" uuid="7b60409d-3b37-4bdc-bf92-2abe5fdd7b7f"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[3ª Linhas   ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="1" y="49" width="263" height="12" backcolor="#AFCAF5" uuid="67918a78-41a0-47e7-9feb-c5844ebe92da"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[2ª Linhas   ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="138" y="75" width="126" height="16" backcolor="#D0D8FC" uuid="df7a5b4d-9353-4afc-857c-c6bba60687b4"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Total:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="1" y="24" width="364" height="11" forecolor="#FFFFFF" backcolor="#000000" uuid="e2853282-f52f-4965-85fc-e73c6ffc82ec"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Linhas Terapêuicas]]></text>
+				</staticText>
+				<line>
+					<reportElement key="line-3" mode="Opaque" x="137" y="75" width="1" height="17" forecolor="#000000" backcolor="#000000" uuid="c3685e90-67ca-4d3c-9b0b-d2ef7ddb7cc2"/>
+					<graphicElement fill="Solid">
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<textField>
+					<reportElement x="267" y="77" width="43" height="13" uuid="2abdbcca-b80f-48ed-bd99-f932409bc24b"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{totalPaciente}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="1" y="48" width="365" height="1" uuid="0bdddc00-aec4-4828-802b-18749d3d662f"/>
+					<graphicElement>
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<textField>
+					<reportElement x="267" y="49" width="43" height="12" uuid="ab0cfc90-6026-403f-81aa-22ca05f78464"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{totalSegundaLinha}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="74" width="365" height="1" uuid="c8602971-396d-4740-a486-80789ec6fbb4"/>
+					<graphicElement>
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<textField>
+					<reportElement x="267" y="62" width="43" height="12" uuid="0aefc40b-2000-44d2-9d3a-0cb1362f710a"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{totalTerceiraLinha}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement mode="Opaque" x="1" y="35" width="263" height="13" backcolor="#AFCAF5" uuid="6b495cc1-4ecf-4084-8af8-272424d0655b"/>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<text><![CDATA[1ª Linhas   ]]></text>
+				</staticText>
+				<line>
+					<reportElement x="1" y="61" width="364" height="1" uuid="ad9e3076-241d-4eca-aa53-663050c070a4"/>
+					<graphicElement>
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<line>
+					<reportElement key="line-3" mode="Opaque" x="0" y="24" width="1" height="51" forecolor="#000000" backcolor="#000000" uuid="5a4b8a1f-cd7d-40ad-8dcc-dd669cf35b73"/>
+					<graphicElement fill="Solid">
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<line>
+					<reportElement x="137" y="91" width="229" height="1" uuid="237f3a5d-88cc-41b3-87f4-36c7209ea932"/>
+					<graphicElement>
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<line>
+					<reportElement key="line-3" mode="Opaque" x="365" y="24" width="1" height="68" forecolor="#000000" backcolor="#000000" uuid="86ad44ce-7bd2-4887-8bc3-34e76a47f9d4"/>
+					<graphicElement fill="Solid">
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<line>
+					<reportElement key="line-3" mode="Opaque" x="314" y="35" width="1" height="56" forecolor="#000000" backcolor="#000000" uuid="0f4c0149-d346-431d-834d-733d3a33e6e9"/>
+					<graphicElement fill="Solid">
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<line>
+					<reportElement key="line-3" mode="Opaque" x="264" y="35" width="1" height="56" forecolor="#000000" backcolor="#000000" uuid="c968d65f-cc53-4949-916a-620b069bb7cf"/>
+					<graphicElement fill="Solid">
+						<pen lineWidth="2.0"/>
+					</graphicElement>
+				</line>
+				<textField>
+					<reportElement mode="Opaque" x="315" y="0" width="48" height="23" backcolor="#D0D8FC" uuid="efd4280f-9f88-4d97-a6cf-d5d1a295c91b"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{totalPacientesDC}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="317" y="78" width="43" height="13" uuid="826312df-f475-466e-ae74-18a9391c6657"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{totalPacientesDC}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="318" y="35" width="43" height="13" uuid="03367313-ab1b-4f4c-ab4c-166f184cc733"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{totalPrimeiraLinhaDC}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="318" y="48" width="43" height="13" uuid="00260227-678e-40b8-bb74-19734612a560"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{totalSegundaLinhaDC}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="317" y="62" width="43" height="13" uuid="403bb7ad-db6c-4e2d-bed5-e7f1b6aa1460"/>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="8"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{totalTerceiraLinhaDC}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="21" splitType="Stretch">
+			<line>
+				<reportElement key="line-3" mode="Opaque" x="314" y="0" width="1" height="21" forecolor="#000000" backcolor="#000000" uuid="d28bc7b3-b56f-4005-960d-2062a9b834bf"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-3" mode="Opaque" x="264" y="0" width="1" height="20" forecolor="#000000" backcolor="#000000" uuid="5feba371-a9f2-4fba-84c6-4baa1db53ac2"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-3" mode="Opaque" x="0" y="0" width="1" height="20" forecolor="#000000" backcolor="#000000" uuid="0b896781-ac79-4952-b2ff-197c65fa1090"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement x="0" y="20" width="365" height="1" uuid="977f6e6f-2733-4b2c-b4df-700a832e0730"/>
+				<graphicElement>
+					<pen lineWidth="1.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-3" mode="Opaque" x="60" y="0" width="1" height="20" forecolor="#000000" backcolor="#000000" uuid="e34d4c7e-9da3-47b0-a0db-12181604967a"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<line>
+				<reportElement key="line-3" mode="Opaque" x="365" y="0" width="1" height="21" forecolor="#000000" backcolor="#000000" uuid="3d6e206f-074e-4ead-97e9-b38b8d378e29"/>
+				<graphicElement fill="Solid">
+					<pen lineWidth="2.0"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="63" y="0" width="200" height="20" uuid="6cb9dfa5-97b9-4f3d-ba51-afe55fb28bf5"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{regimen}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="1" y="0" width="59" height="20" uuid="a74e308b-4139-4cbc-9d06-b1ce50f74899"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{code}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="267" y="1" width="46" height="19" uuid="03b28454-d277-4121-8c93-fce9fdb1f2e7"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{total_patients}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="315" y="0" width="50" height="20" uuid="5efea0e4-fece-4da6-9ce7-3f68bcc2bbeb"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cumunitary_clinic}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
