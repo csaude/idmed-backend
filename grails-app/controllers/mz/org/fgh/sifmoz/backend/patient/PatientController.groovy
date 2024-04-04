@@ -121,11 +121,26 @@ class PatientController extends RestfulController {
         def objectJSON = request.JSON
         def patientFromJSON = (parseTo(objectJSON.toString()) as Map) as Patient
         Patient patient = Patient.get(objectJSON.id)
+//        bindData(patient, patientFromJSON, [exclude: ['id', 'clinicId', 'his', 'hisId', 'provinceId', 'districtId', 'bairroId', 'clinic', 'attributes', 'appointments', 'patientTransReference', 'validated', 'postoAdministrativoId','matchId', 'entity']])
 
-        bindData(patient, patientFromJSON, [exclude: ['id', 'clinicId', 'his', 'hisId', 'provinceId', 'districtId', 'bairroId', 'clinic', 'attributes', 'appointments', 'patientTransReference', 'validated', 'postoAdministrativoId','matchId', 'entity']])
+
+        patient.firstNames = patientFromJSON.firstNames
+        patient.middleNames = patientFromJSON.middleNames
+        patient.lastNames = patientFromJSON.lastNames
+        patient.gender = patientFromJSON.gender
+        patient.dateOfBirth = patientFromJSON.dateOfBirth
+        patient.cellphone = patientFromJSON.cellphone
+        patient.alternativeCellphone = patientFromJSON.alternativeCellphone
+        patient.address = patientFromJSON.address
+        patient.addressReference =  patientFromJSON.addressReference
+        patient.province =  patientFromJSON.province
+        patient.bairro = patientFromJSON.bairro
+        patient.district = patientFromJSON.district
+        patient.postoAdministrativo = patientFromJSON.postoAdministrativo
+
         List<PatientServiceIdentifier> identifiersList = new ArrayList<>()
 
-        if (patient.identifiers != null) {
+     /*   if (patient.identifiers != null) {
             patient.identifiers = [].withDefault { new PatientServiceIdentifier() }
 
             (objectJSON.identifiers as List).collect { item ->
@@ -136,7 +151,7 @@ class PatientController extends RestfulController {
                 }
             }
             patient.identifiers = identifiersList
-        }
+        }*/
         if (patient == null) {
             render status: NOT_FOUND
             return

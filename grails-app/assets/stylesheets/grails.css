@@ -41,8 +41,10 @@ pre {
 
 }
 .navbar-dark, .navbar-static-top {
-    background-color: #424649;
+    background-color: #ffffff;
+    color: #424649;
     border: 0px;
+    horiz-align: center;
 }
 a.navbar-brand {
     color: white !important;

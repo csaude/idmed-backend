@@ -77,6 +77,16 @@ grails:
         scriptlet: html
         taglib: none
         staticparts: none
+  plugin :
+    auditLog :
+      auditDomainClassName: 'mz.org.fgh.sifmoz.backend.auditTrail.AuditTrail'
+      verbose: false
+      verboseEvents: [AuditEventType.UPDATE, AuditEventType.INSERT]
+      failOnError: true
+      excluded: ['version', 'lastUpdated', 'lastUpdatedBy']
+      mask: ['password']
+      logIds: true
+      stampEnabled: true
 dataSource:
   url: jdbc:postgresql://localhost:5432/postgres
   driverClassName: org.postgresql.Driver

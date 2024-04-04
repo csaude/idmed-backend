@@ -1,5 +1,6 @@
 package mz.org.fgh.sifmoz.backend.patient
 
+import grails.plugins.orm.auditable.Auditable
 import mz.org.fgh.sifmoz.backend.appointment.Appointment
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
@@ -17,7 +18,7 @@ import mz.org.fgh.sifmoz.backend.protection.Menu
 import mz.org.fgh.sifmoz.backend.tansreference.PatientTransReference
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
 
-class Patient extends BaseEntity {
+class Patient extends BaseEntity implements Auditable{
     String id
     String firstNames
     String middleNames
@@ -44,6 +45,8 @@ class Patient extends BaseEntity {
     Clinic clinic
     Date creationDate = new Date()
     static belongsTo = [Clinic]
+
+    static auditable = true
 
     static hasMany = [
             attributes           : PatientAttribute,

@@ -49,6 +49,7 @@ dependencies:
 - file:/home/colaco/.gradle/caches/modules-2/files-2.1/io.micronaut.spring/micronaut-spring/4.5.1/659bd50d33d2cee9ae013bfa49c9734bfb1079c0/micronaut-spring-4.5.1.jar
 - file:/home/colaco/.gradle/caches/modules-2/files-2.1/io.micronaut/micronaut-http-client/3.10.3/f739ba3bfcfc2c7217ad05ec521e3a0c3c764b16/micronaut-http-client-3.10.3.jar
 - file:/home/colaco/.gradle/caches/modules-2/files-2.1/org.grails.plugins/database-migration/4.2.1/879a2eb71561b3922201f14df9382ec09d415e55/database-migration-4.2.1-plain.jar
+- file:/home/colaco/.gradle/caches/modules-2/files-2.1/org.grails.plugins/audit-logging/4.0.3/1a59897952dc2c3c29bccebcfcd2ff0c6203703d/audit-logging-4.0.3.jar
 - file:/home/colaco/.gradle/caches/modules-2/files-2.1/org.grails/grails-datastore-gorm-hibernate5/8.0.3/c69bf1ba2375c4d2eff227d31445fd07f974d891/grails-datastore-gorm-hibernate5-8.0.3.jar
 - file:/home/colaco/.gradle/caches/modules-2/files-2.1/org.hibernate/hibernate-core/5.6.15.Final/ab14b7cef1fdff654ca81923048a6034d6c7cfa7/hibernate-core-5.6.15.Final.jar
 - file:/home/colaco/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-actuator/2.7.18/ac6d614d1d0503dfec26110c801902d48bd22628/spring-boot-starter-actuator-2.7.18.jar

@@ -1,11 +1,19 @@
-
+// AuditLog Plugin config
+grails.plugin.auditLog.auditDomainClassName = 'mz.org.fgh.sifmoz.backend.auditTrail.AuditTrail'
+grails.plugin.auditLog.verbose = false
+grails.plugin.auditLog.verboseEvents = [AuditEventType.UPDATE, AuditEventType.INSERT]
+grails.plugin.auditLog.failOnError = true
+grails.plugin.auditLog.excluded = ['version', 'lastUpdated', 'lastUpdatedBy']
+grails.plugin.auditLog.mask = ['password']
+grails.plugin.auditLog.logIds = true
+grails.plugin.auditLog.stampEnabled = false
 
 // Added by the Spring Security Core plugin:
 grails.plugin.springsecurity.userLookup.userDomainClassName = 'mz.org.fgh.sifmoz.backend.protection.SecUser'
 grails.plugin.springsecurity.userLookup.authorityJoinClassName = 'mz.org.fgh.sifmoz.backend.protection.SecUserRole'
 grails.plugin.springsecurity.authority.className = 'mz.org.fgh.sifmoz.backend.protection.Role'
- grails.plugin.springsecurity.requestMap.className = 'mz.org.fgh.sifmoz.backend.protection.Requestmap'
- grails.plugin.springsecurity.securityConfigType = 'Requestmap'
+grails.plugin.springsecurity.requestMap.className = 'mz.org.fgh.sifmoz.backend.protection.Requestmap'
+grails.plugin.springsecurity.securityConfigType = 'Requestmap'
 grails.plugin.springsecurity.controllerAnnotations.staticRules = [
 	[pattern: '/',               access: ['permitAll']],
 	[pattern: '/error',          access: ['permitAll']],
