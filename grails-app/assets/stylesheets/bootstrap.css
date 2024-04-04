@@ -4377,6 +4377,7 @@ input[type="button"].btn-block {
 
 .navbar-brand:hover, .navbar-brand:focus {
   text-decoration: none;
+  horiz-align: center;
 }
 
 .navbar-nav {
