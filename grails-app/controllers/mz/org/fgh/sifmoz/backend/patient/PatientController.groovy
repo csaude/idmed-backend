@@ -1,6 +1,7 @@
 package mz.org.fgh.sifmoz.backend.patient
 
 import grails.converters.JSON
+import grails.gorm.DetachedCriteria
 import grails.rest.RestfulController
 import grails.validation.ValidationException
 import groovy.json.JsonSlurper
@@ -27,7 +28,10 @@ import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.tansreference.PatientTransReference
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import mz.org.fgh.sifmoz.backend.report.ReportGenerator
+import org.grails.web.json.JSONObject
+import org.hibernate.Session
 import org.hibernate.SessionFactory
+import org.hibernate.criterion.Restrictions
 import org.springframework.orm.hibernate5.SessionFactoryUtils
 
 import static org.springframework.http.HttpStatus.CREATED
@@ -117,7 +121,6 @@ class PatientController extends RestfulController {
 
     @Transactional
     def update() {
-
         def objectJSON = request.JSON
         def patientFromJSON = (parseTo(objectJSON.toString()) as Map) as Patient
         Patient patient = Patient.get(objectJSON.id)
@@ -202,33 +205,35 @@ class PatientController extends RestfulController {
         //respond patientService.getAllByClinicId(clinicId, offset, max)
     }
 
+        def countPatientSearchResult () {
+
+            Patient patient = new Patient()
+            def objectJSON = request.JSON
+            patient = objectJSON as Patient
+
+            render patientService.countPatientSearchResult(patient)
+        }
+
     def search() {
         Patient patient = new Patient()
         def objectJSON = request.JSON
         patient = objectJSON as Patient
 
-        List<Patient> patientList = Patient.findAllByFirstNamesIlikeOrLastNamesIlike("%" + patient?.firstNames + "%", "%" + patient?.lastNames + "%")
+        def limit = objectJSON.limit  // Default limit to 10 if not provided
+        def offset = objectJSON.offset
 
-        if (!patient?.identifiers?.empty) {
-            if (patient.identifiers.first().value != null)
-                if (!patient.identifiers.first().value.trim().isEmpty()) {
-                    patientList = Patient.findAllByIdInListAndIdInList(patientList?.id, PatientServiceIdentifier.findAllByValueIlike("%" + patient?.identifiers?.first()?.value + "%")?.patient?.id)
-                    if (patientList.isEmpty()) {
-                        patientList = Patient.findAllByIdInList(PatientServiceIdentifier.findAllByValueIlike("%" + patient?.identifiers?.first()?.value + "%")?.patient?.id)
-                    }
-                }
-        }
+        def patientList =  patientService.search(patient,offset,limit)
 
         def result = JSONSerializer.setLightObjectListJsonResponse(patientList)
-
         (result as List).collect { rs ->
             def auxPatient = Patient.get(rs.id)
             if (auxPatient.identifiers.size() > 0)
                 rs.put('identifiers', auxPatient.identifiers)
         }
 
-        render result as JSON
+            render result as JSON
     }
+
 
     def searchByParam(String searchString, String clinicId) {
         String replacedString = searchString.replace("-", "/");
@@ -267,6 +272,50 @@ class PatientController extends RestfulController {
         String urlPath = "programenrollment?patient=" + uuid + "&v=default"
 
         render RestOpenMRSClient.getResponseOpenMRSClient(openmrsBase64, null, interoperabilityAttribute.value, urlPath, "GET")
+
+    }
+
+    def updatePatientUUID (String base64) {
+
+        def objectJSON = request.JSON
+        def patientFromJSON = (parseTo(objectJSON.toString()) as Map) as Patient
+
+        HealthInformationSystem healthInformationSystem = HealthInformationSystem.get(patientFromJSON.his.id)
+        InteroperabilityType interoperabilityType = InteroperabilityType.findByCode("URL_BASE")
+        InteroperabilityAttribute interoperabilityAttribute = InteroperabilityAttribute.findByHealthInformationSystemAndInteroperabilityType(healthInformationSystem, interoperabilityType)
+
+        JSONObject responsePost = (JSONObject) RestOpenMRSClient.getResponseOpenMRSClient(base64, null, interoperabilityAttribute.value, "session", "GET")
+        if (responsePost.authenticated == false ||
+                responsePost.authenticated == null) {
+            response.status = 400 // Set the HTTP status code to indicate a bad request
+            response.setContentType("text/plain")
+            response.outputStream << 'O Utilizador não se encontra no OpenMRS ou serviço rest no OpenMRS não se encontra em funcionamento'
+        }
+        else {
+            String urlPath = "patient/" + patientFromJSON.hisUuid
+
+            JSONObject responsePostGet = (JSONObject)  RestOpenMRSClient.getResponseOpenMRSClient(openmrsBase64, null, interoperabilityAttribute.value, urlPath, "GET")
+
+          if (responsePostGet != null &&
+                  responsePostGet.person != null) {
+              Patient existsPatientUUID = Patient.findByHisUuid(patientFromJSON.hisUuid)
+              if (existsPatientUUID == null) {
+                  Patient patientToUpdate = Patient.get(objectJSON.id)
+                  patientToUpdate.hisUuid = patientFromJSON.hisUuid
+                  patientService.save(patientToUpdate)
+                  render JSONSerializer.setJsonObjectResponse(patientToUpdate) as JSON
+              } else if (existsPatientUUID.id != patientFromJSON.id) {
+                  response.status = 400
+                  response.setContentType("text/plain")
+                  response.outputStream << 'Ja Existe no iDMED um paciente com UUID digitado'
+              }
+              render status: NO_CONTENT
+          } else {
+              response.status = 400
+              response.setContentType("text/plain")
+              response.outputStream << 'O paciente com o UUID digitado nao existe no openMRS'
+          }
+        }
 
     }
 
