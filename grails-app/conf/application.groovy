@@ -1,3 +1,4 @@
+
 // AuditLog Plugin config
 grails.plugin.auditLog.auditDomainClassName = 'mz.org.fgh.sifmoz.backend.auditTrail.AuditTrail'
 grails.plugin.auditLog.verbose = false
@@ -65,3 +66,9 @@ grails.plugin.springsecurity.password.bcrypt.logrounds = 12
 grails.plugin.springsecurity.rest.token.storage.jwt.expiration=36000000
 
 grails.plugin.springsecurity.auth.loginFormUrl = '/'
+
+grails.plugin.springsecurity.onAbstractAuthenticationFailureEvent = { event, appCtx ->
+
+// Action to be performed (Example : send e-mail)
+
+}

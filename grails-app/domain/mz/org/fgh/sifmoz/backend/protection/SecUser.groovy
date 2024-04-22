@@ -28,6 +28,7 @@ class SecUser implements Serializable, IRoleMenu {
     boolean accountLocked
     boolean passwordExpired
     String[] roles
+    int loginRetries = 3
 
     static transients = ['roles']
 
@@ -55,6 +56,7 @@ class SecUser implements Serializable, IRoleMenu {
         contact nullable: true, blank: true
         roles bindable: true
         clinicSectors bindable: true
+        loginRetries range: 0..3
     }
 
     static mapping = {
