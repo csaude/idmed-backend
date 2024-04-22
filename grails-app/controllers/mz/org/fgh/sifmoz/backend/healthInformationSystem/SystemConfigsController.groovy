@@ -2,12 +2,11 @@ package mz.org.fgh.sifmoz.backend.healthInformationSystem
 
 import grails.converters.JSON
 import grails.validation.ValidationException
-import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.clinicSectorType.ClinicSectorType
 
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
-import mz.org.fgh.sifmoz.backend.packaging.Pack
+import mz.org.fgh.sifmoz.backend.protection.SecUser
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.stockcenter.StockCenter
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
@@ -57,6 +56,9 @@ class SystemConfigsController {
 
         try {
             systemConfigsService.save(systemConfigs)
+            if(systemConfigs.key.equalsIgnoreCase("MAX_LOGIN_TRIES")){
+                updateUserMaxRetries(systemConfigs.value)
+            }
         } catch (ValidationException e) {
             respond systemConfigs.errors
             return
@@ -79,6 +81,9 @@ class SystemConfigsController {
 
         try {
             systemConfigsService.save(systemConfigs)
+            if(systemConfigs.key.equalsIgnoreCase("MAX_LOGIN_TRIES")){
+                updateUserMaxRetries(systemConfigs.value)
+            }
         } catch (ValidationException e) {
             respond systemConfigs.errors
             return
@@ -164,5 +169,18 @@ class SystemConfigsController {
         ClinicSector clinicSector = ClinicSector.get("8a8a823b81900fee0181902674b20004")
         clinicalService.clinicSectors = new HashSet<>(Arrays.asList(clinicSector))
         clinicalService.save(flush: true, failOnError: true)
+    }
+
+    void updateUserMaxRetries(String value){
+
+        SecUser.withTransaction {
+
+            for (def user in SecUser.list()){
+                user.loginRetries = Integer.parseInt(value)
+                user.save()
+            }
+
+        }
+
     }
 }

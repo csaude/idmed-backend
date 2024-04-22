@@ -1,6 +1,6 @@
 package mz.org.fgh.sifmoz.backend.protection
 
-
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import org.springframework.context.ApplicationEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent
@@ -36,10 +36,13 @@ class CustomSecurityEventListener implements ApplicationListener<ApplicationEven
     void handleSuccessEventForUser(String username) {
         SecUser.withTransaction {
             SecUser secUser = SecUser.findWhere(username: username)
-            if (secUser) {
+            SystemConfigs systemConfigs = SystemConfigs.findWhere(key: "MAX_LOGIN_TRIES")
+            if (secUser && systemConfigs)
+                secUser.loginRetries = Integer.parseInt(systemConfigs.value)
+            else
                 secUser.loginRetries = 3
-                secUser.save()
-            }
+            secUser.save()
+
         }
     }
 
@@ -61,39 +64,12 @@ class CustomSecurityEventListener implements ApplicationListener<ApplicationEven
     }
 
     void updateLoginRetriesForUser(SecUser secUser) {
-        if (secUser.loginRetries == 0) {
+        if (secUser.loginRetries == 1) {
             secUser.accountLocked = true
         } else {
             secUser.loginRetries -= 1
         }
     }
-
-//    void onAuthenticationFailure(HttpServletRequest request,
-//                                 HttpServletResponse response,
-//                                 AuthenticationException exception)
-//            throws IOException, ServletException {
-//        def g = new ValidationTagLib()
-//        def msg = ""
-//
-//        response.setStatus(statusCode)
-//        response.addHeader('WWW-Authenticate', 'Bearer')
-//        if (exception instanceof AccountExpiredException) {
-//            msg = g.message(code: "springSecurity.errors.login.expired")
-//        } else if (exception instanceof CredentialsExpiredException) {
-//            msg = g.message(code: "springSecurity.errors.login.passwordExpired")
-//        } else if (exception instanceof DisabledException) {
-//            msg = g.message(code: "springSecurity.errors.login.disabled")
-//        } else if (exception instanceof LockedException) {
-//            msg = g.message(code: "springSecurity.errors.login.locked")
-//        } else {
-//            msg = g.message(code: "springSecurity.errors.login.fail")
-//        }
-//        PrintWriter out = response.getWriter()
-//        response.setContentType("aplication/json")
-//        response.setCharacterEncoding("UTF-8")
-//        out.print(new JsonBuilder([message: msg]).toString())
-//        out.flush()
-//    }
 
     private HttpSession getSession() {
         return RequestContextHolder.currentRequestAttributes().getSession()
