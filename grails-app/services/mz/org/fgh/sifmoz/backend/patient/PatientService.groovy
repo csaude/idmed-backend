@@ -1,53 +1,74 @@
 package mz.org.fgh.sifmoz.backend.patient
 
+import grails.converters.JSON
 import grails.gorm.services.Service
 import grails.gorm.transactions.Transactional
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
-import mz.org.fgh.sifmoz.backend.episode.Episode
-import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
-import mz.org.fgh.sifmoz.backend.prescription.Prescription
-import mz.org.fgh.sifmoz.backend.utilities.Utilities
+import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
+import org.hibernate.Session
+import org.hibernate.SessionFactory
 
 @Transactional
 @Service(Patient)
 abstract class PatientService implements IPatientService{
 
+    SessionFactory sessionFactory
+
     @Override
-    List<Patient> search(Patient patient) {
-        //Check wether identifier exists
-        boolean hasIdentifier = Utilities.listHasElements(patient.identifiers as ArrayList<?>)
-        String mainQuery =  "select p from Patient p " +
-                            " where (lower(p.firstNames) like lower(:firstNames) OR" +
-                            " lower(p.middleNames) like lower(:middleNames) OR " +
-                            " lower(p.lastNames) like lower(:lastNames)) " +
-                            " AND p.clinic =:clinic"
-        String indentifierCondition = " OR EXISTS (select psi " +
-                                "                   from PatientServiceIdentifier psi inner join psi.patient pt " +
-                                "                   where pt.id = p.id and lower(psi.value) like lower(:identifiers)) "
-        String searchQuery = mainQuery + (hasIdentifier? indentifierCondition : "")
+    List<Patient> search(Patient patient,int offset, int limit) {
+        def queryString = "select p from Patient p where 1 = 1"
+        Map<String, Object> parameters = [:]
 
-                searchQuery += " order by p.firstNames "
+        if (patient.firstNames && patient.lastNames) {
+            queryString += """
+        and (
+            lower(unaccent(p.firstNames)) like lower(unaccent(:firstNames))
+            and lower(unaccent(p.lastNames)) like lower(unaccent(:lastNames))
+        )
+    """
+            parameters["firstNames"] = "%" + patient.firstNames + "%"
+            parameters["lastNames"] = "%" + patient.lastNames + "%"
+        } else if (patient.firstNames) {
+            queryString += """
+        and (
+            lower(unaccent(p.firstNames)) like lower(unaccent(:name))
+        )
+    """
+            parameters["name"] = "%" + patient.firstNames + "%"
+        } else if (patient.lastNames) {
+            queryString += """
+        and (
+            lower(unaccent(p.firstNames)) like lower(unaccent(:name))
+        )
+    """
+            parameters["name"] = "%" + patient.lastNames + "%"
+        }
+        if (patient.identifiers.first().value != null) {
+            queryString += " and p.id in (select distinct(psi.patient.id) from PatientServiceIdentifier psi where psi.value like :identifierValue)"
+            parameters["identifierValue"] = "%" + patient.identifiers.first().value.trim() + "%"
+        }
+        Session session = sessionFactory.currentSession
+        def query = session.createQuery(queryString)
 
-        Clinic clinic = Clinic.findById(patient.clinic.id)
+        parameters.each { key, value ->
+            query.setParameter(key, value)
+        }
 
-        if(hasIdentifier)
+        query.setFirstResult(offset)
+        query.setMaxResults(limit)
+        List<Patient> patientList = query.list()
 
-        return Patient.executeQuery(searchQuery,
-                                    [firstNames: "%${patient.firstNames}%",
-                                     middleNames: "%${patient.middleNames}%",
-                                     lastNames: "%${patient.lastNames}%",
-                                     clinic: clinic,
-                                     identifiers: (Utilities.listHasElements(patient.identifiers as ArrayList<?>) ? "%${patient.identifiers.getAt(0).value}%" : ""), max: 400]
-                                    )
-        else
-            return Patient.executeQuery(searchQuery,
-                    [firstNames: "%${patient.firstNames}%",
-                     middleNames: "%${patient.middleNames}%",
-                     lastNames: "%${patient.lastNames}%",
-                     clinic: clinic]
-            )
-        //return Patient.findAllByFirstNamesIlikeOrMiddleNamesIlikeOrLastNamesIlike("%${patient.firstNames}%", "%${patient.middleNames}%", "%${patient.lastNames}%")
+        return patientList
+        def result = JSONSerializer.setLightObjectListJsonResponse(patientList)
+        (result as List).collect { rs ->
+            def auxPatient = Patient.get(rs.id)
+            if (auxPatient.identifiers.size() > 0)
+                rs.put('identifiers', auxPatient.identifiers)
+        }
+
+
+      return result
     }
 
     @Override
@@ -105,6 +126,52 @@ abstract class PatientService implements IPatientService{
           //  p.patientVisits = []
         }
         return patients
+    }
+
+    @Override
+    Long countPatientSearchResult(Patient patient) {
+        def queryString = "select count(p.id) from Patient p where 1 = 1"
+        Map<String, Object> parameters = [:]
+
+        if (patient.firstNames && patient.lastNames) {
+            queryString += """
+        and (
+            lower(unaccent(p.firstNames)) like lower(unaccent(:firstNames))
+            and lower(unaccent(p.lastNames)) like lower(unaccent(:lastNames))
+        )
+    """
+            parameters["firstNames"] = "%" + patient.firstNames + "%"
+            parameters["lastNames"] = "%" + patient.lastNames + "%"
+        } else if (patient.firstNames) {
+            queryString += """
+        and (
+            lower(unaccent(p.firstNames)) like lower(unaccent(:name))
+        )
+    """
+            parameters["name"] = "%" + patient.firstNames + "%"
+        } else if (patient.lastNames) {
+            queryString += """
+        and (
+             lower(unaccent(p.lastNames)) like lower(unaccent(:name))
+        )
+    """
+            parameters["name"] = "%" + patient.lastNames + "%"
+        }
+        if (patient.identifiers.first().value != null) {
+            queryString += " and p.id in (select distinct(psi.patient.id) from PatientServiceIdentifier psi where psi.value like :identifierValue)"
+            parameters["identifierValue"] = "%" + patient.identifiers.first().value.trim() + "%"
+        }
+
+        Session session = sessionFactory.currentSession
+        def query = session.createQuery(queryString)
+
+        parameters.each { key, value ->
+            query.setParameter(key, value)
+        }
+        Long totalCount = query.uniqueResult()
+
+
+        return totalCount
     }
 
 }

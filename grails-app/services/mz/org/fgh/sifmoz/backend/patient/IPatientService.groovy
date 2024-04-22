@@ -16,7 +16,7 @@ interface IPatientService {
 
     Patient save(Patient patient)
 
-    List<Patient> search(Patient patient)
+    List<Patient> search(Patient patient,int offset, int limit)
 
     List<Patient> search(String searchString, String clinicId)
 
@@ -25,5 +25,7 @@ interface IPatientService {
     Long count(Patient patient)
 
     List<Patient> getAllPatientsInClinicSector(ClinicSector clinicSector)
+
+    Long countPatientSearchResult(Patient patient)
 
 }
