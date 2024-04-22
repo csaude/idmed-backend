@@ -820,25 +820,7 @@ class BootStrap {
     List<Object> listUsers() {
         List<Object> usersList = new ArrayList<>()
         usersList.add(new LinkedHashMap(username: 'admin', password: 'admin', fullName: 'admin', contact: 'admin', email: 'admin@gmail.com', openmrsPassword: Utilities.getMd5('admin')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.FHI', password: 'Fhi761', fullName: 'IDMED.FHI', contact: 'IDMED.FHI', email: 'IDMED.FHI@gmail.com', openmrsPassword: Utilities.getMd5('Fhi761')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.EPIC', password: 'Epic007', fullName: 'IDMED.EPIC', contact: 'IDMED.EPIC', email: 'IDMED.EPIC@gmail.com', openmrsPassword: Utilities.getMd5('Epic007')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.I-TECH', password: 'I-tech881', fullName: 'IDMED.I-TECH', contact: 'IDMED.I-TECH', email: 'IDMED.I-TECH@gmail.com', openmrsPassword: Utilities.getMd5('I-tech881')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.ICAP', password: 'Icap123', fullName: 'IDMED.ICAP', contact: 'IDMED.ICAP', email: 'IDMED.ICAP@gmail.com', openmrsPassword: Utilities.getMd5('Icap123')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.CCS', password: 'Ccs452', fullName: 'IDMED.CCS', contact: 'IDMED.CCS', email: 'IDMED.CCS@gmail.com', openmrsPassword: Utilities.getMd5('Ccs452')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.ARIEL', password: 'Ariel872', fullName: 'IDMED.ARIEL', contact: 'IDMED.ARIEL', email: 'IDMED.ARIEL@gmail.com', openmrsPassword: Utilities.getMd5('Ariel872')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.ECHO', password: 'Echo827', fullName: 'IDMED.ECHO', contact: 'IDMED.ECHO', email: 'IDMED.ECHO@gmail.com', openmrsPassword: Utilities.getMd5('Echo827')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.EGPAF', password: 'Egpaf897', fullName: 'IDMED.EGPAF', contact: 'IDMED.EGPAF', email: 'IDMED.EGPAF@gmail.com', openmrsPassword: Utilities.getMd5('Egpaf897')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.JHPIEGO', password: 'Jhpiego562', fullName: 'IDMED.JHPIEGO', contact: 'IDMED.JHPIEGO', email: 'IDMED.JHPIEGO@gmail.com', openmrsPassword: Utilities.getMd5('Jhpiego562')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.FGH', password: 'Fgh542', fullName: 'IDMED.FGH', contact: 'IDMED.FGH', email: 'IDMED.FGH@gmail.com', openmrsPassword: Utilities.getMd5('Fgh542')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.USAID', password: 'Usaid098', fullName: 'IDMED.USAID', contact: 'IDMED.USAID', email: 'IDMED.USAID@gmail.com', openmrsPassword: Utilities.getMd5('Usaid098')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.CDC', password: 'Cdc622', fullName: 'IDMED.CDC', contact: 'IDMED.CDC', email: 'IDMED.CDC@gmail.com', openmrsPassword: Utilities.getMd5('Cdc622')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.CMAM', password: 'Cmam252', fullName: 'IDMED.CMAM', contact: 'IDMED.CMAM', email: 'IDMED.CMAM@gmail.com', openmrsPassword: Utilities.getMd5('Cmam252')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.PHIV', password: 'Phiv545', fullName: 'IDMED.PHIV', contact: 'IDMED.PHIV', email: 'IDMED.PHIV@gmail.com', openmrsPassword: Utilities.getMd5('Phiv545')))
         usersList.add(new LinkedHashMap(username: 'iDMED', password: 'iDMED123', fullName: 'iDMED', contact: 'iDMED', email: 'iDMED@gmail.com', openmrsPassword: Utilities.getMd5('iDMED123')))
-        usersList.add(new LinkedHashMap(username: 'IDMED.JEMBI', password: 'Jembi123', fullName: 'IDMED.JEMBI', contact: 'IDMED.JEMBI', email: 'IDMED.JEMBI@gmail.com', openmrsPassword: Utilities.getMd5('Jembi123')))
-        usersList.add(new LinkedHashMap(username: 'domingos.bernardo', password: 'dBernardo1', fullName: 'domingos.bernardo', contact: 'domingos.bernardo', email: 'domingos.bernardo@gmail.com', openmrsPassword: Utilities.getMd5('dBernardo1')))
-        usersList.add(new LinkedHashMap(username: 'user.sync', password: 'user.sync', fullName: 'Usuario Sincronizacao', contact: 'USER.SYNC', email: 'user.sync@gmail.com', openmrsPassword: Utilities.getMd5('userSync')))
-        usersList.add(new LinkedHashMap(username: 'pepfar', password: 'Pepfar123', fullName: 'Usuario Pepfar', contact: '', email: 'user.pepfar@gmail.com', openmrsPassword: Utilities.getMd5('Pepfar123')))
 
         return usersList
     }
@@ -883,6 +865,8 @@ class BootStrap {
         systemConfigsList.add(new LinkedHashMap(id: '570911CB-6D46-4A3A-8A56-906A73DF1062', value: 'ON', key: 'PARAMS_MIGRATION_ENGINE', description: 'Params migration engine'))
         // systemConfigsList.add(new LinkedHashMap(id: 'E6CDDA47-DC11-4DAA-8672-04B37DEE9703', value: 'LOCAL', key: 'INSTALATION_TYPE',  description: 'Local/Provincial Instalation'))
         systemConfigsList.add(new LinkedHashMap(id: 'B5C44B42-3328-40D9-90D7-6DFF90A672D4', value: 'true', key: 'ACTIVATE_DATA_MIGRATION', description: 'Indica se a migração de dados está activa ou não'))
+        systemConfigsList.add(new LinkedHashMap(id: '550e8400-e29b-41d4-a716-446655440000', value: '3', key: 'MAX_LOGIN_TRIES', description: 'Número máximo de tentativas para Login'))
+        systemConfigsList.add(new LinkedHashMap(id: '3b241101-e2bb-4255-8caf-4136c566a964', value: '90', key: 'MAX_ACTIVE_DAYS_WITHOUT_LOGIN', description: 'Número máximo de dias em activo sem login'))
 
         return systemConfigsList
     }

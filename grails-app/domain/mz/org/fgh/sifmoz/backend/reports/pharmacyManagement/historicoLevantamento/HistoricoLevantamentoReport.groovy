@@ -31,12 +31,13 @@ class HistoricoLevantamentoReport extends BaseEntity {
     String clinic
     String patientType
     String clinicsector
+    String idmeduser
 
     public HistoricoLevantamentoReport(){
 
     }
 
-    HistoricoLevantamentoReport(String nid, String firstNames, String middleNames, String lastNames, String cellphone, String tipoTarv, String startReason, String therapeuticalRegimen, String dispenseType, String dispenseMode, String clinicalService,String clinicsector) {
+    HistoricoLevantamentoReport(String nid, String firstNames, String middleNames, String lastNames, String cellphone, String tipoTarv, String startReason, String therapeuticalRegimen, String dispenseType, String dispenseMode, String clinicalService, String clinicsector, String idmeduser) {
         this.nid = nid
         this.firstNames = firstNames
         this.middleNames = middleNames
@@ -49,6 +50,7 @@ class HistoricoLevantamentoReport extends BaseEntity {
         this.dispenseMode = dispenseMode
         this.clinicalService = clinicalService
         this.clinicsector = clinicsector
+        this.idmeduser = idmeduser
     }
     static constraints = {
         id generator: "uuid"
@@ -57,6 +59,7 @@ class HistoricoLevantamentoReport extends BaseEntity {
         endDate nullable: true
         startReason nullable: true
         patientType nullable: true
+        idmeduser nullable: true
     }
 
 
