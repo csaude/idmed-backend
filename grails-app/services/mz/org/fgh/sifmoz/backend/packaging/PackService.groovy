@@ -2646,7 +2646,8 @@ abstract class PackService implements IPackService {
                 ep.episode_date,
                 prc.patient_status,
                 ssr.code,
-                cr.code as clinicsector
+                cr.code as clinicsector,
+                pack2.provider_uuid
                 from 
                 (
                 select distinct pat.id,
@@ -2769,7 +2770,8 @@ abstract class PackService implements IPackService {
                 ep.episode_date,
                 prc.patient_status,
                 ssr.code,
-                cr.code as clinicsector
+                cr.code as clinicsector,
+                pack2.provider_uuid
                 from 
                 (
                 select distinct pat.id,

@@ -6,4 +6,5 @@ beans = {
     corsFilterTest(CorsFilter)
     accessTokenJsonRenderer(CustomAppRestAuthTokenJsonRenderer)
     customerSecurityEventListener(CustomSecurityEventListener)
+    restAuthenticationFailureHandler(CustomRestAuthenticationFailureHandler)
 }

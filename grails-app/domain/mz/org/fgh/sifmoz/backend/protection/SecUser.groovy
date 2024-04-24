@@ -28,6 +28,8 @@ class SecUser implements Serializable, IRoleMenu {
     boolean accountLocked
     boolean passwordExpired
     String[] roles
+    int loginRetries
+    Date lastLogin = new Date()
 
     static transients = ['roles']
 
@@ -55,14 +57,15 @@ class SecUser implements Serializable, IRoleMenu {
         contact nullable: true, blank: true
         roles bindable: true
         clinicSectors bindable: true
+        loginRetries nullable: false
+        lastLogin nullable: false
+
     }
 
     static mapping = {
 	    password column: '`password`'
         clinics  joinTable: [name: "clinic_users", key: "sec_user_id", column: "clinic_id"]
-//        clinicSectors  joinTable: [name: "clinic_sector_users", key: "sec_user_id", column: "clinic_sector_id"]
-     //   id generator: "assigned"
-id column: 'id', index: 'Pk_SecUser_Idx'
+        id column: 'id', index: 'Pk_SecUser_Idx'
     }
 
     @Override
