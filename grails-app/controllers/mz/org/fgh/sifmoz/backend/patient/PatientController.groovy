@@ -285,7 +285,7 @@ class PatientController extends RestfulController {
         InteroperabilityAttribute interoperabilityAttribute = InteroperabilityAttribute.findByHealthInformationSystemAndInteroperabilityType(healthInformationSystem, interoperabilityType)
 
         JSONObject responsePost = (JSONObject) RestOpenMRSClient.getResponseOpenMRSClient(base64, null, interoperabilityAttribute.value, "session", "GET")
-        if (responsePost.authenticated == false ||
+        if (responsePost == null || responsePost.authenticated == false ||
                 responsePost.authenticated == null) {
             response.status = 400 // Set the HTTP status code to indicate a bad request
             response.setContentType("text/plain")
@@ -294,7 +294,7 @@ class PatientController extends RestfulController {
         else {
             String urlPath = "patient/" + patientFromJSON.hisUuid
 
-            JSONObject responsePostGet = (JSONObject)  RestOpenMRSClient.getResponseOpenMRSClient(openmrsBase64, null, interoperabilityAttribute.value, urlPath, "GET")
+            JSONObject responsePostGet = (JSONObject)  RestOpenMRSClient.getResponseOpenMRSClient(base64, null, interoperabilityAttribute.value, urlPath, "GET")
 
           if (responsePostGet != null &&
                   responsePostGet.person != null) {
