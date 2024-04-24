@@ -2150,6 +2150,139 @@ abstract class PackService implements IPackService {
         return list
     }
 
+
+    @Override
+    List getAbsentPatientsDTByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService, Clinic clinic, Date startDate, Date endDate) {
+        def queryString =
+                """
+                                with ResultTable AS  (
+                                     select distinct ON (p.id)
+                                     pk.next_pick_up_date as nextPickUpDate,
+                                     c.id as clinicId,
+                                     p.id as patient_id
+                                     from patient p
+                                 inner join (
+                                select
+                                MAX(pack.pickup_date) pickupDate, p.id patientid
+                                from patient_visit_details pvdails
+                                inner join pack on pack.id = pvdails.pack_id
+                                inner join patient_visit pv on pvdails.patient_visit_id = pv.id
+                                inner join patient p on pv.patient_id = p.id
+                                inner join patient_service_identifier psi on psi.patient_id = pv.patient_id
+                                inner join clinical_service cs on cs.id = psi.service_id
+                                where cs.code = 'TARV'
+                                group by 2
+                                ) packAux on packAux.patientid = p.id
+                                   inner join patient_visit pv on pv.patient_id = p.id
+                                   inner join patient_visit_details pvd on pvd.patient_visit_id = pv.id
+                                   inner join pack pk on pk.id = pvd.pack_id AND pk.pickup_date = packAux.pickupDate
+                                   inner join clinic c on pk.clinic_id = c.id and c.id =:clinic_id
+                                   inner join prescription pre on pvd.prescription_id = pre.id
+                                   inner join prescription_detail pre_det on pre_det.prescription_id = pre.id
+                                   inner join therapeutic_regimen tr on pre_det.therapeutic_regimen_id = tr.id
+                                   inner join therapeutic_line tl on pre_det.therapeutic_line_id = tl.id
+                                   inner join dispense_type dspt on pre_det.dispense_type_id = dspt.id        
+                                     where EXTRACT(DAY FROM (CURRENT_DATE - (pk.next_pick_up_date + INTERVAL '3 DAY'))) < 60
+                                 AND EXTRACT(DAY FROM (CURRENT_DATE - (pk.next_pick_up_date + INTERVAL '3 DAY'))) > 0
+                                 AND   dspt.code = 'DT'  
+                                 AND pk.next_pick_up_date >= :startDate AND pk.next_pick_up_date <= :endDate
+                                     group by p.id, pk.next_pick_up_date, clinicId
+                                     )
+                                     select distinct ON (psi.patient_id)
+                                psi.value,
+                                pat.first_names,
+                                     pat.middle_names,
+                                     pat.last_names,
+                                     pat.cellphone as contact,
+                                     EXTRACT(year FROM age(:endDate, pat.date_of_birth)) as idade,
+                                     last_packs.nextPickUpDate as dateMissedPickUp 
+                                     from patient_service_identifier psi
+                                 inner join ResultTable last_packs on last_packs.patient_id = psi.patient_id
+                                   inner join episode e on psi.id = e.patient_service_identifier_id
+                                   inner join start_stop_reason ssr on e.start_stop_reason_id = ssr.id 
+                                                                           and ssr.code IN ('NOVO_PACIENTE', 'INICIO_CCR', 'TRANSFERIDO_DE','ABANDONO', 'VOLTOU_REFERENCIA','REINICIO_TRATAMENTO', 'REFERIDO_DC','MANUTENCAO', 'OUTRO')
+                                   inner join clinical_service cs on psi.service_id = cs.id and cs.code = 'TARV'
+                                   inner join patient pat on pat.id = last_packs.patient_id
+                """
+
+        Session session = sessionFactory.getCurrentSession()
+        def query = session.createSQLQuery(queryString)
+        query.setParameter("endDate", endDate)
+        query.setParameter("startDate", startDate)
+        query.setParameter("clinic_id", clinic.id)
+        List<Object[]> list = query.list()
+
+        return list
+    }
+
+
+    @Override
+    List getAbsentPatientsDSByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService, Clinic clinic, Date startDate, Date endDate) {
+        def queryString =
+                """
+                                with ResultTable AS  (
+                                     select distinct ON (p.id)
+                                     pk.next_pick_up_date as nextPickUpDate,
+                                     c.id as clinicId,
+                                     p.id as patient_id
+                                     from patient p
+                                 inner join (
+                                select
+                                MAX(pack.pickup_date) pickupDate, p.id patientid
+                                from patient_visit_details pvdails
+                                inner join pack on pack.id = pvdails.pack_id
+                                inner join patient_visit pv on pvdails.patient_visit_id = pv.id
+                                inner join patient p on pv.patient_id = p.id
+                                inner join patient_service_identifier psi on psi.patient_id = pv.patient_id
+                                inner join clinical_service cs on cs.id = psi.service_id
+                                where cs.code = 'TARV'
+                                group by 2
+                                ) packAux on packAux.patientid = p.id
+                                   inner join patient_visit pv on pv.patient_id = p.id
+                                   inner join patient_visit_details pvd on pvd.patient_visit_id = pv.id
+                                   inner join pack pk on pk.id = pvd.pack_id AND pk.pickup_date = packAux.pickupDate
+                                   inner join clinic c on pk.clinic_id = c.id and c.id =:clinic_id
+                                   inner join prescription pre on pvd.prescription_id = pre.id
+                                   inner join prescription_detail pre_det on pre_det.prescription_id = pre.id
+                                   inner join therapeutic_regimen tr on pre_det.therapeutic_regimen_id = tr.id
+                                   inner join therapeutic_line tl on pre_det.therapeutic_line_id = tl.id
+                                   inner join dispense_type dspt on pre_det.dispense_type_id = dspt.id        
+                                     where EXTRACT(DAY FROM (CURRENT_DATE - (pk.next_pick_up_date + INTERVAL '3 DAY'))) < 60
+                                 AND EXTRACT(DAY FROM (CURRENT_DATE - (pk.next_pick_up_date + INTERVAL '3 DAY'))) > 0
+                                 AND   dspt.code = 'DS'  
+                                 AND pk.next_pick_up_date >= :startDate AND pk.next_pick_up_date <= :endDate
+                                     group by p.id, pk.next_pick_up_date, clinicId
+                                     )
+                                     select distinct ON (psi.patient_id)
+                                psi.value,
+                                pat.first_names,
+                                     pat.middle_names,
+                                     pat.last_names,
+                                     pat.cellphone as contact,
+                                     EXTRACT(year FROM age(:endDate, pat.date_of_birth)) as idade,
+                                     last_packs.nextPickUpDate as dateMissedPickUp 
+                                     from patient_service_identifier psi
+                                 inner join ResultTable last_packs on last_packs.patient_id = psi.patient_id
+                                   inner join episode e on psi.id = e.patient_service_identifier_id
+                                   inner join start_stop_reason ssr on e.start_stop_reason_id = ssr.id 
+                                                                           and ssr.code IN ('NOVO_PACIENTE', 'INICIO_CCR', 'TRANSFERIDO_DE','ABANDONO', 'VOLTOU_REFERENCIA','REINICIO_TRATAMENTO', 'REFERIDO_DC','MANUTENCAO', 'OUTRO')
+                                   inner join clinical_service cs on psi.service_id = cs.id and cs.code = 'TARV'
+                                   inner join patient pat on pat.id = last_packs.patient_id
+                """
+
+        Session session = sessionFactory.getCurrentSession()
+        def query = session.createSQLQuery(queryString)
+        query.setParameter("endDate", endDate)
+        query.setParameter("startDate", startDate)
+        query.setParameter("clinic_id", clinic.id)
+        List<Object[]> list = query.list()
+
+        return list
+    }
+
+
+
+
     @Override
     List<Pack> getActivePatientsReportDataByReportParams(ReportSearchParams reportSearchParams) {
         String queryString =

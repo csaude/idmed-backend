@@ -2,6 +2,7 @@ package mz.org.fgh.sifmoz.backend.patient
 
 import grails.gorm.services.Service
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
+import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
 
 
 interface IPatientService {
@@ -24,8 +25,12 @@ interface IPatientService {
 
     Long count(Patient patient)
 
+    List getPatientWithoutDispense(ReportSearchParams reportSearchParams)
+
     List<Patient> getAllPatientsInClinicSector(ClinicSector clinicSector)
 
+    List getAllExpectedPatients(ReportSearchParams reportSearchParams)
+  
     Long countPatientSearchResult(Patient patient)
 
 }
