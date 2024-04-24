@@ -44,6 +44,10 @@ interface IPackService {
 
     List<Pack> getAbsentPatientsByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
 
+    List<Pack> getAbsentPatientsDTByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
+
+    List<Pack> getAbsentPatientsDSByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
+
     List<Pack> getAbsentPatientsApssByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
 
     List<Pack> getActivePatientsReportDataByReportParams (ReportSearchParams reportSearchParams)

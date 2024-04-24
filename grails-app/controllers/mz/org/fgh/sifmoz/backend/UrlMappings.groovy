@@ -62,6 +62,8 @@ class UrlMappings {
         get "/api/$controller/printReport/$reportId(.$format)?"(action:'getProcessedData')
         get "/api/$controller/printReport/$reportId/$fileType(.$format)?"(action:'printReport')
         get "/api/$controller/getProcessingStatus/$reportId(.$format)?"(action:'getProcessingStatus')
+        get "/api/$controller/getInventoryList/$reportId(.$format)?"(action:'getInventoryList')
+        get "/api/$controller/printReportByInventoryId/$idInventory/$reportId(.$format)?"(action:'printReportByInventoryId')
         get "/api/$controller/printReport/$reportId(.$format)?"(action:'printReport')
         get "/api/$controller/migrationStatus(.$format)?"(action:"migrationStatus")
         get "/api/$controller/migrationStatusDetails/$stage(.$format)?"(action:"migrationStatusDetails")
