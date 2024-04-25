@@ -91,7 +91,8 @@ abstract class InventoryService implements IInventoryService{
 
 
     @Override
-    List getPartialInventories(ReportSearchParams reportSearchParams) {
+    List getInventoriesData(ReportSearchParams reportSearchParams) {
+        boolean  isGeneric = !reportSearchParams.reportType.equalsIgnoreCase("INVENTARIO_PARCIAL")?true: false
         def queryString = " select sa.capture_date, " +
                 "i.start_date, " +
                 "i.end_date," +
@@ -108,16 +109,18 @@ abstract class InventoryService implements IInventoryService{
                 "inner join stock s on s.id = sa.adjusted_stock_id \n" +
                 "inner join drug d on d.id = s.drug_id \n" +
                 "inner join form f on f.id = d.form_id \n" +
-                "where i.generic=false and i.clinic_id =:clinicId  and i.end_date >=:startDate    and i.end_date <=:endDate"
+                "where i.generic=:isGeneric and i.clinic_id =:clinicId  and i.end_date >=:startDate    and i.end_date <=:endDate"
 
         Session session = sessionFactory.getCurrentSession()
         def query = session.createSQLQuery(queryString)
         query.setParameter("endDate", reportSearchParams.endDate)
         query.setParameter("startDate", reportSearchParams.startDate)
         query.setParameter("clinicId", reportSearchParams.clinicId)
+        query.setParameter("isGeneric",isGeneric)
         List<Object[]> list = query.list()
         return list
     }
+
 
     @Override
     List<InventoryReportTemp> getInventoryListByReportId(String reportId) {
