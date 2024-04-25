@@ -26,7 +26,7 @@ interface IInventoryService {
 
     boolean isInventoryPeriod(String clinicId)
 
-    List getPartialInventories(ReportSearchParams reportSearchParams)
+    List getInventoriesData(ReportSearchParams reportSearchParams)
 
     List<InventoryReportTemp> getInventoryListByReportId(String reportId)
 

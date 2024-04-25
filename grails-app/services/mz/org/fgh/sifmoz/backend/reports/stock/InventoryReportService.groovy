@@ -105,7 +105,7 @@ abstract class InventoryReportService implements IInventoryReportService {
 
         def result
 
-        result = inventoryService.getPartialInventories(reportSearchParams)
+        result = inventoryService.getInventoriesData(reportSearchParams)
 
         if (Utilities.listHasElements(result as ArrayList<?>)) {
             double percUnit = 100.0 / result.size()
