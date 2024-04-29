@@ -24,7 +24,6 @@ abstract class PatientService implements IPatientService {
     SessionFactory sessionFactory
 
 
-
     @Override
     List<Patient> search(Patient patient,int offset, int limit) {
         def queryString = "select p from Patient p where 1 = 1"
@@ -69,14 +68,7 @@ abstract class PatientService implements IPatientService {
         query.setMaxResults(limit)
         List<Patient> patientList = query.list()
 
-        def result = JSONSerializer.setLightObjectListJsonResponse(patientList)
-        (result as List).collect { rs ->
-            def auxPatient = Patient.get(rs.id)
-            if (auxPatient.identifiers.size() > 0)
-                rs.put('identifiers', auxPatient.identifiers)
-        }
-
-      return result
+      return patientList
     }
 
     @Override
