@@ -224,6 +224,8 @@ class PatientController extends RestfulController {
 
         def patientList =  patientService.search(patient,offset,limit)
 
+      //  def result = JSONSerializer.setLightObjectListJsonResponse(patientList)
+
         def result = JSONSerializer.setLightObjectListJsonResponse(patientList)
         (result as List).collect { rs ->
             def auxPatient = Patient.get(rs.id)
@@ -231,7 +233,7 @@ class PatientController extends RestfulController {
                 rs.put('identifiers', auxPatient.identifiers)
         }
 
-            render result as JSON
+        render result as JSON
     }
 
 
