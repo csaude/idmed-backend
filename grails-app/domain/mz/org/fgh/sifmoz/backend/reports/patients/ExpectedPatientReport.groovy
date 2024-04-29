@@ -21,11 +21,12 @@ class ExpectedPatientReport extends BaseEntity{
     Date nextPickUpDate
     String therapeuticRegimen
     String dispenseType
+    String clinicSectorName
 
     ExpectedPatientReport() {
     }
 
-    ExpectedPatientReport(String reportId, String firstNames, String middleNames, String lastNames, String therapeuticRegimen,  String periodType, String dispenseType, int year, Date startDate, Date endDate) {
+    ExpectedPatientReport(String reportId, String firstNames, String middleNames, String lastNames, String therapeuticRegimen,  String periodType, String dispenseType, int year, Date startDate, Date endDate, String clinicSectorName) {
         this.reportId = reportId
         this.firstNames = firstNames
         this.middleNames = middleNames
@@ -36,6 +37,7 @@ class ExpectedPatientReport extends BaseEntity{
         this.startDate = startDate
         this.endDate = endDate
         this.dispenseType = dispenseType
+        this.clinicSectorName = clinicSectorName
     }
     static constraints = {
         id generator: "uuid"
@@ -47,6 +49,7 @@ class ExpectedPatientReport extends BaseEntity{
         endDate nullable: true
         year nullable: true
         dispenseType nullable: true
+        clinicSectorName nullable: true
     }
 
     static mapping = {
