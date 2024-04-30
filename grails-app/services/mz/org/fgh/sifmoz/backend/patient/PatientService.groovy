@@ -158,10 +158,13 @@ abstract class PatientService implements IPatientService {
                 "                    r1.t_regimen, " +
                 "                     r1.dt_description, " +
                 "                     r3.clinicName, " +
-                "                    r.value " +
+                "                    r.value, " +
+                "                    cls.description " +
                 "                from patient p  " +
                 "                inner join patient_visit pv on pv.patient_id = p.id  " +
                 "                inner join patient_visit_details pvd on pvd.patient_visit_id = pv.id  " +
+                "                inner join episode epi on epi.id = pvd.episode_id  " +
+                "                inner join clinic_sector cls on cls.id = epi.clinic_sector_id  " +
                 "                inner join (  " +
                 "                select  " +
                 "                psi.patient_id as pat_id,  " +

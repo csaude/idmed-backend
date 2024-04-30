@@ -80,7 +80,7 @@ abstract class ExpectedPatientReportService implements IExpectedPatientReportSer
             for (item in result) {
                 ExpectedPatientReport expectedPatientReport = setGenericInfo(reportSearchParams, clinic)
                 processMonitor.setProgress(processMonitor.getProgress() + percUnit)
-                generateAndSaveActivePacient(item as List, expectedPatientReport, reportId, reportSearchParams)
+                generateAndSaveExpectedPatient(item as List, expectedPatientReport, reportId, reportSearchParams)
                 resultList.add(expectedPatientReport)
                 if (processMonitor.getProgress() > 99.6) processMonitor.setProgress(100)
                 ReportProcessMonitor.withNewTransaction {
@@ -117,7 +117,7 @@ abstract class ExpectedPatientReportService implements IExpectedPatientReportSer
         return expectedPatientReport
     }
 
-    void generateAndSaveActivePacient(List item, ExpectedPatientReport expectedPatientReport, String reportId, ReportSearchParams searchParams) {
+    void generateAndSaveExpectedPatient(List item, ExpectedPatientReport expectedPatientReport, String reportId, ReportSearchParams searchParams) {
         expectedPatientReport.setReportId(reportId)
         item[0].toString() == null || (item[0].toString()).equalsIgnoreCase("null") ? expectedPatientReport.setFirstNames("") : expectedPatientReport.setFirstNames(item[0].toString())
         item[1].toString() == null || (item[1].toString()).equalsIgnoreCase("null") ? expectedPatientReport.setMiddleNames("") : expectedPatientReport.setMiddleNames(item[1].toString())
@@ -128,7 +128,7 @@ abstract class ExpectedPatientReportService implements IExpectedPatientReportSer
         expectedPatientReport.setTherapeuticRegimen(item[5].toString())
         expectedPatientReport.setClinic(item[7].toString())
         expectedPatientReport.setDispenseType(item[6].toString())
-
+        expectedPatientReport.setClinicSectorName(item[9].toString())
         try {
             save(expectedPatientReport)
         } catch (Exception e) {
