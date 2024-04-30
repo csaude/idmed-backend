@@ -254,4 +254,26 @@ abstract class PatientService implements IPatientService {
 
     }
 
+    List findPossibleDuplicatePatients() {
+        String sqlQuery = "SELECT records.value, p.first_names, p.last_names, " +
+                "p.date_of_birth, p.gender, records.amount " +
+                "FROM PatientServiceView p, " +
+                "(SELECT a.value, a.first_names, a.last_names, " +
+                "COUNT(a.value) AS amount " +
+                "FROM PatientServiceView a, PatientServiceView b " +
+                "WHERE a.first_names = b.first_names " +
+                "AND a.last_names = b.last_names " +
+                "GROUP BY a.value, a.first_names, a.last_names) AS records " +
+                "WHERE p.value = records.value " +
+                "AND records.amount > 1 " +
+                "GROUP BY records.value, p.first_names, p.last_names, " +
+                "records.amount, p.date_of_birth, p.gender " +
+                "ORDER BY p.first_names, p.last_names";
+
+        Session session = sessionFactory.getCurrentSession()
+        def query = session.createSQLQuery(sqlQuery)
+        List<Object[]> list = query.list()
+        return list
+    }
+
 }

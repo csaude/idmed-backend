@@ -21,6 +21,8 @@ public class ReportSearchParams implements Validateable {
     public static final String PERIOD_TYPE_SEMESTER = "SEMESTER";
     public static final String PERIOD_TYPE_ANNUAL = "ANNUAL";
 
+    public static final String PERIOD_TYPE_NA = "NOT_APPLICABLE";
+
     private String id;
     private String clinicId;
     private String provinceId;
@@ -130,6 +132,8 @@ public class ReportSearchParams implements Validateable {
                 if (endDate.after(currentDate)) {
                     setEndDate(currentDate);
                 }
+                break;
+            case PERIOD_TYPE_NA:
                 break;
         }
     }
