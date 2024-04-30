@@ -33,4 +33,6 @@ interface IPatientService {
   
     Long countPatientSearchResult(Patient patient)
 
+    List findPossibleDuplicatePatients()
+
 }
