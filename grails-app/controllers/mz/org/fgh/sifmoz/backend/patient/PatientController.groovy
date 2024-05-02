@@ -282,43 +282,48 @@ class PatientController extends RestfulController {
         def objectJSON = request.JSON
         def patientFromJSON = (parseTo(objectJSON.toString()) as Map) as Patient
 
-        HealthInformationSystem healthInformationSystem = HealthInformationSystem.get(patientFromJSON.his.id)
-        InteroperabilityType interoperabilityType = InteroperabilityType.findByCode("URL_BASE")
-        InteroperabilityAttribute interoperabilityAttribute = InteroperabilityAttribute.findByHealthInformationSystemAndInteroperabilityType(healthInformationSystem, interoperabilityType)
+        if(patientFromJSON.his){
+            HealthInformationSystem healthInformationSystem = HealthInformationSystem.get(patientFromJSON.his.id)
+            InteroperabilityType interoperabilityType = InteroperabilityType.findByCode("URL_BASE")
+            InteroperabilityAttribute interoperabilityAttribute = InteroperabilityAttribute.findByHealthInformationSystemAndInteroperabilityType(healthInformationSystem, interoperabilityType)
 
-        JSONObject responsePost = (JSONObject) RestOpenMRSClient.getResponseOpenMRSClient(base64, null, interoperabilityAttribute.value, "session", "GET")
-        if (responsePost == null || responsePost.authenticated == false ||
-                responsePost.authenticated == null) {
-            response.status = 400 // Set the HTTP status code to indicate a bad request
+            JSONObject responsePost = (JSONObject) RestOpenMRSClient.getResponseOpenMRSClient(base64, null, interoperabilityAttribute.value, "session", "GET")
+            if (responsePost == null || responsePost.authenticated == false ||
+                    responsePost.authenticated == null) {
+                response.status = 400 // Set the HTTP status code to indicate a bad request
+                response.setContentType("text/plain")
+                response.outputStream << 'O Utilizador não se encontra no OpenMRS ou serviço rest no OpenMRS não se encontra em funcionamento'
+            }
+            else {
+                String urlPath = "patient/" + patientFromJSON.hisUuid
+
+                JSONObject responsePostGet = (JSONObject)  RestOpenMRSClient.getResponseOpenMRSClient(base64, null, interoperabilityAttribute.value, urlPath, "GET")
+
+                if (responsePostGet != null &&
+                        responsePostGet.person != null) {
+                    Patient existsPatientUUID = Patient.findByHisUuid(patientFromJSON.hisUuid)
+                    if (existsPatientUUID == null) {
+                        Patient patientToUpdate = Patient.get(objectJSON.id)
+                        patientToUpdate.hisUuid = patientFromJSON.hisUuid
+                        patientService.save(patientToUpdate)
+                        render JSONSerializer.setJsonObjectResponse(patientToUpdate) as JSON
+                    } else if (existsPatientUUID.id != patientFromJSON.id) {
+                        response.status = 400
+                        response.setContentType("text/plain")
+                        response.outputStream << 'Ja Existe no iDMED um paciente com UUID digitado'
+                    }
+                    render status: NO_CONTENT
+                } else {
+                    response.status = 400
+                    response.setContentType("text/plain")
+                    response.outputStream << 'O paciente com o UUID digitado não existe no openMRS'
+                }
+            }
+        }else{
+            response.status = 400
             response.setContentType("text/plain")
-            response.outputStream << 'O Utilizador não se encontra no OpenMRS ou serviço rest no OpenMRS não se encontra em funcionamento'
+            response.outputStream << 'Paciente criado a partir do iDMED. Este paciente não tem ligação com fonte de dados OpenMRS'
         }
-        else {
-            String urlPath = "patient/" + patientFromJSON.hisUuid
-
-            JSONObject responsePostGet = (JSONObject)  RestOpenMRSClient.getResponseOpenMRSClient(base64, null, interoperabilityAttribute.value, urlPath, "GET")
-
-          if (responsePostGet != null &&
-                  responsePostGet.person != null) {
-              Patient existsPatientUUID = Patient.findByHisUuid(patientFromJSON.hisUuid)
-              if (existsPatientUUID == null) {
-                  Patient patientToUpdate = Patient.get(objectJSON.id)
-                  patientToUpdate.hisUuid = patientFromJSON.hisUuid
-                  patientService.save(patientToUpdate)
-                  render JSONSerializer.setJsonObjectResponse(patientToUpdate) as JSON
-              } else if (existsPatientUUID.id != patientFromJSON.id) {
-                  response.status = 400
-                  response.setContentType("text/plain")
-                  response.outputStream << 'Ja Existe no iDMED um paciente com UUID digitado'
-              }
-              render status: NO_CONTENT
-          } else {
-              response.status = 400
-              response.setContentType("text/plain")
-              response.outputStream << 'O paciente com o UUID digitado nao existe no openMRS'
-          }
-        }
-
     }
 
     def getPatientsInClinicSector(String clinicSectorId) {
