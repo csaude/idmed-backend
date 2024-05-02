@@ -191,19 +191,20 @@ abstract class PatientService implements IPatientService {
                 "                pk.id as pack_id,  " +
                 "                pk.next_pick_up_date as nextPickUpDate, " +
                 "                MAX(pk.pickup_date) AS pickUpDate," +
-                "  c.clinic_name as clinicName " +
+                "                c.clinic_name as clinicName " +
                 "                from pack pk  " +
-                "                inner join clinic c on pk.clinic_id = c.id  and c.id = :clinic_id  " +
+                "                inner join clinic c on pk.clinic_id = c.id" +
                 "                group by pk.id, pk.next_pick_up_date,  c.clinic_name " +
                 "                ) r3 on pvd.pack_id = r3.pack_id  " +
-                "                where   r3.nextPickUpDate >=:startDate and   r3.nextPickUpDate <=:endDate "
+                "                where   Date(r3.nextPickUpDate) >= :startDate and Date(r3.nextPickUpDate) <= :endDate "
         //and   r3.nextPickUpDate >=current_timestamp
 
         Session session = sessionFactory.getCurrentSession()
         def query = session.createSQLQuery(queryString)
         query.setParameter("endDate", reportSearchParams.endDate)
         query.setParameter("startDate", reportSearchParams.startDate)
-        query.setParameter("clinic_id", reportSearchParams.clinicId)
+//        query.setParameter("clinic_id", reportSearchParams.clinicId)
+
         List<Object[]> list = query.list()
         return list
     }
