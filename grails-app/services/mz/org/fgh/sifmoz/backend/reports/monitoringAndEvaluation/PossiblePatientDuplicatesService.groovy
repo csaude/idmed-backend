@@ -3,7 +3,6 @@ package mz.org.fgh.sifmoz.backend.reports.monitoringAndEvaluation
 import grails.gorm.services.Service
 import grails.gorm.transactions.Transactional
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
-import mz.org.fgh.sifmoz.backend.openmrsErrorLog.OpenmrsErrorLog
 import mz.org.fgh.sifmoz.backend.patient.IPatientService
 import mz.org.fgh.sifmoz.backend.reports.common.IReportProcessMonitorService
 import mz.org.fgh.sifmoz.backend.reports.common.ReportProcessMonitor
@@ -32,22 +31,29 @@ abstract class PossiblePatientDuplicatesService implements IPossiblePatientDupli
         } else {
             percentageUnit = 100 / result.size()
         }
-        for (Object possiblePatientDuplicatesRepo:result) {
+        for (Object possiblePatientDuplicatesRepo : result) {
+            try {
 
-            PossiblePatientDuplicatesReport possiblePatientDuplicatesReport = new PossiblePatientDuplicatesReport()
-         //   possiblePatientDuplicatesReport.setStartDate(searchParams.startDate)
-          //  possiblePatientDuplicatesReport.setEndDate(searchParams.endDate)
-            possiblePatientDuplicatesReport.setReportId(searchParams.id)
-            possiblePatientDuplicatesReport.setPeriodType(searchParams.periodType)
-            possiblePatientDuplicatesReport.setYear(searchParams.year)
-            possiblePatientDuplicatesReport.setNid(possiblePatientDuplicatesRepo[0] == null ? "": possiblePatientDuplicatesRepo[0].toString())
-            possiblePatientDuplicatesReport.setPatientName(possiblePatientDuplicatesRepo[1] == null ? "": possiblePatientDuplicatesRepo[1].toString() +" " + possiblePatientDuplicatesRepo[2].toString())
-            possiblePatientDuplicatesReport.setDateOfBirth(possiblePatientDuplicatesRepo[3] == null ? "": possiblePatientDuplicatesRepo[3] as Date)
-            possiblePatientDuplicatesReport.setGender(possiblePatientDuplicatesRepo[4] == null ? "": possiblePatientDuplicatesRepo[4].toString())
-            possiblePatientDuplicatesReport.setNumberOfTimes(possiblePatientDuplicatesRepo[5] == null ? "": possiblePatientDuplicatesRepo[5].toString())
-            processMonitor.setProgress(processMonitor.getProgress() + percentageUnit)
-            reportProcessMonitorService.save(processMonitor)
-            save(possiblePatientDuplicatesReport)
+                PossiblePatientDuplicatesReport possiblePatientDuplicatesReport = new PossiblePatientDuplicatesReport()
+                //   possiblePatientDuplicatesReport.setStartDate(searchParams.startDate)
+                //  possiblePatientDuplicatesReport.setEndDate(searchParams.endDate)
+                possiblePatientDuplicatesReport.setReportId(searchParams.id)
+                possiblePatientDuplicatesReport.setPeriodType(searchParams.periodType)
+                possiblePatientDuplicatesReport.setYear(searchParams.year)
+                possiblePatientDuplicatesReport.setNid(possiblePatientDuplicatesRepo[0] == null ? "" : possiblePatientDuplicatesRepo[0].toString())
+                possiblePatientDuplicatesReport.setPatientName(possiblePatientDuplicatesRepo[1] == null ? "" : possiblePatientDuplicatesRepo[1].toString() + " " + possiblePatientDuplicatesRepo[2].toString())
+                possiblePatientDuplicatesReport.setDateOfBirth(possiblePatientDuplicatesRepo[3] == null ? "" : possiblePatientDuplicatesRepo[3] as Date)
+                possiblePatientDuplicatesReport.setGender(possiblePatientDuplicatesRepo[4] == null ? "" : possiblePatientDuplicatesRepo[4].toString())
+                possiblePatientDuplicatesReport.setNumberOfTimes(possiblePatientDuplicatesRepo[5] == null ? "" : possiblePatientDuplicatesRepo[5].toString())
+                processMonitor.setProgress(processMonitor.getProgress() + percentageUnit)
+                reportProcessMonitorService.save(processMonitor)
+                save(possiblePatientDuplicatesReport)
+            } catch (Exception e) {
+                e.printStackTrace()
+            } finally {
+                continue
+            }
+
         }
         processMonitor.setProgress(processMonitor.getProgress() + percentageUnit)
         if (100 == processMonitor.progress.intValue() || 99 == processMonitor.progress.intValue()) {
