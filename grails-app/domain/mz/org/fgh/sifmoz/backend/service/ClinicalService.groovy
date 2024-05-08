@@ -1,6 +1,7 @@
 package mz.org.fgh.sifmoz.backend.service
 
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.identifierType.IdentifierType
 import mz.org.fgh.sifmoz.backend.protection.Menu
@@ -17,7 +18,7 @@ class ClinicalService extends BaseEntity {
     boolean active
 
     static belongsTo = [ClinicalServiceAttributeType]
-    static hasMany = [clinicalServiceAttributes: ClinicalServiceAttributeType, therapeuticRegimens: TherapeuticRegimen, clinicSectors: ClinicSector]
+    static hasMany = [clinicalServiceAttributes: ClinicalServiceAttributeType, therapeuticRegimens: TherapeuticRegimen, subClinics: Clinic]
 
     static mapping = {
         id generator: "assigned"

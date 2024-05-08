@@ -672,6 +672,7 @@ class BootStrap {
                 clinic.mainClinic = false
                 clinic.active = true
                 clinic.uuid = clinicObject.uuid
+                clinic.syncStatus = 'S'
                 clinic.save(flush: true, failOnError: true)
             }
         }
@@ -689,6 +690,7 @@ class BootStrap {
                 clinic.mainClinic = false
                 clinic.active = true
                 clinic.uuid = clinicObject.uuid
+                clinic.syncStatus = 'S'
                 clinic.save(flush: true, failOnError: true)
             }
         }
@@ -706,6 +708,7 @@ class BootStrap {
                 clinic.mainClinic = false
                 clinic.active = true
                 clinic.uuid = clinicObject.uuid
+                clinic.syncStatus = 'S'
                 clinic.save(flush: true, failOnError: true)
             }
         }
@@ -906,6 +909,13 @@ class BootStrap {
         facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81900fee0181901608890000', code: 'FP', description: 'Farmácia Privada'))
         facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81900fee018190163e0c0001', code: 'FC', description: 'Farmácia Comunitária'))
         facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81900fee0181901674b20002', code: 'US', description: 'Unidade Sanitária'))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c801ab120000', code: 'PARAGEM_UNICA', description: 'Paragem Única'))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c801fcac0001', code: 'PROVEDOR', description: 'Dispensa Comunitária pelo Provedor'))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c8025ea10002', code: 'APE', description: 'Agente Polivalente Elementar'))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c8029c890003', code: 'CLINICA_MOVEL', description: 'Clinica Móvel'))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0004', code: 'BRIGADA_MOVEL', description: 'Brigada Móvel'))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0006', code: 'NORMAL', description: 'Atendimento Normal'))
+
 
         return facilityTypeList
     }
