@@ -17,10 +17,10 @@ class ClinicSector extends BaseEntity {
     boolean active
     String syncStatus
     ClinicSectorType clinicSectorType
-    Clinic clinic
+   // Clinic clinic
 
-    static belongsTo = [ClinicalService]
-    static  hasMany = [clinicalService: ClinicalService]
+  //  static belongsTo = [ClinicalService]
+  //  static hasMany = [clinicalService: ClinicalService]
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_ClinicSector_Idx'
