@@ -4,13 +4,16 @@ import grails.core.GrailsApplication
 import grails.plugin.springsecurity.SecurityFilterPosition
 import grails.plugin.springsecurity.SpringSecurityService
 import grails.plugin.springsecurity.SpringSecurityUtils
+import groovy.sql.Sql
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
+import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.clinicSectorType.ClinicSectorType
 import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
 import mz.org.fgh.sifmoz.backend.dispenseMode.DispenseMode
 import mz.org.fgh.sifmoz.backend.dispenseType.DispenseType
 import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.District
 import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.Province
+import mz.org.fgh.sifmoz.backend.doctor.Doctor
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.duration.Duration
 import mz.org.fgh.sifmoz.backend.episode.Episode
@@ -23,6 +26,7 @@ import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.identifierType.IdentifierType
 import mz.org.fgh.sifmoz.backend.interoperabilityAttribute.InteroperabilityAttribute
 import mz.org.fgh.sifmoz.backend.interoperabilityType.InteroperabilityType
+import mz.org.fgh.sifmoz.backend.migration.fromDataSource.DataSourceMigrationService
 import mz.org.fgh.sifmoz.backend.migration.stage.MigrationService
 import mz.org.fgh.sifmoz.backend.migration.stage.MigrationStage
 import mz.org.fgh.sifmoz.backend.multithread.ExecutorThreadProvider
@@ -48,14 +52,19 @@ import mz.org.fgh.sifmoz.backend.therapeuticLine.TherapeuticLine
 import mz.org.fgh.sifmoz.backend.therapeuticRegimen.TherapeuticRegimen
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
 import org.grails.core.artefact.ControllerArtefactHandler
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpMethod
+
+import javax.sql.DataSource
 
 class BootStrap {
 
     GrailsApplication grailsApplication
     SpringSecurityService springSecurityService
+    DataSource dataSource
 
-//    DataSourceMigrationService dataSourceMigrationService
+   // DataSourceMigrationService dataSourceMigrationService
 
     def init = { servletContext ->
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
@@ -148,6 +157,12 @@ class BootStrap {
         Episode.withTransaction {
             getEpisodesWithSameStartStopReason()
         }
+
+        ClinicSector.withTransaction {
+       //    insertClinicSectorsOnClinics()
+            compareClinics()
+         //   dropClinicSector()
+        }
 //        Pack.withTransaction {
 //           resolvePackWithoutPackagedDrugs()
 //        }
@@ -169,7 +184,7 @@ class BootStrap {
 //        dataSourceMigrationService.loadAndSaveClinicSectorMigrationService()
 //        dataSourceMigrationService.loadAndSaveDoctorsMigrationService()
 //        dataSourceMigrationService.loadAndSavePatientVisitDetailsMigrationService()
-//        dataSourceMigrationService.loadAndSavePatientVisitMigrationService()
+  //      dataSourceMigrationService.compareClinics()
 
     }
 
@@ -204,7 +219,7 @@ class BootStrap {
             ) {
                 def requastmapObjectList = Requestmap.findAllByUrl(url)
 
-                if(requastmapObjectList) {
+                if (requastmapObjectList) {
 
                     for (requastmapObject in requastmapObjectList) {
 
@@ -251,10 +266,10 @@ class BootStrap {
 
         for (
                 String url in [
-                        '/' , '/index', '/index.gsp', '/**/favicon.ico',
-                        '/**/js/**' , '/**/css/**', '/**/images/**',
-                        '/login' , '/login.*', '/login/*',
-                        '/logout' , '/logout.*', '/logout/*' ] ) {
+                        '/', '/index', '/index.gsp', '/**/favicon.ico',
+                        '/**/js/**', '/**/css/**', '/**/images/**',
+                        '/login', '/login.*', '/login/*',
+                        '/logout', '/logout.*', '/logout/*']) {
             new Requestmap(url: url, configAttribute: 'permitAll').save(flush: true, failOnError: false);
 
         }
@@ -302,6 +317,7 @@ class BootStrap {
                 facilityType.id = facilityTypeObject.id
                 facilityType.code = facilityTypeObject.code
                 facilityType.description = facilityTypeObject.description
+                facilityType.type = facilityTypeObject.type
                 facilityType.save(flush: true, failOnError: true)
             }
         }
@@ -906,15 +922,15 @@ class BootStrap {
 
     List<Object> listFacilityType() {
         List<Object> facilityTypeList = new ArrayList<>()
-        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81900fee0181901608890000', code: 'FP', description: 'Farmácia Privada'))
-        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81900fee018190163e0c0001', code: 'FC', description: 'Farmácia Comunitária'))
-        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81900fee0181901674b20002', code: 'US', description: 'Unidade Sanitária'))
-        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c801ab120000', code: 'PARAGEM_UNICA', description: 'Paragem Única'))
-        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c801fcac0001', code: 'PROVEDOR', description: 'Dispensa Comunitária pelo Provedor'))
-        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c8025ea10002', code: 'APE', description: 'Agente Polivalente Elementar'))
-        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c8029c890003', code: 'CLINICA_MOVEL', description: 'Clinica Móvel'))
-        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0004', code: 'BRIGADA_MOVEL', description: 'Brigada Móvel'))
-        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0006', code: 'NORMAL', description: 'Atendimento Normal'))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81900fee0181901608890000', code: 'FP', description: 'Farmácia Privada', type: "clinic"))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81900fee018190163e0c0001', code: 'FC', description: 'Farmácia Comunitária', type: "clinic"))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81900fee0181901674b20002', code: 'US', description: 'Unidade Sanitária', type: "clinic"))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c801ab120000', code: 'PARAGEM_UNICA', description: 'Paragem Única', type: "clinic_sector"))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c801fcac0001', code: 'PROVEDOR', description: 'Dispensa Comunitária pelo Provedor', type: "clinic_sector"))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c8025ea10002', code: 'APE', description: 'Agente Polivalente Elementar', type: "clinic_sector"))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c8029c890003', code: 'CLINICA_MOVEL', description: 'Clinica Móvel', type: "clinic_sector"))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0004', code: 'BRIGADA_MOVEL', description: 'Brigada Móvel', type: "clinic_sector"))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0006', code: 'NORMAL', description: 'Atendimento Normal', type: "clinic_sector"))
 
 
         return facilityTypeList
@@ -2854,5 +2870,35 @@ class BootStrap {
 
     }
 
-}
+    void insertClinicSectorsOnClinics() {
+        List<Object> clinicSectorList = new ArrayList<>()
+        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181901608880000', code: 'CPN', clinicName: "Consulta Pre-Natal", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
+        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee018190163i0c0001', code: 'TB', clinicName: "Tuberculose", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
+        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181901074b20002', code: 'PREP', clinicName: "Profilaxia Pré-Exposição", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
+        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181902674b20003', code: 'SAAJ', clinicName: "Serviços Amigos dos Adolescentes e Jovens", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
+        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181902674b20005', code: 'CCR', clinicName: "Consulta Criança em Risco", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
+        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181902674b20004', code: 'NORMAL', clinicName: "Atendimento Geral", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
 
+        for (clinicSectorObject in clinicSectorList) {
+            if (!Clinic.findById(clinicSectorObject.id)) {
+                ClinicSector clinicSector = new ClinicSector()
+                clinicSector.id = clinicSectorObject.uuid
+                clinicSector.syncStatus = 'S'
+                clinicSector.code = clinicSectorObject.code
+                clinicSector.clinicName = clinicSectorObject.clinicName
+                clinicSector.active = clinicSectorObject.active
+                clinicSector.uuid = clinicSectorObject.uuid
+                clinicSector.facilityType = FacilityType.findById(clinicSectorObject.facilityType_id)
+                clinicSector.parentClinic = Clinic.findByMainClinic(true)
+                clinicSector.province = clinicSector.parentClinic.province
+                clinicSector.district = clinicSector.parentClinic.district
+                clinicSector.active = true
+                clinicSector.withTransaction {
+                    clinicSector.save(flush: true, failOnError: true)
+                }
+            }
+        }
+    }
+
+
+}

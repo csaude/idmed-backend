@@ -18,7 +18,7 @@ class ClinicalService extends BaseEntity {
     boolean active
 
     static belongsTo = [ClinicalServiceAttributeType]
-    static hasMany = [clinicalServiceAttributes: ClinicalServiceAttributeType, therapeuticRegimens: TherapeuticRegimen, subClinics: Clinic]
+    static hasMany = [clinicalServiceAttributes: ClinicalServiceAttributeType, therapeuticRegimens: TherapeuticRegimen, clinicSectors: ClinicSector]
 
     static mapping = {
         id generator: "assigned"

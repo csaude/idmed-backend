@@ -98,7 +98,7 @@ abstract class PatientTransReferenceService implements IPatientTransReferenceSer
         transReferenceData.setEpisodeNotes(lastVisitDetails.episode.notes)
         transReferenceData.setEpisodeTypeCode(lastVisitDetails.episode.episodeType.code)
         transReferenceData.setClinicSectorCode(lastVisitDetails.episode.clinicSector.code)
-        transReferenceData.setClinicSectorTypeCode(lastVisitDetails.episode.clinicSector.clinicSectorType.code)
+        transReferenceData.setClinicSectorTypeCode(lastVisitDetails.episode.clinicSector.facilityType.code)
         transReferenceData.setPrescriptionDate(lastVisitDetails.prescription.prescriptionDate)
         transReferenceData.setExpiryDate(lastVisitDetails.prescription.expiryDate)
         transReferenceData.setNotes(lastVisitDetails.prescription.notes)
