@@ -131,3 +131,9 @@ dist
 
 # Compiled class files
 *.class
+
+
+# Gradle
+/target/
+.gradle/
+build/
