@@ -160,7 +160,7 @@ class BootStrap {
 
         ClinicSector.withTransaction {
        //    insertClinicSectorsOnClinics()
-            compareClinics()
+     //       compareClinics()
          //   dropClinicSector()
         }
 //        Pack.withTransaction {
