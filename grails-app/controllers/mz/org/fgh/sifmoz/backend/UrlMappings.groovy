@@ -108,6 +108,10 @@ class UrlMappings {
         post "/api/patient/mergeUnitePatients/$patientToHoldId/$patientToDeleteId(.$format)?"(controller:'patient', action:'mergeUnitePatients')
         get "/api/drug/getInventoryDrugs/$id(.$format)?"(controller:'drug', action:'getDrugsByInventoryId')
         get "/api/inventory/isInventoryPeriod/$clinicId(.$format)?"(controller:'inventory', action:'isInventoryPeriod')
+        get "/api/stockDistributorBatch/getStockDistributorBatchByStockDistributorId/$stockDistributorId(.$format)?"(controller:'StockDistributorBatch', action:'getStockDistributorBatchByStockDistributorId')
+        patch "/api/stockDistributor/updateStockDistributorStatus/$idStockDistributor/$status(.$format)?"(controller:'stockDistributor', action:'updateStockDistributorStatus')
+        get "/api/stock/clinic/$clinicId(.$format)?"(controller:'stock', action:'getByClinicId')
+
         "/"(view:"/login/auth")
         "500"(view: '/error')
         "404"(view: '/notFound')
