@@ -141,7 +141,7 @@ class SystemConfigsController {
     void initClinicSectorInClinic() {
         for (clinicSectorObject in listClinicSectorInClinic()) {
             if (!Clinic.findById(clinicSectorObject.id)) {
-                Clinic clinicSector = new Clinic()
+                ClinicSector clinicSector = new ClinicSector()
                 clinicSector.id = clinicSectorObject.uuid
                 clinicSector.syncStatus = 'S'
                 clinicSector.code = clinicSectorObject.code
@@ -208,9 +208,9 @@ class SystemConfigsController {
     def associateClinicSectorToClinicalService() {
         //id for TARV
         ClinicalService clinicalService = ClinicalService.get("80A7852B-57DF-4E40-90EC-ABDE8403E01F")
-        Clinic clinicSector = Clinic.get("8a8a823b81900fee0181902674b20004")
+        ClinicSector clinicSector = Clinic.get("8a8a823b81900fee0181902674b20004")
         def clinicSectors = new HashSet<>(Arrays.asList(clinicSector))
-        clinicalService.addToSubClinics(clinicSectors)
+        clinicalService.addToClinicSectors(clinicSectors)
         clinicalService.save(flush: true, failOnError: true)
     }
 

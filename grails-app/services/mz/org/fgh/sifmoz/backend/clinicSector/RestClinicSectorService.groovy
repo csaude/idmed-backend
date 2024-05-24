@@ -40,28 +40,28 @@ class RestClinicSectorService extends SynchronizerTask {
 
                 for (ClinicSector clinicSector : clinicSectorList) {
                     try {
-                        if(postClinicFirst(clinicSector.clinic, provincialServer)) {
+                        if(postClinicFirst(clinicSector.parentClinic, provincialServer)) {
 
                             def sectorTypeID = 0
 
-                            if (clinicSector.clinicSectorType.code.equalsIgnoreCase(("PARAGEM_UNICA")))
+                            if (clinicSector.facilityType.code.equalsIgnoreCase(("PARAGEM_UNICA")))
                                 sectorTypeID = 1
-                            else if (clinicSector.clinicSectorType.code.equalsIgnoreCase(("PROVEDOR")))
+                            else if (clinicSector.facilityType.code.equalsIgnoreCase(("PROVEDOR")))
                                 sectorTypeID = 2
-                            else if (clinicSector.clinicSectorType.code.equalsIgnoreCase(("APE")))
+                            else if (clinicSector.facilityType.code.equalsIgnoreCase(("APE")))
                                 sectorTypeID = 3
-                            else if (clinicSector.clinicSectorType.code.equalsIgnoreCase(("CLINICA_MOVEL")))
+                            else if (clinicSector.facilityType.code.equalsIgnoreCase(("CLINICA_MOVEL")))
                                 sectorTypeID = 4
-                            if (clinicSector.clinicSectorType.code.equalsIgnoreCase(("BRIGADA_MOVEL")))
+                            if (clinicSector.facilityType.code.equalsIgnoreCase(("BRIGADA_MOVEL")))
                                 sectorTypeID = 5
 
                             String clinicJSONObject = "{\"id\": \"" + getRandomNumber() +
                                     "\", \"code\": \"" + clinicSector.getCode() +
-                                    "\", \"sectorname\": \"" + clinicSector.getDescription() +
+                                    "\", \"sectorname\": \"" + clinicSector.getClinicName() +
                                     "\", \"clinicsectortype\":\"" + sectorTypeID +
                                     "\", \"telephone\": \""+
-                                    "\", \"clinic\":\"" + clinicSector.getClinic().getUuid() +
-                                    "\", \"clinicuuid\":\"" + clinicSector.getClinic().getUuid() +
+                                    "\", \"clinic\":\"" + clinicSector.getParentClinic().getUuid() +
+                                    "\", \"clinicuuid\":\"" + clinicSector.getParentClinic().getUuid() +
                                     "\", \"uuid\":\"" + clinicSector.getUuid() + "\"}";
 
                             StringEntity inputAddDispense = new StringEntity(clinicJSONObject, "UTF-8");

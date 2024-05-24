@@ -27,8 +27,9 @@ class Clinic extends BaseEntity {
 
     Clinic parentClinic
     String syncStatus
+    String matchFC
     static belongsTo = [NationalClinic, SecUser]
-    static hasMany = [ mmiaReports: MmiaReport, users: SecUser,clinicalServices: ClinicalService]
+    static hasMany = [sectors: ClinicSector, mmiaReports: MmiaReport, users: SecUser]
 
     static mapping = {
         id generator: "assigned"
@@ -51,6 +52,7 @@ class Clinic extends BaseEntity {
         nationalClinic nullable: true
         uuid unique: true
         parentClinic(nullable: true)
+        matchFC nullable:  true
     }
 
     boolean equals(o) {

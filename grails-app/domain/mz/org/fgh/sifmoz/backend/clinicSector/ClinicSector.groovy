@@ -9,18 +9,11 @@ import mz.org.fgh.sifmoz.backend.protection.Menu
 import mz.org.fgh.sifmoz.backend.protection.SecUser
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 
-class ClinicSector extends BaseEntity {
-    String id
-    String code
-    String description
-    String uuid = UUID.randomUUID().toString()
-    boolean active
-    String syncStatus
-    ClinicSectorType clinicSectorType
-   // Clinic clinic
+class ClinicSector extends Clinic {
 
-  //  static belongsTo = [ClinicalService]
-  //  static hasMany = [clinicalService: ClinicalService]
+     Clinic parentClinic
+    static belongsTo = [parentClinic: Clinic]
+   // static hasMany = [clinicalService: ClinicalService]
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_ClinicSector_Idx'
@@ -34,7 +27,7 @@ class ClinicSector extends BaseEntity {
 
     static constraints = {
         code nullable: false, unique: true
-        description nullable: false
+       // description nullable: false
         uuid unique: true
     }
 

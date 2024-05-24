@@ -126,7 +126,7 @@ class PatientTransReferenceController extends RestfulController{
         patientTransReference.creationDate = new Date()
         patientTransReference.operationType =  PatientTransReferenceType.findByCode("REFERENCIA_DC")
         patientTransReference.origin = clinic
-        patientTransReference.destination = clinic.id
+        patientTransReference.destination = clinic.uuid
         patientTransReference.patient = patientIdentifier?.patient
         patientTransReference.identifier = patientIdentifier
         patientTransReference.patientStatus = objectJSON.type
