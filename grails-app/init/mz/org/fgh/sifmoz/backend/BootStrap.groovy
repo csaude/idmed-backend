@@ -571,7 +571,7 @@ class BootStrap {
                         therapeuticRegimen2.regimenScheme = "ABC+3TC+DTG (2DFC+DTG50)"
                         therapeuticRegimen2.description = "ABC+3TC+DTG (2DFC+DTG50)"
                     }
-                    therapeuticRegimen2.active = therapeuticRegimenObject.active
+//                    therapeuticRegimen2.active = therapeuticRegimenObject.active
                     therapeuticRegimen2.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
                     therapeuticRegimen2.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                     therapeuticRegimen2.save(flush: true, failOnError: true)
@@ -581,7 +581,7 @@ class BootStrap {
                     therapeuticRegimen1.regimenScheme = "ABC+3TC+DTG (2DFC+DTG50)"
                     therapeuticRegimen1.description = "ABC+3TC+DTG (2DFC+DTG50)"
                 }
-                therapeuticRegimen1.active = therapeuticRegimenObject.active
+//                therapeuticRegimen1.active = therapeuticRegimenObject.active
                 therapeuticRegimen1.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
                 therapeuticRegimen1.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                 therapeuticRegimen1.save(flush: true, failOnError: true)
