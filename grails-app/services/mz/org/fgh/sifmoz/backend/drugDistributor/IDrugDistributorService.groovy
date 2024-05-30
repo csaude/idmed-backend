@@ -1,10 +1,6 @@
 package mz.org.fgh.sifmoz.backend.drugDistributor
 
-import grails.gorm.services.Service
-import mz.org.fgh.sifmoz.backend.service.ClinicalService
-
-@Service(DrugDistributor)
-interface DrugDistributorService {
+interface IDrugDistributorService {
 
     DrugDistributor get(Serializable id)
 
@@ -15,4 +11,8 @@ interface DrugDistributorService {
     DrugDistributor delete(Serializable id)
 
     DrugDistributor save(DrugDistributor drugDistributor)
+
+    List<DrugDistributor> getAllByClinicId(String clinicId, int offset, int max)
+
+
 }
