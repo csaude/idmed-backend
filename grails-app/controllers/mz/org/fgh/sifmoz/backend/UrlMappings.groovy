@@ -109,7 +109,7 @@ class UrlMappings {
         get "/api/drug/getInventoryDrugs/$id(.$format)?"(controller:'drug', action:'getDrugsByInventoryId')
         get "/api/inventory/isInventoryPeriod/$clinicId(.$format)?"(controller:'inventory', action:'isInventoryPeriod')
         get "/api/stockDistributorBatch/getStockDistributorBatchByStockDistributorId/$stockDistributorId(.$format)?"(controller:'StockDistributorBatch', action:'getStockDistributorBatchByStockDistributorId')
-        patch "/api/stockDistributor/updateStockDistributorStatus/$idStockDistributor/$status(.$format)?"(controller:'stockDistributor', action:'updateStockDistributorStatus')
+        patch "/api/drugDistributor/updateDrugDistributorStatus/$idDrugDistributor/$status(.$format)?"(controller:'drugDistributor', action:'updateDrugDistributorStatus')
         get "/api/stock/clinic/$clinicId(.$format)?"(controller:'stock', action:'getByClinicId')
 
         "/"(view:"/login/auth")
