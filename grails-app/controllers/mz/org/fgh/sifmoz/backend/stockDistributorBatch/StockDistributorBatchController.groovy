@@ -6,15 +6,7 @@ import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
-import mz.org.fgh.sifmoz.backend.drugDistributor.DrugDistributor
-import mz.org.fgh.sifmoz.backend.drugDistributor.DrugDistributorService
-import mz.org.fgh.sifmoz.backend.stock.IStockService
 import mz.org.fgh.sifmoz.backend.stock.Stock
-import mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment
-import mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustmentService
-import mz.org.fgh.sifmoz.backend.stockoperation.StockOperationType
-import mz.org.fgh.sifmoz.backend.stockrefered.ReferedStockMoviment
-import mz.org.fgh.sifmoz.backend.stockrefered.ReferedStockMovimentService
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
 import static org.springframework.http.HttpStatus.*
@@ -115,5 +107,4 @@ class StockDistributorBatchController extends RestfulController {
     def getStockDistributorBatchByStockDistributorId(String stockDistributorId) {
         respond stockDistributorBatchService.getStockDistributorBatchByStockDistributorId(stockDistributorId)
     }
-
 }

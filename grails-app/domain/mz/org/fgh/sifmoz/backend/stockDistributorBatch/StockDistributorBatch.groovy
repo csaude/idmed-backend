@@ -13,7 +13,7 @@ class StockDistributorBatch extends BaseEntity {
     Stock stock
     StockDistributor stockDistributor
 
-    static belongsTo = [drugDistributor: DrugDistributor, stockDistributor : StockDistributor ]
+    static belongsTo = [drugDistributor: DrugDistributor, stockDistributor : StockDistributor, stock: Stock]
 
 
     static mapping = {
