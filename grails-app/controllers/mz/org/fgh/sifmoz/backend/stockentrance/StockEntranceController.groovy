@@ -103,6 +103,6 @@ class StockEntranceController extends RestfulController{
     }
 
     def getByClinicId(String clinicId, int offset, int max) {
-        return stockEntranceService.getAllByClinicId(clinicId, offset, max)
+        respond stockEntranceService.getAllByClinicId(clinicId, offset, max)
     }
 }

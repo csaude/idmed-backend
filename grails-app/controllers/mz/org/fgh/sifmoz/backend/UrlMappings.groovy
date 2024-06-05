@@ -111,6 +111,10 @@ class UrlMappings {
         get "/api/stockDistributorBatch/getStockDistributorBatchByStockDistributorId/$stockDistributorId(.$format)?"(controller:'StockDistributorBatch', action:'getStockDistributorBatchByStockDistributorId')
         patch "/api/drugDistributor/updateDrugDistributorStatus/$idDrugDistributor/$status(.$format)?"(controller:'drugDistributor', action:'updateDrugDistributorStatus')
         get "/api/stock/clinic/$clinicId(.$format)?"(controller:'stock', action:'getByClinicId')
+        get "/api/inventoryStockAdjustment/clinic/$clinicId(.$format)?"(controller:'inventoryStockAdjustment', action:'getByClinicId')
+        get "/api/referedStockMoviment/clinic/$clinicId(.$format)?"(controller:'referedStockMoviment', action:'getByClinicId')
+        get "/api/destroyedStock/clinic/$clinicId(.$format)?"(controller:'destroyedStock', action:'getByClinicId')
+
 
         "/"(view:"/login/auth")
         "500"(view: '/error')
