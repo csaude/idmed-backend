@@ -65,6 +65,8 @@ class DrugDistributorController extends RestfulController {
         }
 
         try {
+       //  boolean hasStock =   stockService.validateStock(drugDistributor.getDrug(), drugDistributor.getStockDistributor().getCreationDate(), drugDistributor.getQuantity())
+
             makeDistribution(drugDistributor)
 
 
@@ -197,7 +199,8 @@ class DrugDistributorController extends RestfulController {
                     generateNewStocksList(batch, newStockList, entrance)
                 } else {
                     // make adjustments because the batch number exists
-                    ReferedStockMoviment reference = generateAdjustment(batch)
+                    Stock stock  = stockService.getStockByBatchNumberAndClinic(batch.getStock().getBatchNumber(), batch.getDrugDistributor().getClinicId())
+                    ReferedStockMoviment reference = generateAdjustment(batch, stock)
                     if (!Objects.isNull(reference)) {
                         referedStockMovimentService.save(reference)
                     }
@@ -265,10 +268,10 @@ class DrugDistributorController extends RestfulController {
         return entrance
     }
 
-    private ReferedStockMoviment generateAdjustment(StockDistributorBatch batch) {
+    private ReferedStockMoviment generateAdjustment(StockDistributorBatch batch, Stock stock) {
         ReferedStockMoviment reference = new ReferedStockMoviment()
         reference.id = UUID.randomUUID()
-        reference.setClinic(batch.getStockDistributor().getClinic())
+        reference.setClinic(batch.getDrugDistributor().getClinic())
         reference.setOrderNumber("Ordem_Ajuste_Distribuicao")
         reference.setOrigin("Ajuste_Distribuicao")
         reference.setDate(new Date())
@@ -277,10 +280,10 @@ class DrugDistributorController extends RestfulController {
 
         StockReferenceAdjustment stockReferenceAdjustment = new StockReferenceAdjustment()
         stockReferenceAdjustment.adjustedValue = batch.getQuantity()
-        stockReferenceAdjustment.setBalance(batch.getStock().stockMoviment + batch.getQuantity())
+        stockReferenceAdjustment.setBalance(stock.stockMoviment + batch.getQuantity())
         stockReferenceAdjustment.id = UUID.randomUUID()
         stockReferenceAdjustment.setOperation(StockOperationType.findByCode("AJUSTE_POSETIVO"))
-        stockReferenceAdjustment.setAdjustedStock(batch.getStock())
+        stockReferenceAdjustment.setAdjustedStock(stock)
 
         stockReferenceAdjustment.setCaptureDate(batch.getStockDistributor().getCreationDate())
         stockReferenceAdjustment.setClinic(batch.getDrugDistributor().getClinic())
