@@ -1,18 +1,13 @@
 package mz.org.fgh.sifmoz.backend.stockadjustment
 
 import grails.converters.JSON
+import grails.gorm.transactions.Transactional
 import grails.rest.RestfulController
-import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import org.grails.datastore.mapping.validation.ValidationException
 
-import static org.springframework.http.HttpStatus.CREATED
-import static org.springframework.http.HttpStatus.NOT_FOUND
-import static org.springframework.http.HttpStatus.NO_CONTENT
-import static org.springframework.http.HttpStatus.OK
-
-import grails.gorm.transactions.ReadOnly
-import grails.gorm.transactions.Transactional
+import static org.springframework.http.HttpStatus.*
 
 class InventoryStockAdjustmentController extends RestfulController{
 
@@ -71,8 +66,6 @@ class InventoryStockAdjustmentController extends RestfulController{
 
     @Transactional
     def update() {
-
-
         def objectJSON = request.JSON
         InventoryStockAdjustment inventoryStockAdjustmentDB = InventoryStockAdjustment.get(objectJSON.id)
         if (inventoryStockAdjustmentDB == null) {
@@ -108,5 +101,9 @@ class InventoryStockAdjustmentController extends RestfulController{
         }
 
         render status: NO_CONTENT
+    }
+
+    def getByClinicId(String clinicId, int offset, int max) {
+        respond InventoryStockAdjustment.findAllByClinic(Clinic.findById(clinicId), [offset: offset, max: max])
     }
 }
