@@ -527,5 +527,9 @@ abstract class StockService implements IStockService {
         return Stock.findAllByClinic(Clinic.findById(clinicId), [offset: offset, max: max])
     }
 
+    @Override
+    Stock getStockByBatchNumberAndClinic(String batchNumber, String clinicId) {
+        return Stock.findByBatchNumberAndClinic(batchNumber, Clinic.findById(clinicId))
+}
 }
 
