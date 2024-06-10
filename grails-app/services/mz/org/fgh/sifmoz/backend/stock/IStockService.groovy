@@ -28,6 +28,8 @@ interface IStockService {
 
     boolean existsBatchNumber(String batchNumber, String clinicId)
 
+    Stock getStockByBatchNumberAndClinic(String batchNumber, String clinicId)
+
     List<Stock> getAllByClinicId(String clinicId, int offset, int max)
 
 
