@@ -38,9 +38,8 @@ class InventoryController extends RestfulController{
     @Transactional
     def close(String id) {
         Inventory inventory = inventoryService.get(id)
-
         if (!Utilities.listHasElements(inventory.adjustments as ArrayList<?>)) {
-            throw new RuntimeException("Não foram carregados os ajustes deste inventário, impossivel fechar!")
+            throw new RuntimeException("Não foram carregados os ajustes deste inventário, impossivel fechar! ")
         } else {
             try {
                 inventory.close()
