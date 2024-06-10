@@ -45,15 +45,11 @@ class InventoryController extends RestfulController{
             try {
                 inventory.close()
                 inventory.setEndDate(ConvertDateUtils.getCurrentDate())
-
                 def adjustmentsTemp = inventory.adjustments
                 inventory.adjustments = []
                 inventoryService.save(inventory)
                 inventory.setAdjustments(adjustmentsTemp)
-                // Process and save the adjustments independently
                 inventoryService.processInventoryAdjustments(inventory)
-
-                // Optionally, you can save adjustments manually if needed
                 inventory.adjustments.each { adjustment ->
                     adjustment.save(flush: true)
                 }
