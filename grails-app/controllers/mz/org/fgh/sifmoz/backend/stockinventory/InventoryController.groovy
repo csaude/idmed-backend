@@ -43,10 +43,17 @@ class InventoryController extends RestfulController{
             throw new RuntimeException("Não foram carregados os ajustes deste inventário, impossivel fechar!")
         } else {
             try {
-                inventory.close();
+                inventory.close()
                 inventory.setEndDate(ConvertDateUtils.getCurrentDate())
-                inventoryService.processInventoryAdjustments(inventory)
+                def adjustmentsTemp = inventory.adjustments
+                inventory.adjustments = []
                 inventoryService.save(inventory)
+                inventory.setAdjustments(adjustmentsTemp)
+                inventoryService.processInventoryAdjustments(inventory)
+                inventory.adjustments.each { adjustment ->
+                    adjustment.save(flush: true)
+                }
+
             } catch (ValidationException e) {
                 respond inventory.errors
                 return
@@ -55,6 +62,7 @@ class InventoryController extends RestfulController{
             respond inventory, [status: OK, view: "show"]
         }
     }
+
 
     @Transactional
     def save() {
@@ -102,7 +110,7 @@ class InventoryController extends RestfulController{
         inventoryDb.adjustments.eachWithIndex { item, index ->
             objectJSON.adjustments.eachWithIndex { item2, index2 ->
                 if (item.adjustedStockId == objectJSON.adjustments[index2].adjustedStockId)
-                item.id = UUID.fromString(objectJSON.adjustments[index].id)
+                    item.id = UUID.fromString(objectJSON.adjustments[index].id)
             }
         }
 
