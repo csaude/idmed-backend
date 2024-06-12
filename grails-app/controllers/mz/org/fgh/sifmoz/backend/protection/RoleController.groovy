@@ -157,7 +157,6 @@ class RoleController extends RestfulController {
                 !simpleName.equalsIgnoreCase("identifierType")) {
 
             Requestmap requestMap = Requestmap.findByUrlIlike(name)
-            println(name)
            if (requestMap) {
                String actualConfigAttribute = requestMap.configAttribute
                if (!actualConfigAttribute.contains(role.authority)) {
