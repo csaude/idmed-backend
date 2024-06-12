@@ -19,7 +19,7 @@ class SecUserService {
 
     @Scheduled(cron = "0 0 12 * * 1,5")
     void schedulerUserMonitoringRunning() {
-        println('CRON FOR USERS UPDDATE')
+        println('CRON FOR USERS UPDDATE - DATE '+ new Date())
         SecUser.withTransaction {
             suspendInactiveUserAccounts()
         }
