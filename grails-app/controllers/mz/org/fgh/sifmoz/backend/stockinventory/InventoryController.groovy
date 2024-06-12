@@ -4,6 +4,8 @@ import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
+import mz.org.fgh.sifmoz.backend.stock.Stock
+import mz.org.fgh.sifmoz.backend.stock.StockService
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
 
@@ -17,6 +19,8 @@ import grails.gorm.transactions.Transactional
 class InventoryController extends RestfulController{
 
     IInventoryService inventoryService
+    StockService stockService
+
 
 
     static responseFormats = ['json', 'xml']
@@ -52,6 +56,9 @@ class InventoryController extends RestfulController{
                 inventoryService.processInventoryAdjustments(inventory)
                 inventory.adjustments.each { adjustment ->
                     adjustment.save(flush: true)
+                    Stock stock = adjustment.adjustedStock
+                    stock.stockMoviment = adjustment.getBalance()
+                    stockService.save(stock)
                 }
 
             } catch (ValidationException e) {
