@@ -58,6 +58,7 @@ class Patient extends BaseEntity implements Auditable{
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_Patient_Idx'
+        identifiers cascade: 'none'
     }
 
     static constraints = {
@@ -87,18 +88,18 @@ class Patient extends BaseEntity implements Auditable{
         if (!id) {
             id = UUID.randomUUID()
         }
-        if (!clinic) {
-            clinic = Clinic.findByMainClinic(true)
-        }
-        if (matchId == null) {
-            def  patient =  findAll( [sort: ['matchId': 'desc']])
-            if (patient.size() == 0) {
-                matchId = 1
-            } else {
-                matchId = patient.get(0).matchId + 1
-            }
-
-        }
+//        if (!clinic) {
+//            clinic = Clinic.findByMainClinic(true)
+//        }
+//        if (matchId == null) {
+//            def  patient =  findAll( [sort: ['matchId': 'desc']])
+//            if (patient.size() == 0) {
+//                matchId = 1
+//            } else {
+//                matchId = patient.get(0).matchId + 1
+//            }
+//
+//        }
     }
     @Override
     List<Menu> hasMenus() {

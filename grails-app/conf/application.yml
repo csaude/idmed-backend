@@ -103,7 +103,7 @@ environments:
   development:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://localhost:2345/gurue
+      url: jdbc:postgresql://localhost:2345/idmed
   test:
     dataSource:
       dbCreate: update
