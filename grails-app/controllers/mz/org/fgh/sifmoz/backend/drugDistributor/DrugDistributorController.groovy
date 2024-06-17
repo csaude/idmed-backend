@@ -307,5 +307,8 @@ class DrugDistributorController extends RestfulController {
         return drugDistributorService.getAllByClinicId(clinicId, offset, max)
     }
 
+    def getDistributionsByStatus(String  clinicSectorId, String status) {
+            render   JSONSerializer.setObjectListJsonResponse(DrugDistributor.findAllByClinicAndStatus(Clinic.findById(clinicSectorId),status)) as JSON
+    }
 
 }

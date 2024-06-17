@@ -40,9 +40,7 @@ class DrugStockFileService {
                 "from drug_stock_summary_vw  " +
                 "where drug_id = :drug " +
                 "   and clinic_id = :clinic "+
-                " order by event_year asc, event_month asc"
-
-
+                " order by max_Date asc"
 
 
         def query = session.createSQLQuery(queryString)
