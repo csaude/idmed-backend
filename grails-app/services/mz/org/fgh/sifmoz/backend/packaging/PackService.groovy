@@ -1139,10 +1139,7 @@ abstract class PackService implements IPackService {
                      inner join start_stop_reason ssr on ssr.id = ep.start_stop_reason_id
                      inner join clinical_service cs ON cs.id = psi.service_id
                      inner join clinic c on c.id = ep.clinic_id
-                     where ((Date(pk.pickup_date) BETWEEN :startDate AND :endDate) OR
-                     pg_catalog.date(pk.pickup_date) < :startDate and pg_catalog.date(pk.next_pick_up_date) > :endDate AND
-                     DATE(pk.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) >= :startDate
-                     AND DATE(pk.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) <= :endDate)
+                     where ((Date(pk.pickup_date) BETWEEN :startDate AND :endDate))
                      AND ssr.code in ('NOVO_PACIENTE',
                                      'INICIO_CCR',
                                      'TRANSFERIDO_DE',
@@ -1663,10 +1660,7 @@ abstract class PackService implements IPackService {
                     INNER JOIN
                         clinic c ON c.id = ep.clinic_id
                     WHERE 
-                        ((Date(pk.pickup_date) BETWEEN :startDate AND :endDate) OR
-                        pg_catalog.date(pk.pickup_date) < :startDate and pg_catalog.date(pk.next_pick_up_date) > :endDate AND
-                        DATE(pk.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) >= :startDate
-                        AND DATE(pk.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) <= :endDate)
+                        ((Date(pk.pickup_date) BETWEEN :startDate AND :endDate))
                         AND ssr.code in ('NOVO_PACIENTE',
                                      'INICIO_CCR',
                                      'TRANSFERIDO_DE',
