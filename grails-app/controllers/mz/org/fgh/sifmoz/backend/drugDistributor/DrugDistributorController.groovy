@@ -65,11 +65,7 @@ class DrugDistributorController extends RestfulController {
         }
 
         try {
-       //  boolean hasStock =   stockService.validateStock(drugDistributor.getDrug(), drugDistributor.getStockDistributor().getCreationDate(), drugDistributor.getQuantity())
-
             makeDistribution(drugDistributor)
-
-
         } catch (ValidationException e) {
             respond drugDistributor.errors
             return
@@ -137,7 +133,7 @@ class DrugDistributorController extends RestfulController {
         reference.setQuantity(quantityAux)
         reference.updateStatus = 'P'
 
-        // Validate if there is stock enough
+        // Validate if there is stock
         for (Stock stock : stocks) {
 
             StockReferenceAdjustment stockReferenceAdjustment = new StockReferenceAdjustment()
@@ -213,8 +209,6 @@ class DrugDistributorController extends RestfulController {
             if (!newStockList.isEmpty()) {
                 stockEntranceService.save(entrance)
             }
-
-
         }  else if (status.equalsIgnoreCase("A") ||   status.equalsIgnoreCase("R")  ) {
             // processo para anular ordem 
 
@@ -253,8 +247,6 @@ class DrugDistributorController extends RestfulController {
         }
         drugDistributorService.save(drugDistributor)
         respond drugDistributor, [status: OK, view: "show"]
-
-
     }
 
     private StockEntrance getStockEntranceInstance(DrugDistributor drugDistributor) {
@@ -263,6 +255,7 @@ class DrugDistributorController extends RestfulController {
         entrance.setClinic(drugDistributor.getClinic())
         entrance.setCreationDate(new Date())
         entrance.setDateReceived(new Date())
+        entrance.setIsDistribution(true)
         entrance.setNotes("Entrada criada aparitir de distribuicao")
         entrance.id = UUID.randomUUID()
         return entrance
@@ -314,5 +307,8 @@ class DrugDistributorController extends RestfulController {
         return drugDistributorService.getAllByClinicId(clinicId, offset, max)
     }
 
+    def getDistributionsByStatus(String  clinicSectorId, String status) {
+            render   JSONSerializer.setObjectListJsonResponse(DrugDistributor.findAllByClinicAndStatus(Clinic.findById(clinicSectorId),status)) as JSON
+    }
 
 }

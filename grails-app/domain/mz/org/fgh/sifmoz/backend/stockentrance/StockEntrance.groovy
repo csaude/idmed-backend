@@ -12,6 +12,7 @@ class StockEntrance extends BaseEntity {
     Clinic clinic
     Date creationDate
     String notes
+    boolean isDistribution
     static hasMany = [stocks: Stock]
 
     static mapping = {

@@ -361,13 +361,14 @@ class DashBoardService {
                 "INNER JOIN drug d ON svw.drug_id = d.id " +
                 " inner join clinical_service cs on cs.id = d.clinical_service_id   " +
                 " where cs.code = :service  " +
-                " and cs.code = :service   " +
+                " and cs.code = :service " +
+                " and svw.clinic_id = :clinicId  " +
                 " GROUP BY d.id) as  stock_consuption";
 
         Session session = sessionFactory.getCurrentSession()
         def query = session.createSQLQuery(queryString)
         query.setParameter("service", serviceCode)
-        //query.setParameter("clinic", clinicId)
+        query.setParameter("clinicId", clinicId)
         List<Object[]> result = query.list()
 
         List<StockAlert> registeredPatientsByDispenseTypeList = new ArrayList<>()
