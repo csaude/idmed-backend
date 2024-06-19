@@ -213,8 +213,8 @@ class PatientController extends RestfulController {
         def objectJSON = request.JSON
         patient = objectJSON as Patient
 
-        def limit = objectJSON.limit  // Default limit to 10 if not provided
-        def offset = objectJSON.offset
+        def limit = objectJSON.limit  as int// Default limit to 10 if not provided
+        def offset = objectJSON.offset as int
 
         def patientList = patientService.search(patient, offset, limit)
 
