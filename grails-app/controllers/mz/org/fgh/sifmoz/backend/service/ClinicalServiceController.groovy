@@ -86,7 +86,7 @@ class ClinicalServiceController extends RestfulController {
         }
 
         clinicalService.clinicSectors = [].withDefault {new ClinicSector()}
-        clinicalService.therapeuticRegimens = [].withDefault {new TherapeuticRegimen()}
+      //  clinicalService.therapeuticRegimens = [].withDefault {new TherapeuticRegimen()}
         (objectJSON.clinicSectors as List).collect { item ->
             if (item) {
                 def clinicSectorObject = ClinicSector.get(item.id)
@@ -96,7 +96,7 @@ class ClinicalServiceController extends RestfulController {
                 clinicalService.addToClinicSectors(clinicSectorObject)
             }
         }
-
+/*
         (objectJSON.therapeuticRegimens as List).collect { item ->
             if (item) {
                 def therapeuticRegimenObject = TherapeuticRegimen.findWhere(id: item.id)
@@ -104,9 +104,9 @@ class ClinicalServiceController extends RestfulController {
                 clinicalService.addToTherapeuticRegimens(therapeuticRegimenObject)
             }
         }
-
+*/
         try {
-            clinicalServiceService.save(clinicalService)
+            clinicalService.save(flush: true, failOnError: true)
         } catch (ValidationException e) {
             respond clinicalService.errors
             return
