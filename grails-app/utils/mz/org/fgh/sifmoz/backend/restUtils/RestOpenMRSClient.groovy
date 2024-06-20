@@ -386,7 +386,7 @@ class RestOpenMRSClient {
                 String openmrsJSON  =
                          "{\"person\":"
                                 .concat("{")
-                                .concat( "\"gender\": \"" + patient.gender + "\",")
+                                .concat( "\"gender\": \"" + patient?.gender?.toString()?.charAt(0)?.toUpperCase() + "\",")
                                 .concat( "\"names\":")
                                 .concat("[{\"givenName\": \"" + patient.firstNames + "\", \"middleName\": \"" + patient.middleNames + "\", \"familyName\": \"" + patient.lastNames + "\"}], \"birthdate\": \"" + dateOfBirthFormated+ "\"")
                                 .concat( "},")
