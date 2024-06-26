@@ -12,6 +12,7 @@ class DrugDistributor extends BaseEntity {
     Drug drug
     Clinic clinic
     int quantity
+    String status
 
     static belongsTo = [stockDistributor: StockDistributor]
     static hasMany = [stockDistributorBatchs: StockDistributorBatch]

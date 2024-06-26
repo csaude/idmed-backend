@@ -1,6 +1,6 @@
 package mz.org.fgh.sifmoz.backend.stockadjustment
 
-import grails.rest.Resource
+
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.protection.Menu
 import mz.org.fgh.sifmoz.backend.stock.Stock
@@ -13,6 +13,7 @@ class InventoryStockAdjustment extends StockAdjustment{
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_InventoryStockAdjustment_Idx'
+        inventory updateable: false
     }
 
     InventoryStockAdjustment() {

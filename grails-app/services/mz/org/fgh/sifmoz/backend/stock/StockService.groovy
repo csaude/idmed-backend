@@ -43,12 +43,13 @@ abstract class StockService implements IStockService {
         return list
     }
 
-    boolean validateStock(String drugId, Date dateToCompare, int qtyPrescribed) {
+    boolean validateStock(String drugId, Date dateToCompare, int qtyPrescribed, String clinicId) {
         Drug drug = Drug.findById(drugId)
+        Clinic clinic = Clinic.findById(clinicId)
         List<Stock> list = Stock.executeQuery("select  s from Stock  s " +
                 " where s.expireDate > :prescriptionDate  AND " +
-                " s.stockMoviment > 0  AND s.drug = :drug ",
-                [drug: drug, prescriptionDate:  Utilities.addDaysInDate(dateToCompare, drug.packSize)])
+                " s.stockMoviment > 0  AND s.drug = :drug AND s.clinic =:clinic ",
+                [drug: drug, prescriptionDate:  Utilities.addDaysInDate(dateToCompare, drug.packSize),clinic: clinic])
 
         if (list.size() > 0) {
             int qtyInStock = 0
@@ -527,5 +528,9 @@ abstract class StockService implements IStockService {
         return Stock.findAllByClinic(Clinic.findById(clinicId), [offset: offset, max: max])
     }
 
+    @Override
+    Stock getStockByBatchNumberAndClinic(String batchNumber, String clinicId) {
+        return Stock.findByBatchNumberAndClinic(batchNumber, Clinic.findById(clinicId))
+}
 }
 

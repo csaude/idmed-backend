@@ -94,7 +94,7 @@ class UrlMappings {
         get "/api/patient/openmrsProgramSearch/$interoperabilityId/$uuid/$openmrsBase64(.$format)?"(controller:'patient', action:'getOpenMRSPatientProgramDetails')
         get "/api/episode/clinicSector/$clinicSectorId(.$format)?"(controller:'episode', action:'getLastWithVisitByClinicSectors')
         get "/api/patient/clinicSector/$clinicSectorId(.$format)?"(controller:'patient', action:'getPatientsInClinicSector')
-        get "/api/stock/checkStockStatus/$idPrescribedDrug/$prescriptionDate/$qtyPrescribed(.$format)?"(controller:'stock', action:'checkStockStatus')
+        get "/api/stock/checkStockStatus/$idPrescribedDrug/$prescriptionDate/$qtyPrescribed/$clinicId(.$format)?"(controller:'stock', action:'checkStockStatus')
         get "/api/stock/getValidStocks/$idPackagedDrug/$packageDate(.$format)?"(controller:'stock', action:'getValidStockByDrugAndPickUpDate')
 
         get "/api/drug/drugFromProvicnial/$offset(.$format)?"(controller:'drug', action:'getDrugsFromProvincialServer')
@@ -109,8 +109,13 @@ class UrlMappings {
         get "/api/drug/getInventoryDrugs/$id(.$format)?"(controller:'drug', action:'getDrugsByInventoryId')
         get "/api/inventory/isInventoryPeriod/$clinicId(.$format)?"(controller:'inventory', action:'isInventoryPeriod')
         get "/api/stockDistributorBatch/getStockDistributorBatchByStockDistributorId/$stockDistributorId(.$format)?"(controller:'StockDistributorBatch', action:'getStockDistributorBatchByStockDistributorId')
-        patch "/api/stockDistributor/updateStockDistributorStatus/$idStockDistributor/$status(.$format)?"(controller:'stockDistributor', action:'updateStockDistributorStatus')
+        patch "/api/drugDistributor/updateDrugDistributorStatus/$idDrugDistributor/$status(.$format)?"(controller:'drugDistributor', action:'updateDrugDistributorStatus')
+        get "/api/drugDistributor/getDistributionsByStatus/$clinicSectorId/$status(.$format)?"(controller:'DrugDistributor', action:'getDistributionsByStatus')
         get "/api/stock/clinic/$clinicId(.$format)?"(controller:'stock', action:'getByClinicId')
+        get "/api/inventoryStockAdjustment/clinic/$clinicId(.$format)?"(controller:'inventoryStockAdjustment', action:'getByClinicId')
+        get "/api/referedStockMoviment/clinic/$clinicId(.$format)?"(controller:'referedStockMoviment', action:'getByClinicId')
+        get "/api/destroyedStock/clinic/$clinicId(.$format)?"(controller:'destroyedStock', action:'getByClinicId')
+
 
         "/"(view:"/login/auth")
         "500"(view: '/error')

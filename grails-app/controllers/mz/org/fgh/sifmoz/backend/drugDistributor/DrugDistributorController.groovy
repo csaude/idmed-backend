@@ -12,6 +12,8 @@ import mz.org.fgh.sifmoz.backend.stockDistributorBatch.StockDistributorBatch
 import mz.org.fgh.sifmoz.backend.stockDistributorBatch.StockDistributorBatchService
 import mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment
 import mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustmentService
+import mz.org.fgh.sifmoz.backend.stockentrance.StockEntrance
+import mz.org.fgh.sifmoz.backend.stockentrance.StockEntranceService
 import mz.org.fgh.sifmoz.backend.stockoperation.StockOperationType
 import mz.org.fgh.sifmoz.backend.stockrefered.ReferedStockMoviment
 import mz.org.fgh.sifmoz.backend.stockrefered.ReferedStockMovimentService
@@ -24,7 +26,8 @@ class DrugDistributorController extends RestfulController {
     StockDistributorBatchService stockDistributorBatchService
     StockReferenceAdjustmentService stockReferenceAdjustmentService
     ReferedStockMovimentService referedStockMovimentService
-    DrugDistributorService drugDistributorService
+    IDrugDistributorService drugDistributorService
+    StockEntranceService stockEntranceService
 
     IStockService stockService
     static responseFormats = ['json', 'xml']
@@ -63,8 +66,6 @@ class DrugDistributorController extends RestfulController {
 
         try {
             makeDistribution(drugDistributor)
-
-
         } catch (ValidationException e) {
             respond drugDistributor.errors
             return
@@ -91,15 +92,10 @@ class DrugDistributorController extends RestfulController {
 
         try {
 
-
             drugDistributor.quantity = Integer.parseInt(objectJSON.getAt("quantity").toString())
-            //stock.stockMoviment = Integer.parseInt(objectJSON.getAt("stockMoviment").toString())
-            //stock.manufacture = objectJSON.getAt("manufacture").toString()
-            // stock.batchNumber = objectJSON.getAt("batchNumber").toString()
             drugDistributor.drug = Drug.findWhere(id: objectJSON?.getAt("drug")?.getAt("id")?.toString())
             drugDistributor.clinic = Clinic.findWhere(id: objectJSON?.getAt("clinic")?.getAt("id")?.toString())
-
-            stockDistributorBatchService.save(drugDistributor)
+            drugDistributorService.save(drugDistributor)
         } catch (ValidationException e) {
             respond drugDistributor.errors
             return
@@ -110,6 +106,7 @@ class DrugDistributorController extends RestfulController {
 
     @Transactional
     def delete(String id) {
+
         if (id == null || drugDistributorService.delete(id) == null) {
             render status: NOT_FOUND
             return
@@ -136,7 +133,7 @@ class DrugDistributorController extends RestfulController {
         reference.setQuantity(quantityAux)
         reference.updateStatus = 'P'
 
-        // Validate if there is stock enough
+        // Validate if there is stock
         for (Stock stock : stocks) {
 
             StockReferenceAdjustment stockReferenceAdjustment = new StockReferenceAdjustment()
@@ -183,5 +180,135 @@ class DrugDistributorController extends RestfulController {
         }
     }
 
+
+    @Transactional
+    def updateDrugDistributorStatus(String idDrugDistributor, String status) {
+        DrugDistributor drugDistributor = drugDistributorService.get(idDrugDistributor)
+        List<StockDistributorBatch> batchs = stockDistributorBatchService.getStockDistributorBatchByDrugDistributorId(idDrugDistributor)
+        drugDistributor.setStatus(status)
+        if (status.equalsIgnoreCase("C")) {
+            List<Stock> newStockList = new ArrayList<>()
+            StockEntrance entrance = getStockEntranceInstance(drugDistributor)
+            for (StockDistributorBatch batch : batchs) {
+                //make new Stock entrance because the batch number doesnt exist
+                if (!stockService.existsBatchNumber(batch.getStock().getBatchNumber(), batch.getDrugDistributor().getClinicId())) {
+                    generateNewStocksList(batch, newStockList, entrance)
+                } else {
+                    // make adjustments because the batch number exists
+                    Stock stock  = stockService.getStockByBatchNumberAndClinic(batch.getStock().getBatchNumber(), batch.getDrugDistributor().getClinicId())
+                    ReferedStockMoviment reference = generateAdjustment(batch, stock)
+                    if (!Objects.isNull(reference)) {
+                        referedStockMovimentService.save(reference)
+                    }
+                }
+            }
+
+
+            entrance.stocks = new ArrayList<Stock>()
+            entrance.stocks.addAll(newStockList)
+            if (!newStockList.isEmpty()) {
+                stockEntranceService.save(entrance)
+            }
+        }  else if (status.equalsIgnoreCase("A") ||   status.equalsIgnoreCase("R")  ) {
+            // processo para anular ordem 
+
+            // 1 reverter o valor do stock moviment nos lotes  (stocks) debitados
+            List<StockDistributorBatch> batches = StockDistributorBatch.findAllByDrugDistributor( drugDistributor)
+            for (StockDistributorBatch batch: batches) {
+                Stock stock = batch.getStock()
+                stock.stockMoviment = stock.stockMoviment +batch.quantity
+                stockService.save(stock)
+
+                // Criar um ajuste positivo (anulacao)
+                ReferedStockMoviment reference = new ReferedStockMoviment()
+                reference.id = UUID.randomUUID()
+                reference.setClinic(batch.getStockDistributor().getClinic())
+                reference.setOrderNumber("Anulacao_Ajuste_Distribuicao")
+                reference.setOrigin("Anulacao_Ajuste_Distribuicao")
+                reference.setDate(new Date())
+                reference.setQuantity(batch.quantity)
+                reference.updateStatus = 'P'
+
+                StockReferenceAdjustment stockReferenceAdjustment = new StockReferenceAdjustment()
+                stockReferenceAdjustment.adjustedValue = batch.quantity
+                stockReferenceAdjustment.setBalance(stock.stockMoviment)
+                stockReferenceAdjustment.id = UUID.randomUUID()
+                stockReferenceAdjustment.setOperation(StockOperationType.findByCode("AJUSTE_POSETIVO"))
+                stockReferenceAdjustment.setAdjustedStock(stock)
+                stockReferenceAdjustment.setCaptureDate(batch.getStockDistributor().getCreationDate())
+                stockReferenceAdjustment.setClinic(batch.getStockDistributor().getClinic())
+                stockReferenceAdjustment.setNotes("Anulacao  de Distribuicao de medicamentos")
+                stockReferenceAdjustment.setReference(reference)
+
+                reference.adjustments = new HashSet<StockReferenceAdjustment>()
+                reference.adjustments.add(stockReferenceAdjustment)
+                referedStockMovimentService.save(reference)
+            }
+        }
+        drugDistributorService.save(drugDistributor)
+        respond drugDistributor, [status: OK, view: "show"]
+    }
+
+    private StockEntrance getStockEntranceInstance(DrugDistributor drugDistributor) {
+        StockEntrance entrance = new StockEntrance()
+        entrance.setOrderNumber("Dist_" + drugDistributor.getStockDistributor().getOrderNumber())
+        entrance.setClinic(drugDistributor.getClinic())
+        entrance.setCreationDate(new Date())
+        entrance.setDateReceived(new Date())
+        entrance.setIsDistribution(true)
+        entrance.setNotes("Entrada criada aparitir de distribuicao")
+        entrance.id = UUID.randomUUID()
+        return entrance
+    }
+
+    private ReferedStockMoviment generateAdjustment(StockDistributorBatch batch, Stock stock) {
+        ReferedStockMoviment reference = new ReferedStockMoviment()
+        reference.id = UUID.randomUUID()
+        reference.setClinic(batch.getDrugDistributor().getClinic())
+        reference.setOrderNumber("Ordem_Ajuste_Distribuicao")
+        reference.setOrigin("Ajuste_Distribuicao")
+        reference.setDate(new Date())
+        reference.setQuantity(batch.getQuantity())
+        reference.updateStatus = 'P'
+
+        StockReferenceAdjustment stockReferenceAdjustment = new StockReferenceAdjustment()
+        stockReferenceAdjustment.adjustedValue = batch.getQuantity()
+        stockReferenceAdjustment.setBalance(stock.stockMoviment + batch.getQuantity())
+        stockReferenceAdjustment.id = UUID.randomUUID()
+        stockReferenceAdjustment.setOperation(StockOperationType.findByCode("AJUSTE_POSETIVO"))
+        stockReferenceAdjustment.setAdjustedStock(stock)
+
+        stockReferenceAdjustment.setCaptureDate(batch.getStockDistributor().getCreationDate())
+        stockReferenceAdjustment.setClinic(batch.getDrugDistributor().getClinic())
+        stockReferenceAdjustment.setNotes("Recebimento de medicamentos vindo da farmacia para o sector")
+        stockReferenceAdjustment.setReference(reference)
+
+        reference.adjustments = new HashSet<StockReferenceAdjustment>()
+        reference.adjustments.add(stockReferenceAdjustment)
+        return reference
+    }
+
+    private void generateNewStocksList(StockDistributorBatch batch, ArrayList<Stock> newStockList, StockEntrance entrance) {
+        Stock newStock = new Stock()
+        newStock.id = UUID.randomUUID()
+        newStock.setClinic(batch.getDrugDistributor().getClinic())
+        newStock.setBatchNumber(batch.getStock().getBatchNumber())
+        newStock.setCenter(batch.getStock().getCenter())
+        newStock.setManufacture(batch.getStock().getManufacture())
+        newStock.setExpireDate(batch.getStock().getExpireDate())
+        newStock.setUnitsReceived(batch.getQuantity())
+        newStock.setDrug(batch.getDrugDistributor().getDrug())
+        newStock.setEntrance(entrance)
+        newStock.setStockMoviment(batch.getQuantity())
+        newStockList.push(newStock)
+    }
+
+    def getByClinicId(String clinicId, int offset, int max) {
+        return drugDistributorService.getAllByClinicId(clinicId, offset, max)
+    }
+
+    def getDistributionsByStatus(String  clinicSectorId, String status) {
+            render   JSONSerializer.setObjectListJsonResponse(DrugDistributor.findAllByClinicAndStatus(Clinic.findById(clinicSectorId),status)) as JSON
+    }
 
 }

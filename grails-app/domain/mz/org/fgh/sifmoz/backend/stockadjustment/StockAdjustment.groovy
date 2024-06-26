@@ -2,14 +2,9 @@ package mz.org.fgh.sifmoz.backend.stockadjustment
 
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
-import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
-import mz.org.fgh.sifmoz.backend.protection.Menu
 import mz.org.fgh.sifmoz.backend.stock.Stock
-import mz.org.fgh.sifmoz.backend.stockdestruction.DestroyedStock
 import mz.org.fgh.sifmoz.backend.stockinventory.Inventory
 import mz.org.fgh.sifmoz.backend.stockoperation.StockOperationType
-import mz.org.fgh.sifmoz.backend.stockrefered.ReferedStockMoviment
-
 
 abstract class StockAdjustment extends BaseEntity {
     String id
@@ -22,6 +17,7 @@ abstract class StockAdjustment extends BaseEntity {
     Stock adjustedStock
     StockOperationType operation
     Clinic clinic
+    static hasOne = [adjustedStock: Stock]
 
     StockAdjustment() {
     }

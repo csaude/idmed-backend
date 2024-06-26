@@ -12,7 +12,7 @@ class StockDistributor extends BaseEntity {
     Date creationDate = new Date()
     String notes
     Clinic clinic
-    String status // C- Confirmado, R-Rejeitado, P -Pendente
+
 
     static hasMany = [drugDistributors: DrugDistributor]
 

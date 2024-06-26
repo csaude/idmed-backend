@@ -15,9 +15,7 @@ interface IStockDistributorBatchService {
 
     StockDistributorBatch save(StockDistributorBatch stock)
 
-    List<StockDistributorBatch> getStockDistributorBatchByStockDistributorId(String StockDistributorId)
-
-
+    List<StockDistributorBatch> getStockDistributorBatchByDrugDistributorId(String idDdrugDistributor)
 
 
 }

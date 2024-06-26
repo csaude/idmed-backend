@@ -1,18 +1,16 @@
 package mz.org.fgh.sifmoz.backend.drugDistributor
 
 import grails.gorm.services.Service
-import mz.org.fgh.sifmoz.backend.service.ClinicalService
+import grails.gorm.transactions.Transactional
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 
+@Transactional
 @Service(DrugDistributor)
-interface DrugDistributorService {
+abstract class DrugDistributorService implements  IDrugDistributorService{
+ 
 
-    DrugDistributor get(Serializable id)
-
-    List<DrugDistributor> list(Map args)
-
-    Long count()
-
-    DrugDistributor delete(Serializable id)
-
-    DrugDistributor save(DrugDistributor drugDistributor)
+    @Override
+    List<DrugDistributor> getAllByClinicId(String clinicId, int offset, int max) {
+        return DrugDistributor.findAllByClinic(Clinic.findById(clinicId), [offset: offset, max: max])
+    }
 }
