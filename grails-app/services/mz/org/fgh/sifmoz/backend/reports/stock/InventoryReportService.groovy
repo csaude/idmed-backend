@@ -176,11 +176,12 @@ abstract class InventoryReportService implements IInventoryReportService {
         inventoryReportTemp.setBatchNumber(item[4])
         Date expireDate =formatter.parse(item[1].toString())
         inventoryReportTemp.setExpireDate(expireDate)
-        inventoryReportTemp.setBalance((long) Double.parseDouble(String.valueOf(item[7])) )
+        inventoryReportTemp.setBalance((long) Double.parseDouble(String.valueOf(item[7])))
         inventoryReportTemp.setAdjustedValue((long) Double.parseDouble(String.valueOf(item[6])))
         inventoryReportTemp.setFormDescription(item[8])
         inventoryReportTemp.setNotes(item[9])
         inventoryReportTemp.setInventoryId(item[10])
+        inventoryReportTemp.setOperation_type(item[11])
 
         try {
             save(inventoryReportTemp)

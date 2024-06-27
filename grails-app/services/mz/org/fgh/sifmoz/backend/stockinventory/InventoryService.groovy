@@ -103,9 +103,11 @@ abstract class InventoryService implements IInventoryService{
                 "s.stock_moviment, " +
                 "f.description as formDescription, " +
                 "sa.notes,"+
-                "i.id as inventoryId " +
+                "i.id as inventoryId, " +
+                "sot.code as operation_type " +
                 "from stock_adjustment sa \n" +
                 "inner join inventory i on (i.id = sa.inventory_id)\n" +
+                "inner join stock_operation_type sot on (sot.id = sa.operation_id)\n" +
                 "inner join stock s on s.id = sa.adjusted_stock_id \n" +
                 "inner join drug d on d.id = s.drug_id \n" +
                 "inner join form f on f.id = d.form_id \n" +
