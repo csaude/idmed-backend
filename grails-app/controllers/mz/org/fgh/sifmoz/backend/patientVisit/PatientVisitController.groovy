@@ -1,53 +1,32 @@
 package mz.org.fgh.sifmoz.backend.patientVisit
 
-import com.fasterxml.jackson.annotation.JsonBackReference
+
 import grails.converters.JSON
-import groovy.json.JsonSlurper
+import grails.gorm.transactions.Transactional
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import groovy.json.JsonSlurper
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.episode.Episode
-import mz.org.fgh.sifmoz.backend.form.Form
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
 import mz.org.fgh.sifmoz.backend.packaging.Pack
-import mz.org.fgh.sifmoz.backend.patient.Patient
-import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.Localidade
-import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.IPatientVisitDetailsService
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.prescription.IPrescriptionService
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
-import mz.org.fgh.sifmoz.backend.prescriptionDetail.PrescriptionDetail
-import mz.org.fgh.sifmoz.backend.screening.AdherenceScreening
-import mz.org.fgh.sifmoz.backend.screening.AdherenceScreeningService
-import mz.org.fgh.sifmoz.backend.screening.PregnancyScreening
-import mz.org.fgh.sifmoz.backend.screening.PregnancyScreeningService
-import mz.org.fgh.sifmoz.backend.screening.RAMScreening
-import mz.org.fgh.sifmoz.backend.screening.RAMScreeningService
-import mz.org.fgh.sifmoz.backend.screening.TBScreening
-import mz.org.fgh.sifmoz.backend.screening.TBScreeningService
-import mz.org.fgh.sifmoz.backend.screening.VitalSignsScreening
-import mz.org.fgh.sifmoz.backend.screening.VitalSignsScreeningService
-import mz.org.fgh.sifmoz.backend.service.ClinicalService
+import mz.org.fgh.sifmoz.backend.screening.*
 import mz.org.fgh.sifmoz.backend.stock.Stock
 import mz.org.fgh.sifmoz.backend.stock.StockService
-import mz.org.fgh.sifmoz.backend.stocklevel.StockLevel
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
-import org.apache.commons.lang3.StringUtils
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.BindingResult
 
-import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.NO_CONTENT
-import static org.springframework.http.HttpStatus.OK
 
 //import grails.plugin.json.view.api.JsonView
-
-import grails.gorm.transactions.Transactional
 
 class PatientVisitController extends RestfulController {
 
@@ -86,10 +65,14 @@ class PatientVisitController extends RestfulController {
     def save() {
         PatientVisit visit = new PatientVisit()
         def objectJSON = request.JSON
-        def amtPerTimePackaged = objectJSON?.patientVisitDetails[0]?.pack?.packagedDrugs[0]?.amtPerTime+""
-        objectJSON?.patientVisitDetails[0]?.pack?.packagedDrugs[0]?.amtPerTime = amtPerTimePackaged ? Double.parseDouble(amtPerTimePackaged) : 0
-        def amtPerTimePrescribed = objectJSON?.patientVisitDetails[0]?.prescription?.prescribedDrugs[0]?.amtPerTime+""
-        objectJSON?.patientVisitDetails[0]?.prescription?.prescribedDrugs[0]?.amtPerTime = amtPerTimePrescribed ? Double.parseDouble(amtPerTimePrescribed) : 0
+
+        if (!objectJSON?.patientVisitDetails?.isEmpty()) {
+            def amtPerTimePackaged = objectJSON?.patientVisitDetails[0]?.pack?.packagedDrugs[0]?.amtPerTime + ""
+            objectJSON?.patientVisitDetails[0]?.pack?.packagedDrugs[0]?.amtPerTime = amtPerTimePackaged ? Double.parseDouble(amtPerTimePackaged) : 0
+            def amtPerTimePrescribed = objectJSON?.patientVisitDetails[0]?.prescription?.prescribedDrugs[0]?.amtPerTime + ""
+            objectJSON?.patientVisitDetails[0]?.prescription?.prescribedDrugs[0]?.amtPerTime = amtPerTimePrescribed ? Double.parseDouble(amtPerTimePrescribed) : 0
+
+        }
 
         def syncStatus = objectJSON["syncStatus"]
         visit = objectJSON as PatientVisit
@@ -471,10 +454,10 @@ class PatientVisitController extends RestfulController {
 
                 def quantityControl = pcDrugs.quantitySupplied
 
-                while (quantityControl > 0){
+                while (quantityControl > 0) {
                     Stock stock = Stock.get(getFirstExpiredBatchFromDrug(pcDrugs.drug, pack.pickupDate))
 
-                    if(stock){
+                    if (stock) {
                         if (stock.stockMoviment <= quantityControl && stock.stockMoviment < 0) {
                             quantityControl -= stock.stockMoviment
                             stock.stockMoviment = 0
