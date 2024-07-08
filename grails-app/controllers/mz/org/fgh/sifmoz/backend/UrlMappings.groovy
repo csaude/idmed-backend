@@ -115,7 +115,11 @@ class UrlMappings {
         get "/api/inventoryStockAdjustment/clinic/$clinicId(.$format)?"(controller:'inventoryStockAdjustment', action:'getByClinicId')
         get "/api/referedStockMoviment/clinic/$clinicId(.$format)?"(controller:'referedStockMoviment', action:'getByClinicId')
         get "/api/destroyedStock/clinic/$clinicId(.$format)?"(controller:'destroyedStock', action:'getByClinicId')
-
+        post "/api/patientVisitDetails/getAllByPatientIds(.$format)?"(controller:'patientVisitDetails', action:'getAllByListPatientId')
+        post "/api/patientVisit/getAllByVisitIds(.$format)?"(controller:'patientVisit', action:'getAllByVisitIds')
+        post "/api/prescription/getAllByPrescriptionIds(.$format)?"(controller:'prescription', action:'getAllByPrescriptionIds')
+        post "/api/pack/getAllByPackIds(.$format)?"(controller:'pack', action:'getAllByPackIds')
+        post "/api/episode/getAllByEpisodeIds(.$format)?"(controller:'episode', action:'getAllByEpisodeIds')
 
         "/"(view:"/login/auth")
         "500"(view: '/error')

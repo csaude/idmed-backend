@@ -3,6 +3,7 @@ package mz.org.fgh.sifmoz.backend.patientVisitDetails
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.openmrsErrorLog.OpenmrsErrorLog
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
@@ -17,6 +18,7 @@ import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.stock.IStockService
 import mz.org.fgh.sifmoz.backend.stock.Stock
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
+import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer2
 
 import javax.transaction.TransactionalException
 
@@ -198,5 +200,31 @@ class PatientVisitDetailsController extends RestfulController {
 
     def getAllByPatientId(String patientId) {
         render JSONSerializer.setObjectListJsonResponse(patientVisitDetailsService.getAllByPatientId(patientId)) as JSON
+    }
+
+    def getAllByListPatientId() {
+
+        def objectJSON = request.JSON
+        List<String> ids = objectJSON.ids
+       def clinicSector = objectJSON.clinicSector
+    //    int index = ids.size() - 1;
+    //    ids.remove(index)
+
+        // render JSONSerializer.setObjectListJsonResponse(patientVisitDetailsService.getAllByListPatientId(ids)) as JSON
+
+       ClinicSector clinicSector2 = ClinicSector.get(clinicSector.id)
+        def result = patientVisitDetailsService.getAllByListPatientId(ids,clinicSector2)
+        result.get(0)
+        List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
+     //  patientVisitDetailsLists.add(result.get(0))
+      //  PatientVisitDetails pvd = result.get(0)
+     //   result.get(0).pack = null
+     //   result.get(0).episode = null
+     //   result.get(0).patientVisit = null
+   //     result.get(0).prescription = null
+     //   patientVisitDetailsLists.add(result.get(0))
+      //  respond result
+        def jsonResponse = JSONSerializer.setObjectListJsonResponse(result) as JSON
+        render jsonResponse
     }
 }

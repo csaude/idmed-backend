@@ -1048,6 +1048,7 @@ class BootStrap {
         startStopReasonList.add(new LinkedHashMap(id: 'ff8081817c9791ee017c99bbb2aa0015', isStartReason: false, reason: 'Voltou a ser referido para outra Farmacia', code: 'VOLTOU_A_SER_REFERIDO_PARA'))
         startStopReasonList.add(new LinkedHashMap(id: 'ff8081817c9791ee017c99bbb2aa0016', isStartReason: false, reason: 'Outro', code: 'OUTRO'))
         startStopReasonList.add(new LinkedHashMap(id: 'ff8081817c9791ee017c99bbb2aa0017', isStartReason: false, reason: 'Referido para dispensa comunitária', code: 'REFERIDO_DC'))
+        startStopReasonList.add(new LinkedHashMap(id: 'ff8081817c9791ee017c99bbb2aa0018', isStartReason: false, reason: 'Referido para Sector Clinico', code: 'REFERIDO_SECTOR_CLINICO'))
         return startStopReasonList
 
     }
