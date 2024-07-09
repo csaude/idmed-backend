@@ -3,6 +3,7 @@ package mz.org.fgh.sifmoz.backend.patientVisitDetails
 import grails.gorm.services.Service
 import grails.gorm.transactions.Transactional
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
+import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patient.Patient
@@ -540,5 +541,48 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
 
         List<Object[]> list = query.list()
         return list
+    }
+
+
+    List<PatientVisitDetails> getAllByListPatientId(List<String> patientIds, ClinicSector clinicSector1) {
+        /*
+        List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
+        patientIds.each {it ->
+            List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it))
+            List<PatientVisitDetails> patientVisitDetailsList = new ArrayList<>();
+            patientVisitList.each {it2 ->
+                it2.patientVisitDetails.each {pvd ->
+                    patientVisitDetailsLists.add(pvd)
+                }
+            }
+            print(patientVisitDetailsList.size())
+        }
+        *
+         */
+        List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
+
+            patientIds.each { it ->
+                def visitDetails = Patient.executeQuery("select pvd from PatientVisitDetails pvd " +
+                        "inner join pvd.episode ep " +
+                        "inner join ep.startStopReason stp " +
+                        "inner join ep.patientServiceIdentifier psi " +
+                        "inner join psi.patient p " +
+                        "inner join ep.clinic c " +
+                        "where ep.clinicSector = :clinicSector " +
+                        "and p.id = :patientId " +
+                        "and ep.episodeDate = ( " +
+                        "  SELECT MAX(e.episodeDate)" +
+                        "  FROM Episode e" +
+                        " inner join e.patientServiceIdentifier psi2" +
+                        "  WHERE psi2 = ep.patientServiceIdentifier and e.clinicSector = :clinicSector" +
+                        ")" +
+                        "order by ep.episodeDate desc", [clinicSector: clinicSector1,patientId:it])
+                if (visitDetails.size() == 0) {
+                    List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it), [sort: 'visitDate', order: 'desc'])
+                    PatientVisit pvLast = patientVisitList.get(0)
+                    patientVisitDetailsLists.addAll(pvLast.patientVisitDetails)
+                }
+            }
+        return patientVisitDetailsLists
     }
 }

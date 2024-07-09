@@ -104,7 +104,7 @@ abstract class PatientService implements IPatientService {
     }
 
     @Override
-    List<Patient> getAllPatientsInClinicSector(ClinicSector clinicSector) {
+    List<Patient> getAllPatientsInClinicSector(ClinicSector clinicSector, int offset , int max) {
 
         def patients = Patient.executeQuery("select p from Episode ep " +
                 "inner join ep.startStopReason stp " +
@@ -112,19 +112,13 @@ abstract class PatientService implements IPatientService {
                 "inner join psi.patient p " +
                 "inner join ep.clinic c " +
                 "where ep.clinicSector = :clinicSector " +
-                "and exists (select pvd from PatientVisitDetails pvd where pvd.episode = ep ) " +
                 "and ep.episodeDate = ( " +
                 "  SELECT MAX(e.episodeDate)" +
                 "  FROM Episode e" +
                 " inner join e.patientServiceIdentifier psi2" +
                 "  WHERE psi2 = ep.patientServiceIdentifier and e.clinicSector = :clinicSector" +
                 ")" +
-                "order by ep.episodeDate desc", [clinicSector: clinicSector])
-
-        patients.each { p ->
-            p.identifiers = []
-            //  p.patientVisits = []
-        }
+                "order by ep.episodeDate desc", [clinicSector: clinicSector],[max: max, offset: offset])
         return patients
     }
 

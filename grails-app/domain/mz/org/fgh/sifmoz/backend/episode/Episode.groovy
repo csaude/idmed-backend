@@ -30,6 +30,8 @@ class Episode extends BaseEntity {
     @JsonIgnore
     Clinic referralClinic
 
+    boolean isAbandonmentDC
+
     static belongsTo = [patientServiceIdentifier: PatientServiceIdentifier]
 
 //    @JsonBackReference

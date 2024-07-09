@@ -1,6 +1,6 @@
 package mz.org.fgh.sifmoz.backend.patientVisitDetails
 
-
+import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.reports.monitoringAndEvaluation.DrugQuantityTemp
 
@@ -33,6 +33,8 @@ interface IPatientVisitDetailsService{
     PatientVisitDetails getLastByEpisodeId(String episodeId)
 
     List<PatientVisitDetails> getAllByPatientId(String patientId)
+
+    List<PatientVisitDetails> getAllByListPatientId(List<String> patientIds, ClinicSector clinicSector1)
 
     // NOVOS REPORTS
     List<PatientVisitDetails> getPREPDailyReport(String clinicId, Date startDate, Date endDate, String clinicalServiceId)

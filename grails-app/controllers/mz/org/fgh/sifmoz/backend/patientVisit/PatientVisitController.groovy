@@ -515,5 +515,10 @@ class PatientVisitController extends RestfulController {
         return null
     }
 
+    def getAllByVisitIds() {
+        def objectJSON = request.JSON
+        List<String> ids = objectJSON
+        render JSONSerializer.setObjectListJsonResponse(PatientVisit.findAllByIdInList(ids)) as JSON
+    }
 
 }

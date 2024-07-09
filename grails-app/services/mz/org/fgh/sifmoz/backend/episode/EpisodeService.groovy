@@ -112,7 +112,6 @@ abstract class EpisodeService implements IEpisodeService{
                 "inner join psi.patient p" +
                 "inner join ep.clinic c " +
                 "where ep.clinicSector = :clinicSector " +
-                "and exists (select pvd from PatientVisitDetails pvd where pvd.episode = ep ) " +
                 "and ep.episodeDate = ( " +
                 "  SELECT MAX(e.episodeDate)" +
                 "  FROM Episode e" +
