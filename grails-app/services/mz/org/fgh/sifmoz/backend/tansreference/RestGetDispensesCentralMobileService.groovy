@@ -7,11 +7,12 @@ import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
 import mz.org.fgh.sifmoz.backend.dispenseMode.DispenseMode
 import mz.org.fgh.sifmoz.backend.dispenseType.DispenseType
+import mz.org.fgh.sifmoz.backend.doctor.Doctor
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.duration.Duration
 import mz.org.fgh.sifmoz.backend.episode.Episode
-import mz.org.fgh.sifmoz.backend.episode.EpisodeService
 import mz.org.fgh.sifmoz.backend.episode.IEpisodeService
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
 import mz.org.fgh.sifmoz.backend.packagedDrug.IPackagedDrugService
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
@@ -105,7 +106,7 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
                 PrescriptionDetail prescriptionDetail = PrescriptionDetail.findByPrescription(prescription)
                 ClinicalService service = ClinicalService.get(identifier.service.id)
                 Clinic clinic = Clinic.get(patient.clinic.id)
-                PatientTransReference patientTransReference = PatientTransReference.findAllByPatient(patient).last()
+                List<PatientTransReference> patientTransReference = PatientTransReference?.findAllByPatient(patient)
 
                 String message = String.format(FORMAT_STRING,
                         patient.matchId,
@@ -114,13 +115,17 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
 
                 LOGGER.info("Processando" + message)
                 try {
-                    def syncTempDipsnenseJSONObject = createSyncTempDispenseObject(pack, patient, identifier, prescription, prescriptionDetail, service, clinic, patientTransReference)
+                    if (!patientTransReference.isEmpty()) {
+                        def syncTempDipsnenseJSONObject = createSyncTempDispenseObject(pack, patient, identifier, prescription, prescriptionDetail, service, clinic, patientTransReference?.last())
 
-                    def response = restProvincialServerClient.postRequestProvincialServerClient(provincialServer, "/sync_temp_dispense", syncTempDipsnenseJSONObject)
+                        def response = restProvincialServerClient.postRequestProvincialServerClient(provincialServer, "/sync_temp_dispense", syncTempDipsnenseJSONObject)
 
-                    if (Integer.parseInt(response) == HttpURLConnection.HTTP_CREATED) {
-                        pack.isreferalsynced = true
-                        pack.save(flush: true)
+                        if (Integer.parseInt(response) == HttpURLConnection.HTTP_CREATED) {
+                            pack.isreferalsynced = true
+                            pack.save(flush: true)
+                        }
+                    } else {
+                        LOGGER.info("O Paciente nao possui referencia " + message)
                     }
                 } catch (Exception e) {
                     e.printStackTrace()
@@ -267,12 +272,14 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
 
                             if (patientServiceIdentifier != null) {
                                 def startStop = StartStopReason.findAllByIsStartReason(true)
-                                Episode episode = Episode.findAllByPatientServiceIdentifier(patientServiceIdentifier, [sort: 'episodeDate', order: 'desc']).first()
+                                List<Episode> episodeList = Episode.findAllByPatientServiceIdentifier(patientServiceIdentifier, [sort: 'episodeDate', order: 'desc'])
+                                Episode episode = episodeList?.first()
                                 def prescriprionDate = ConvertDateUtils.createDate(dispense.getAt("date").toString(), "yyyy-MM-dd")
                                 def patientVisitDetailsList = PatientVisitDetails.findAllByEpisode(episode)
 
                                 if (patientVisitDetailsList.isEmpty()) {
-                                    episode = Episode.findAllByPatientServiceIdentifierAndStartStopReasonInList(patientServiceIdentifier, startStop, [sort: 'episodeDate', order: 'desc']).first()
+                                    episodeList = Episode.findAllByPatientServiceIdentifierAndStartStopReasonInList(patientServiceIdentifier, startStop, [sort: 'episodeDate', order: 'desc'])
+                                    episode = episodeList?.isEmpty() ? episode : episodeList?.first()
                                     patientVisitDetailsList = PatientVisitDetails.findAllByEpisode(episode)
                                 }
 
@@ -283,12 +290,13 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
                                 Pack idmedPack = createIdmedPack(dispense, lastPrescriprion, episode, dispenseMode)
                                 createIdmedVisit(dispense, lastPrescriprion, idmedPack, episode, patientServiceIdentifier)
 
-                                def path = "/sync_temp_dispense?mainclinicuuid=eq." + clinic.getUuid() + "&id=eq." + dispense.getAt("id")
-                                println(path)
-                                String obj = '{"syncstatus":"U"}'
-                                def convertedObj = new StringEntity(obj, "UTF-8");
-
-                                restProvincialServerClient.patchRequestProvincialServerClient(provincialServer, path, convertedObj)
+                                if (idmedPack) {
+                                    def path = "/sync_temp_dispense?mainclinicuuid=eq." + clinic.getUuid() + "&id=eq." + dispense.getAt("id")
+                                    println(path)
+                                    String obj = '{"syncstatus":"U"}'
+                                    def convertedObj = new StringEntity(obj, "UTF-8");
+                                    restProvincialServerClient.patchRequestProvincialServerClient(provincialServer, path, convertedObj)
+                                }
                             } else {
                                 LOGGER.info("Servico de Saude Nao encontrado Para o paciente com o nid:" + dispense.getAt("patientid").toString());
                             }
@@ -325,7 +333,8 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
     private Prescription createIdmedPrescription(Object dispense, List prescriprionList) {
 
         def prescriprionDate = ConvertDateUtils.createDate(dispense.getAt("date").toString(), "yyyy-MM-dd")
-        def lastPrescription = Prescription.findAllByIdInList(prescriprionList, [sort: 'prescriptionDate', order: 'desc']).first()
+        def doctor = Doctor.findAllByActive(true)?.first()
+        List<Prescription> prescriptionList = Prescription.findAllByIdInList(prescriprionList, [sort: 'prescriptionDate', order: 'desc'])
 
         Prescription prescription = new Prescription()
         prescription.beforeInsert()
@@ -334,7 +343,7 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
         prescription.setNotes(dispense.getAt("notes").toString())
 
         prescription.setPrescriptionSeq(dispense.getAt("prescriptionid").toString())
-        prescription.setDoctor(lastPrescription.doctor)
+        prescription.setDoctor(prescriptionList.isEmpty() ? doctor : prescriptionList?.first()?.doctor)
         prescription.setClinic(Clinic.findByUuid(dispense.getAt("mainclinicuuid").toString()))
 
         prescription.setPatientStatus("Manutenção")
@@ -375,14 +384,27 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
     private Pack createIdmedPack(Object dispense, Prescription prescription, Episode episode, DispenseMode dispenseMode) {
         def pickUpDate = ConvertDateUtils.createDate(dispense.getAt("pickupdate").toString(), "yyyy-MM-dd")
         def patientVisitDetailsList = PatientVisitDetails.findAllByEpisode(episode)
+        def lastPack = null
 
-        def lastPack = Pack.findByPickupDateAndIdInList(pickUpDate, patientVisitDetailsList.pack.id)
+        if (!patientVisitDetailsList.isEmpty()) {
+            lastPack = Pack.findByPickupDateAndIdInList(pickUpDate, patientVisitDetailsList.pack.id)
+        }
 
         if (lastPack) {
             addDrugToPack(dispense, lastPack)
             return lastPack
         } else {
-            lastPack = Pack.findAllByIdInList(patientVisitDetailsList.pack.id).first()
+            List<Pack> packList = Pack.findAllByIdInList(patientVisitDetailsList.pack.id)
+            def providerUuid = ""
+
+            if (packList.isEmpty()) {
+                HealthInformationSystem his = HealthInformationSystem.findByAbbreviation("OpenMRS")
+                providerUuid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_USER_PROVIDER_UUID" }.value
+            } else {
+                providerUuid = packList.first().providerUuid
+            }
+
+
             Pack dispenseIdmed = new Pack()
             dispenseIdmed.beforeInsert()
             dispenseIdmed.setClinic(prescription.getClinic())
@@ -394,7 +416,7 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
             dispenseIdmed.setDateLeft()
             dispenseIdmed.setPackDate(ConvertDateUtils.createDate(dispense.getAt("pickupdate").toString(), "yyyy-MM-dd"))
             dispenseIdmed.syncStatus = 'R'
-            dispenseIdmed.providerUuid = lastPack.providerUuid
+            dispenseIdmed.providerUuid = providerUuid
             dispenseIdmed.isreferral = true
             dispenseIdmed.isreferalsynced = true
             dispenseIdmed.setDispenseMode(dispenseMode)

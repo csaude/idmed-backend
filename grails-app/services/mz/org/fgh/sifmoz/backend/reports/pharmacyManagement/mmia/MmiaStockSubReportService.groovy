@@ -30,224 +30,236 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
 
         List<MmiaStockSubReportItem> mmiaStockSubReportItems = new ArrayList<>()
 
-        String query = "SELECT \n" +
-                " mmiareport.packSize,\n" +
-                " mmiareport.fnmCode,\n" +
-                " mmiareport.drugName,\n" +
-                " mmiareport.drugId,\n" +
-                " mmiareport.h as received,\n" +
-                " mmiareport.i as saidas,\n" +
-                " ((mmiareport.j + mmiareport.l) - (mmiareport.k + mmiareport.m) - mmiareport.n ) as ajustes,\n" +
-                " ((mmiareport.a + mmiareport.b + mmiareport.c) - (mmiareport.d + mmiareport.c + mmiareport.f) - mmiareport.g) as saldo,\n" +
-                " mmiareport.validade,\n" +
-                " (((mmiareport.a + mmiareport.b + mmiareport.c) - (mmiareport.d + mmiareport.c + mmiareport.f) - mmiareport.g) + mmiareport.h - mmiareport.i + (mmiareport.j + mmiareport.l) - (mmiareport.k + mmiareport.m) - mmiareport.n) as inventario\n" +
-                " FROM\n" +
-                " ( SELECT \n" +
-                " dr.pack_Size as packSize, \n" +
-                " dr.fnm_Code as fnmCode,\n" +
-                " dr.name as drugName,\n" +
-                " dr.id as drugId,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(sum(s.units_received),0) as r \n" +
-                " from stock s \n" +
-                " inner join stock_entrance se on se.id = s.entrance_id \n" +
-                " where se.date_received < :startDate\n" +
-                " and s.drug_id = dr.id \n" +
-                " and s.clinic_id = :clinic\n" +
-                " ) as a,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_value ELSE (-1*sa.adjusted_value) END),0) as adjusted_value\n" +
-                " from stock_adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id  \n" +
-                " inner join refered_stock_moviment rf on rf.id = sa.reference_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' \n" +
-                " and s.drug_id = dr.id \n" +
-                " and (rf.date < :startDate) \n" +
-                " and rf.clinic_id = :clinic\n" +
-                " ) as b,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_Value ELSE (-1*sa.adjusted_Value) END),0) as adjusted_Value\n" +
-                " from stock_adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id\n" +
-                " inner join inventory i on i.id = sa.inventory_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStock_Adjustment'\n" +
-                " and s.drug_id = dr.id \n" +
-                " and (i.end_date < :startDate) \n" +
-                " and i.clinic_id = :clinic\n" +
-                " ) as c,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(sum(pd.quantity_supplied),0) as s \n" +
-                " from packaged_drug pd \n" +
-                " inner join pack pk on pk.id = pd.pack_id \n" +
-                " where pk.pickup_date < :startDate \n" +
-                " and pd.drug_id = dr.id \n" +
-                " and pk.clinic_id = :clinic\n" +
-                " ) as d,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_value ELSE (-1*sa.adjusted_value) END),0) as adjusted_value\n" +
-                " from stock_adjustment sa\n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id  \n" +
-                " inner join refered_stock_moviment rf on rf.id = sa.reference_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' \n" +
-                " and s.drug_id = dr.id \n" +
-                " and (rf.date < :startDate) \n" +
-                " and rf.clinic_id = :clinic\n" +
-                " ) as e,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE (-1*sa.adjusted_Value) END),0) as adjusted_Value\n" +
-                " from Stock_Adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id\n" +
-                " inner join inventory i on i.id = sa.inventory_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStock_Adjustment'\n" +
-                " and s.drug_id = dr.id \n" +
-                " and (i.end_date < :startDate) \n" +
-                " and i.clinic_id = :clinic\n" +
-                " ) as f,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE (-1*sa.adjusted_Value) END),0) as adjusted_Value\n" +
-                " from Stock_Adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id  \n" +
-                " inner join destroyed_stock rf on rf.id = sa.destruction_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockDestructionAdjustment' \n" +
-                " and s.drug_id = dr.id \n" +
-                " and (rf.date < :startDate) \n" +
-                " and rf.clinic_id = :clinic\n" +
-                " ) as g,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(sum(s.units_received),0) as r \n" +
-                " from stock s \n" +
-                " inner join stock_entrance se on se.id = s.entrance_id \n" +
-                " where se.date_received >= :startDate \n" +
-                " and se.date_received <= :endDate \n" +
-                " and s.drug_id = dr.id \n" +
-                " and s.clinic_id = :clinic\n" +
-                " ) as h,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(sum(pd.quantity_supplied),0) as s \n" +
-                " from packaged_drug pd \n" +
-                " inner join pack pk on pk.id = pd.pack_id \n" +
-                " where pk.pickup_Date >= :startDate \n" +
-                " and pk.pickup_Date <= :endDate\n" +
-                " and pd.drug_id = dr.id \n" +
-                " and pk.clinic_id = :clinic\n" +
-                " ) as i,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_value ELSE (-1*sa.adjusted_value) END),0) as adjusted_value\n" +
-                " from stock_adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id  \n" +
-                " inner join refered_stock_moviment rf on rf.id = sa.reference_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' \n" +
-                " and s.drug_id = dr.id \n" +
-                " and (rf.date >= :startDate and rf.date <= :endDate) \n" +
-                " and rf.clinic_id = :clinic\n" +
-                " ) as j,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_Value ELSE (-1*sa.adjusted_Value) END),0) as adjusted_Value\n" +
-                " from stock_adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id\n" +
-                " inner join inventory i on i.id = sa.inventory_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'\n" +
-                " and s.drug_id = dr.id \n" +
-                " and (i.end_date >= :startDate and i.end_date <= :endDate) \n" +
-                " and i.clinic_id = :clinic\n" +
-                " ) as k,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_value ELSE (-1*sa.adjusted_value) END),0) as adjusted_value\n" +
-                " from stock_adjustment sa\n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id  \n" +
-                " inner join refered_stock_moviment rf on rf.id = sa.reference_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' \n" +
-                " and s.drug_id = dr.id \n" +
-                " and (rf.date >= :startDate and rf.date <= :endDate)\n" +
-                " and rf.clinic_id = :clinic\n" +
-                " ) as l,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE (-1*sa.adjusted_Value) END),0) as adjusted_Value\n" +
-                " from Stock_Adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id\n" +
-                " inner join inventory i on i.id = sa.inventory_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'\n" +
-                " and s.drug_id = dr.id \n" +
-                " and (i.end_date >= :startDate and i.end_date <= :endDate)\n" +
-                " and i.clinic_id = :clinic\n" +
-                " ) as m,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE (-1*sa.adjusted_Value) END),0) as adjusted_Value\n" +
-                " from Stock_Adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id  \n" +
-                " inner join destroyed_stock rf on rf.id = sa.destruction_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockDestructionAdjustment' \n" +
-                " and s.drug_id = dr.id \n" +
-                " and (rf.date >= :startDate and rf.date <= :endDate)\n" +
-                " and rf.clinic_id = :clinic\n" +
-                " ) as n,\n" +
-                " (\n" +
-                " select \n" +
-                " max(s.expire_date) \n" +
-                " from Stock s \n" +
-                " where s.drug_id = dr.id \n" +
-                " and s.clinic_id = :clinic\n" +
-                " ) as validade\n" +
-                "\n" +
-                " FROM drug dr\n" +
-                " INNER JOIN Stock s ON s.drug_id = dr.id\n" +
-                " WHERE  dr.active = true AND s.expire_date >= :startDate\n" +
-                " and dr.clinical_service_id = :clinicalService\n" +
-                " ) as mmiareport\n" +
-                " group by 1,2,3,4,5,6,7,8,9,10\n" +
-                " ORDER BY\n" +
-                "   CASE mmiareport.fnmCode\n" +
-                "   WHEN '08S18WI' THEN 1\n" +
-                "   WHEN '08S18W' THEN 2\n" +
-                "   WHEN '08S18WII' THEN 3\n" +
-                "   WHEN '08S18XI' THEN 4\n" +
-                "   WHEN '08S18X' THEN 5\n" +
-                "   WHEN '08S18XII' THEN 6\n" +
-                "   WHEN '08S18Z' THEN 7\n" +
-                "   WHEN '08S01ZY' THEN 8\n" +
-                "   WHEN '08S01ZZ' THEN 9\n" +
-                "   WHEN '08S30WZ' THEN 10\n" +
-                "   WHEN '08S30ZY' THEN 11\n" +
-                "   WHEN '08S39Z' THEN 12\n" +
-                "   WHEN '08S30ZX' THEN 13\n" +
-                "   WHEN '08S30ZXi' THEN 14\n" +
-                "   WHEN '08S38Y' THEN 15\n" +
-                "   WHEN '08S39B' THEN 16\n" +
-                "   WHEN '08S01ZW' THEN 17\n" +
-                "   WHEN '08S01ZWi' THEN 18\n" +
-                "   WHEN '08S40Z' THEN 19\n" +
-                "   WHEN '08S01' THEN 20\n" +
-                "   WHEN '08S01Z' THEN 21\n" +
-                "   WHEN '08S42' THEN 22\n" +
-                "   WHEN '08S31' THEN 23\n" +
-                "   WHEN '08S39Y' THEN 24\n" +
-                "   WHEN '08S39' THEN 25\n" +
-                "     ELSE 300\n" +
-                "  END\n"
+        String query =
+        """
+        SELECT 
+         mmiareport.packSize,
+         mmiareport.fnmCode,
+         mmiareport.drugName,
+         mmiareport.drugId,
+         mmiareport.h as received,
+         mmiareport.i as saidas,
+         ((mmiareport.j + mmiareport.k) - (mmiareport.l + mmiareport.m) - mmiareport.n ) as ajustes,
+         ((mmiareport.a + mmiareport.b + mmiareport.c) - (mmiareport.d + mmiareport.e + mmiareport.f + mmiareport.g)) as saldo,
+         mmiareport.validade,
+         ((((mmiareport.a + mmiareport.b + mmiareport.c) - (mmiareport.d + mmiareport.e + mmiareport.f + mmiareport.g)) 
+           + mmiareport.h - mmiareport.i + (mmiareport.j + mmiareport.k) - (mmiareport.l + mmiareport.m) - mmiareport.n )) as inventario
+        FROM
+         ( SELECT 
+             dr.pack_Size as packSize, 
+             dr.fnm_Code as fnmCode,
+             dr.name as drugName,
+             dr.id as drugId,
+             (
+             select 
+             COALESCE(sum(ceil(s.units_received)),0)::integer as r 
+             from stock s 
+             inner join stock_entrance se on se.id = s.entrance_id 
+             where se.date_received < :startDate
+             and s.drug_id = dr.id 
+             and s.clinic_id = :clinic
+             ) as a,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_value ELSE 0 END)),0)::integer as adjusted_value
+             from stock_adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id  
+             inner join refered_stock_moviment rf on rf.id = sa.reference_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' 
+             and s.drug_id = dr.id 
+             and (rf.date < :startDate) 
+             and rf.clinic_id = :clinic
+             ) as b,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_Value ELSE 0 END)),0)::integer as adjusted_Value
+             from stock_adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id
+             inner join inventory i on i.id = sa.inventory_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'
+             and s.drug_id = dr.id 
+             and (i.end_date < :startDate) 
+             and i.clinic_id = :clinic
+             ) as c,
+             (
+             select 
+             COALESCE(sum(ceil(pd.quantity_supplied)),0)::integer as s 
+             from packaged_drug pd 
+             inner JOIN packaged_drug_stock pds ON pd.id::text = pds.packaged_drug_id::text
+             inner join pack pk on pk.id = pd.pack_id 
+             inner JOIN stock s ON s.id::text = pds.stock_id::text
+             where pk.pickup_date < :startDate 
+             and pd.drug_id = dr.id 
+             and pk.clinic_id = :clinic
+             ) as d,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_value ELSE 0 END)),0)::integer as adjusted_value
+             from stock_adjustment sa
+             inner join stock s on s.id = sa.adjusted_stock_id  
+             inner join refered_stock_moviment rf on rf.id = sa.reference_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' 
+             and s.drug_id = dr.id 
+             and (rf.date < :startDate) 
+             and rf.clinic_id = :clinic
+             ) as e,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE 0 END)),0)::integer as adjusted_Value
+             from Stock_Adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id
+             inner join inventory i on i.id = sa.inventory_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'
+             and s.drug_id = dr.id 
+             and (i.end_date < :startDate) 
+             and i.clinic_id = :clinic
+             ) as f,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE 0 END)),0)::integer as adjusted_Value
+             from Stock_Adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id  
+             inner join destroyed_stock rf on rf.id = sa.destruction_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockDestructionAdjustment' 
+             and s.drug_id = dr.id 
+             and (rf.date < :startDate) 
+             and rf.clinic_id = :clinic
+             ) as g,
+             (
+             select 
+             COALESCE(sum(ceil(s.units_received)),0)::integer as r 
+             from stock s 
+             inner join stock_entrance se on se.id = s.entrance_id 
+             where se.date_received >= :startDate 
+             and se.date_received <= :endDate 
+             and s.drug_id = dr.id 
+             and s.clinic_id = :clinic
+             ) as h,
+             (
+             select 
+             COALESCE(sum(ceil(pd.quantity_supplied)),0) as s 
+             from packaged_drug pd 
+             inner JOIN packaged_drug_stock pds ON pd.id::text = pds.packaged_drug_id::text
+             inner join pack pk on pk.id = pd.pack_id 
+             inner JOIN stock s ON s.id::text = pds.stock_id::text
+             where pk.pickup_Date >= :startDate 
+             and pk.pickup_Date <= :endDate
+             and pd.drug_id = dr.id 
+             and pk.clinic_id = :clinic
+             ) as i,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_value ELSE 0 END)),0)::integer as adjusted_value
+             from stock_adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id  
+             inner join refered_stock_moviment rf on rf.id = sa.reference_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' 
+             and s.drug_id = dr.id 
+             and (rf.date >= :startDate and rf.date <= :endDate)
+             and s.expire_date >= :startDate
+             and rf.clinic_id = :clinic
+             ) as j,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_Value ELSE 0 END)),0)::integer as adjusted_Value
+             from stock_adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id
+             inner join inventory i on i.id = sa.inventory_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'
+             and s.drug_id = dr.id 
+             and s.expire_date >= :startDate
+             and (i.end_date >= :startDate and i.end_date <= :endDate) 
+             and i.clinic_id = :clinic
+             ) as k,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_value ELSE 0 END)),0)::integer as adjusted_value
+             from stock_adjustment sa
+             inner join stock s on s.id = sa.adjusted_stock_id  
+             inner join refered_stock_moviment rf on rf.id = sa.reference_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' 
+             and s.drug_id = dr.id
+             and s.expire_date >= :startDate
+             and (rf.date >= :startDate and rf.date <= :endDate)
+             and rf.clinic_id = :clinic
+             ) as l,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE 0 END)),0)::integer as adjusted_Value
+             from Stock_Adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id
+             inner join inventory i on i.id = sa.inventory_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'
+             and s.drug_id = dr.id 
+             and s.expire_date >= :startDate
+             and (i.end_date >= :startDate and i.end_date <= :endDate)
+             and i.clinic_id = :clinic
+             ) as m,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE 0 END)),0)::integer as adjusted_Value
+             from Stock_Adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id  
+             inner join destroyed_stock rf on rf.id = sa.destruction_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockDestructionAdjustment' 
+             and s.drug_id = dr.id 
+             and s.expire_date >= :startDate
+             and (rf.date >= :startDate and rf.date <= :endDate)
+             and rf.clinic_id = :clinic
+             ) as n,
+             (
+             select 
+             max(s.expire_date) 
+             from Stock s 
+             where s.drug_id = dr.id 
+             and s.clinic_id = :clinic
+             ) as validade
+         FROM drug dr
+         INNER JOIN Stock s ON s.drug_id = dr.id
+         WHERE  dr.active = true AND s.expire_date >= :startDate
+         and dr.clinical_service_id = :clinicalService
+         ) as mmiareport
+    GROUP BY 1,2,3,4,5,6,7,8,9,10
+    ORDER BY
+       CASE mmiareport.fnmCode
+       WHEN '08S18WI' THEN 1
+       WHEN '08S18W' THEN 2
+       WHEN '08S18WII' THEN 3
+       WHEN '08S18XI' THEN 4
+       WHEN '08S18X' THEN 5
+       WHEN '08S18XII' THEN 6
+       WHEN '08S18Z' THEN 7
+       WHEN '08S01ZY' THEN 8
+       WHEN '08S01ZZ' THEN 9
+       WHEN '08S30WZ' THEN 10
+       WHEN '08S30ZY' THEN 11
+       WHEN '08S39Z' THEN 12
+       WHEN '08S30ZX' THEN 13
+       WHEN '08S30ZXi' THEN 14
+       WHEN '08S38Y' THEN 15
+       WHEN '08S39B' THEN 16
+       WHEN '08S01ZW' THEN 17
+       WHEN '08S01ZWi' THEN 18
+       WHEN '08S40Z' THEN 19
+       WHEN '08S01' THEN 20
+       WHEN '08S01Z' THEN 21
+       WHEN '08S42' THEN 22
+       WHEN '08S31' THEN 23
+       WHEN '08S39Y' THEN 24
+       WHEN '08S39' THEN 25
+         ELSE 300
+      END
+    """
         def starter = new Timestamp(searchParams.getStartDate().time)
         def endDate = new Timestamp(searchParams.getEndDate().time)
         def params = [startDate: starter, endDate: endDate, clinic: clinic.id, clinicalService: service.id]
@@ -285,224 +297,236 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
 
         List<MmiaStockSubReportItem> mmiaStockSubReportItems = new ArrayList<>()
 
-        String query = "SELECT \n" +
-                " mmiareport.packSize,\n" +
-                " mmiareport.fnmCode,\n" +
-                " mmiareport.drugName,\n" +
-                " mmiareport.drugId,\n" +
-                " mmiareport.h as received,\n" +
-                " mmiareport.i as saidas,\n" +
-                " ((mmiareport.j + mmiareport.l) - (mmiareport.k + mmiareport.m) - mmiareport.n ) as ajustes,\n" +
-                " ((mmiareport.a + mmiareport.b + mmiareport.c) - (mmiareport.d + mmiareport.c + mmiareport.f) - mmiareport.g) as saldo,\n" +
-                " mmiareport.validade,\n" +
-                " (((mmiareport.a + mmiareport.b + mmiareport.c) - (mmiareport.d + mmiareport.c + mmiareport.f) - mmiareport.g) + mmiareport.h - mmiareport.i + (mmiareport.j + mmiareport.l) - (mmiareport.k + mmiareport.m) - mmiareport.n) as inventario\n" +
-                " FROM\n" +
-                " ( SELECT \n" +
-                " dr.pack_Size as packSize, \n" +
-                " dr.fnm_Code as fnmCode,\n" +
-                " dr.name as drugName,\n" +
-                " dr.id as drugId,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(sum(s.units_received),0) as r \n" +
-                " from stock s \n" +
-                " inner join stock_entrance se on se.id = s.entrance_id \n" +
-                " where se.date_received < :startDate\n" +
-                " and s.drug_id = dr.id \n" +
-                " and s.clinic_id = :clinic\n" +
-                " ) as a,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_value ELSE (-1*sa.adjusted_value) END),0) as adjusted_value\n" +
-                " from stock_adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id  \n" +
-                " inner join refered_stock_moviment rf on rf.id = sa.reference_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' \n" +
-                " and s.drug_id = dr.id \n" +
-                " and (rf.date < :startDate) \n" +
-                " and rf.clinic_id = :clinic\n" +
-                " ) as b,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_Value ELSE (-1*sa.adjusted_Value) END),0) as adjusted_Value\n" +
-                " from stock_adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id\n" +
-                " inner join inventory i on i.id = sa.inventory_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStock_Adjustment'\n" +
-                " and s.drug_id = dr.id \n" +
-                " and (i.end_date < :startDate) \n" +
-                " and i.clinic_id = :clinic\n" +
-                " ) as c,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(sum(pd.quantity_supplied),0) as s \n" +
-                " from packaged_drug pd \n" +
-                " inner join pack pk on pk.id = pd.pack_id \n" +
-                " where pk.pickup_date < :startDate \n" +
-                " and pd.drug_id = dr.id \n" +
-                " and pk.clinic_id = :clinic\n" +
-                " ) as d,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_value ELSE (-1*sa.adjusted_value) END),0) as adjusted_value\n" +
-                " from stock_adjustment sa\n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id  \n" +
-                " inner join refered_stock_moviment rf on rf.id = sa.reference_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' \n" +
-                " and s.drug_id = dr.id \n" +
-                " and (rf.date < :startDate) \n" +
-                " and rf.clinic_id = :clinic\n" +
-                " ) as e,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE (-1*sa.adjusted_Value) END),0) as adjusted_Value\n" +
-                " from Stock_Adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id\n" +
-                " inner join inventory i on i.id = sa.inventory_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStock_Adjustment'\n" +
-                " and s.drug_id = dr.id \n" +
-                " and (i.end_date < :startDate) \n" +
-                " and i.clinic_id = :clinic\n" +
-                " ) as f,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE (-1*sa.adjusted_Value) END),0) as adjusted_Value\n" +
-                " from Stock_Adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id  \n" +
-                " inner join destroyed_stock rf on rf.id = sa.destruction_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockDestructionAdjustment' \n" +
-                " and s.drug_id = dr.id \n" +
-                " and (rf.date < :startDate) \n" +
-                " and rf.clinic_id = :clinic\n" +
-                " ) as g,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(sum(s.units_received),0) as r \n" +
-                " from stock s \n" +
-                " inner join stock_entrance se on se.id = s.entrance_id \n" +
-                " where se.date_received >= :startDate \n" +
-                " and se.date_received <= :endDate \n" +
-                " and s.drug_id = dr.id \n" +
-                " and s.clinic_id = :clinic\n" +
-                " ) as h,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(sum(pd.quantity_supplied),0) as s \n" +
-                " from packaged_drug pd \n" +
-                " inner join pack pk on pk.id = pd.pack_id \n" +
-                " where pk.pickup_Date >= :startDate \n" +
-                " and pk.pickup_Date <= :endDate\n" +
-                " and pd.drug_id = dr.id \n" +
-                " and pk.clinic_id = :clinic\n" +
-                " ) as i,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_value ELSE (-1*sa.adjusted_value) END),0) as adjusted_value\n" +
-                " from stock_adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id  \n" +
-                " inner join refered_stock_moviment rf on rf.id = sa.reference_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' \n" +
-                " and s.drug_id = dr.id \n" +
-                " and (rf.date >= :startDate and rf.date <= :endDate) \n" +
-                " and rf.clinic_id = :clinic\n" +
-                " ) as j,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_Value ELSE (-1*sa.adjusted_Value) END),0) as adjusted_Value\n" +
-                " from stock_adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id\n" +
-                " inner join inventory i on i.id = sa.inventory_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'\n" +
-                " and s.drug_id = dr.id \n" +
-                " and (i.end_date >= :startDate and i.end_date <= :endDate) \n" +
-                " and i.clinic_id = :clinic\n" +
-                " ) as k,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_value ELSE (-1*sa.adjusted_value) END),0) as adjusted_value\n" +
-                " from stock_adjustment sa\n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id  \n" +
-                " inner join refered_stock_moviment rf on rf.id = sa.reference_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' \n" +
-                " and s.drug_id = dr.id \n" +
-                " and (rf.date >= :startDate and rf.date <= :endDate)\n" +
-                " and rf.clinic_id = :clinic\n" +
-                " ) as l,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE (-1*sa.adjusted_Value) END),0) as adjusted_Value\n" +
-                " from Stock_Adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id\n" +
-                " inner join inventory i on i.id = sa.inventory_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'\n" +
-                " and s.drug_id = dr.id \n" +
-                " and (i.end_date >= :startDate and i.end_date <= :endDate)\n" +
-                " and i.clinic_id = :clinic\n" +
-                " ) as m,\n" +
-                " (\n" +
-                " select \n" +
-                " coalesce(SUM(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE (-1*sa.adjusted_Value) END),0) as adjusted_Value\n" +
-                " from Stock_Adjustment sa \n" +
-                " inner join stock s on s.id = sa.adjusted_stock_id  \n" +
-                " inner join destroyed_stock rf on rf.id = sa.destruction_id\n" +
-                " inner join stock_operation_type sot on sot.id = sa.operation_id\n" +
-                " where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockDestructionAdjustment' \n" +
-                " and s.drug_id = dr.id \n" +
-                " and (rf.date >= :startDate and rf.date <= :endDate)\n" +
-                " and rf.clinic_id = :clinic\n" +
-                " ) as n,\n" +
-                " (\n" +
-                " select \n" +
-                " max(s.expire_date) \n" +
-                " from Stock s \n" +
-                " where s.drug_id = dr.id \n" +
-                " and s.clinic_id = :clinic\n" +
-                " ) as validade\n" +
-                "\n" +
-                " FROM drug dr\n" +
-                " INNER JOIN Stock s ON s.drug_id = dr.id\n" +
-                " WHERE  dr.active = true AND s.expire_date >= :startDate\n" +
-                " and dr.clinical_service_id = :clinicalService\n" +
-                " ) as mmiareport\n" +
-                " group by 1,2,3,4,5,6,7,8,9,10\n" +
-                " ORDER BY\n" +
-                "   CASE mmiareport.fnmCode\n" +
-                "   WHEN '08S18WI' THEN 1\n" +
-                "   WHEN '08S18W' THEN 2\n" +
-                "   WHEN '08S18WII' THEN 3\n" +
-                "   WHEN '08S18XI' THEN 4\n" +
-                "   WHEN '08S18X' THEN 5\n" +
-                "   WHEN '08S18XII' THEN 6\n" +
-                "   WHEN '08S18Z' THEN 7\n" +
-                "   WHEN '08S01ZY' THEN 8\n" +
-                "   WHEN '08S01ZZ' THEN 9\n" +
-                "   WHEN '08S30WZ' THEN 10\n" +
-                "   WHEN '08S30ZY' THEN 11\n" +
-                "   WHEN '08S39Z' THEN 12\n" +
-                "   WHEN '08S30ZX' THEN 13\n" +
-                "   WHEN '08S30ZXi' THEN 14\n" +
-                "   WHEN '08S38Y' THEN 15\n" +
-                "   WHEN '08S39B' THEN 16\n" +
-                "   WHEN '08S01ZW' THEN 17\n" +
-                "   WHEN '08S01ZWi' THEN 18\n" +
-                "   WHEN '08S40Z' THEN 19\n" +
-                "   WHEN '08S01' THEN 20\n" +
-                "   WHEN '08S01Z' THEN 21\n" +
-                "   WHEN '08S42' THEN 22\n" +
-                "   WHEN '08S31' THEN 23\n" +
-                "   WHEN '08S39Y' THEN 24\n" +
-                "   WHEN '08S39' THEN 25\n" +
-                "     ELSE 300\n" +
-                "  END\n"
+        String query =
+                """
+        SELECT 
+         mmiareport.packSize,
+         mmiareport.fnmCode,
+         mmiareport.drugName,
+         mmiareport.drugId,
+         mmiareport.h as received,
+         mmiareport.i as saidas,
+         ((mmiareport.j + mmiareport.k) - (mmiareport.l + mmiareport.m) - mmiareport.n ) as ajustes,
+         ((mmiareport.a + mmiareport.b + mmiareport.c) - (mmiareport.d + mmiareport.e + mmiareport.f + mmiareport.g)) as saldo,
+         mmiareport.validade,
+         ((((mmiareport.a + mmiareport.b + mmiareport.c) - (mmiareport.d + mmiareport.e + mmiareport.f + mmiareport.g)) 
+           + mmiareport.h - mmiareport.i + (mmiareport.j + mmiareport.k) - (mmiareport.l + mmiareport.m) - mmiareport.n )) as inventario
+        FROM
+         ( SELECT 
+             dr.pack_Size as packSize, 
+             dr.fnm_Code as fnmCode,
+             dr.name as drugName,
+             dr.id as drugId,
+             (
+             select 
+             COALESCE(sum(ceil(s.units_received)),0)::integer as r 
+             from stock s 
+             inner join stock_entrance se on se.id = s.entrance_id 
+             where se.date_received < :startDate
+             and s.drug_id = dr.id 
+             and s.clinic_id = :clinic
+             ) as a,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_value ELSE 0 END)),0)::integer as adjusted_value
+             from stock_adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id  
+             inner join refered_stock_moviment rf on rf.id = sa.reference_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' 
+             and s.drug_id = dr.id 
+             and (rf.date < :startDate) 
+             and rf.clinic_id = :clinic
+             ) as b,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_Value ELSE 0 END)),0)::integer as adjusted_Value
+             from stock_adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id
+             inner join inventory i on i.id = sa.inventory_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'
+             and s.drug_id = dr.id 
+             and (i.end_date < :startDate) 
+             and i.clinic_id = :clinic
+             ) as c,
+             (
+             select 
+             COALESCE(sum(ceil(pd.quantity_supplied)),0)::integer as s 
+             from packaged_drug pd 
+             inner JOIN packaged_drug_stock pds ON pd.id::text = pds.packaged_drug_id::text
+             inner join pack pk on pk.id = pd.pack_id 
+             inner JOIN stock s ON s.id::text = pds.stock_id::text
+             where pk.pickup_date < :startDate 
+             and pd.drug_id = dr.id 
+             and pk.clinic_id = :clinic
+             ) as d,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_value ELSE 0 END)),0)::integer as adjusted_value
+             from stock_adjustment sa
+             inner join stock s on s.id = sa.adjusted_stock_id  
+             inner join refered_stock_moviment rf on rf.id = sa.reference_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' 
+             and s.drug_id = dr.id 
+             and (rf.date < :startDate) 
+             and rf.clinic_id = :clinic
+             ) as e,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE 0 END)),0)::integer as adjusted_Value
+             from Stock_Adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id
+             inner join inventory i on i.id = sa.inventory_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'
+             and s.drug_id = dr.id 
+             and (i.end_date < :startDate) 
+             and i.clinic_id = :clinic
+             ) as f,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE 0 END)),0)::integer as adjusted_Value
+             from Stock_Adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id  
+             inner join destroyed_stock rf on rf.id = sa.destruction_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockDestructionAdjustment' 
+             and s.drug_id = dr.id 
+             and (rf.date < :startDate) 
+             and rf.clinic_id = :clinic
+             ) as g,
+             (
+             select 
+             COALESCE(sum(ceil(s.units_received)),0)::integer as r 
+             from stock s 
+             inner join stock_entrance se on se.id = s.entrance_id 
+             where se.date_received >= :startDate 
+             and se.date_received <= :endDate 
+             and s.drug_id = dr.id 
+             and s.clinic_id = :clinic
+             ) as h,
+             (
+             select 
+             COALESCE(sum(ceil(pd.quantity_supplied)),0) as s 
+             from packaged_drug pd 
+             inner JOIN packaged_drug_stock pds ON pd.id::text = pds.packaged_drug_id::text
+             inner join pack pk on pk.id = pd.pack_id 
+             inner JOIN stock s ON s.id::text = pds.stock_id::text
+             where pk.pickup_Date >= :startDate 
+             and pk.pickup_Date <= :endDate
+             and pd.drug_id = dr.id 
+             and pk.clinic_id = :clinic
+             ) as i,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_value ELSE 0 END)),0)::integer as adjusted_value
+             from stock_adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id  
+             inner join refered_stock_moviment rf on rf.id = sa.reference_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' 
+             and s.drug_id = dr.id 
+             and (rf.date >= :startDate and rf.date <= :endDate)
+             and s.expire_date >= :startDate
+             and rf.clinic_id = :clinic
+             ) as j,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_POSETIVO' THEN sa.adjusted_Value ELSE 0 END)),0)::integer as adjusted_Value
+             from stock_adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id
+             inner join inventory i on i.id = sa.inventory_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'
+             and s.drug_id = dr.id 
+             and s.expire_date >= :startDate
+             and (i.end_date >= :startDate and i.end_date <= :endDate) 
+             and i.clinic_id = :clinic
+             ) as k,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_value ELSE 0 END)),0)::integer as adjusted_value
+             from stock_adjustment sa
+             inner join stock s on s.id = sa.adjusted_stock_id  
+             inner join refered_stock_moviment rf on rf.id = sa.reference_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' 
+             and s.drug_id = dr.id
+             and s.expire_date >= :startDate
+             and (rf.date >= :startDate and rf.date <= :endDate)
+             and rf.clinic_id = :clinic
+             ) as l,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE 0 END)),0)::integer as adjusted_Value
+             from Stock_Adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id
+             inner join inventory i on i.id = sa.inventory_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'
+             and s.drug_id = dr.id 
+             and s.expire_date >= :startDate
+             and (i.end_date >= :startDate and i.end_date <= :endDate)
+             and i.clinic_id = :clinic
+             ) as m,
+             (
+             select 
+             COALESCE(sum(ceil(CASE sot.code WHEN 'AJUSTE_NEGATIVO' THEN sa.adjusted_Value ELSE 0 END)),0)::integer as adjusted_Value
+             from Stock_Adjustment sa 
+             inner join stock s on s.id = sa.adjusted_stock_id  
+             inner join destroyed_stock rf on rf.id = sa.destruction_id
+             inner join stock_operation_type sot on sot.id = sa.operation_id
+             where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockDestructionAdjustment' 
+             and s.drug_id = dr.id 
+             and s.expire_date >= :startDate
+             and (rf.date >= :startDate and rf.date <= :endDate)
+             and rf.clinic_id = :clinic
+             ) as n,
+             (
+             select 
+             max(s.expire_date) 
+             from Stock s 
+             where s.drug_id = dr.id 
+             and s.clinic_id = :clinic
+             ) as validade
+         FROM drug dr
+         INNER JOIN Stock s ON s.drug_id = dr.id
+         WHERE  dr.active = true AND s.expire_date >= :startDate
+         and dr.clinical_service_id = :clinicalService
+         ) as mmiareport
+    GROUP BY 1,2,3,4,5,6,7,8,9,10
+    ORDER BY
+       CASE mmiareport.fnmCode
+       WHEN '08S18WI' THEN 1
+       WHEN '08S18W' THEN 2
+       WHEN '08S18WII' THEN 3
+       WHEN '08S18XI' THEN 4
+       WHEN '08S18X' THEN 5
+       WHEN '08S18XII' THEN 6
+       WHEN '08S18Z' THEN 7
+       WHEN '08S01ZY' THEN 8
+       WHEN '08S01ZZ' THEN 9
+       WHEN '08S30WZ' THEN 10
+       WHEN '08S30ZY' THEN 11
+       WHEN '08S39Z' THEN 12
+       WHEN '08S30ZX' THEN 13
+       WHEN '08S30ZXi' THEN 14
+       WHEN '08S38Y' THEN 15
+       WHEN '08S39B' THEN 16
+       WHEN '08S01ZW' THEN 17
+       WHEN '08S01ZWi' THEN 18
+       WHEN '08S40Z' THEN 19
+       WHEN '08S01' THEN 20
+       WHEN '08S01Z' THEN 21
+       WHEN '08S42' THEN 22
+       WHEN '08S31' THEN 23
+       WHEN '08S39Y' THEN 24
+       WHEN '08S39' THEN 25
+         ELSE 300
+      END
+    """
         def starter = new Timestamp(searchParams.getStartDate().time)
         def endDate = new Timestamp(searchParams.getEndDate().time)
         def params = [startDate: starter, endDate: endDate, clinic: clinic.id, clinicalService: service.id]

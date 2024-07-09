@@ -20,7 +20,9 @@
         <a class="navbar-brand justify-content-center text-md-center" href="/#">
             <asset:image style="height: 100px;width: 110px; text-align: center" src="LogoiDMED.png" alt="iDMED Logo"/>
         </a>
-        <a style="font-family: 'Fira Sans Condensed ExtraBold'">iDMED BackEND</a>
+        <a class="text-black-50" style="font-family: 'Fira Sans Condensed ExtraBold'">
+            <h5>iDMED BackEND</h5>
+        </a>
         <div class="collapse navbar-collapse" aria-expanded="false" style="height: 0.8px;" id="navbarContent">
             <ul class="nav navbar-nav ml-auto">
                 <g:pageProperty name="page.nav"/>
@@ -36,9 +38,9 @@
         <div class="row">
             <div class="col text-md-center">
                 <strong class="centered">
-                    <a href="#" target="_blank">Version</a>
+                    <a class="text-black-50" href="#" target="_blank">Version</a>
                 </strong>
-                <p>1.2.0</p>
+                <p>1.3.0</p>
             </div>
         </div>
     </div>

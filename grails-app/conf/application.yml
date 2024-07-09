@@ -103,7 +103,7 @@ environments:
   development:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://172.22.0.2:5432/CS_Mocuba
+      url: jdbc:postgresql://localhost:2345/idmed
   test:
     dataSource:
       dbCreate: update

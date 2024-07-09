@@ -34,6 +34,7 @@ class InventoryReportTemp extends BaseEntity {
     Long adjustedValue
     String formDescription
     String notes
+    String operation_type
 
 
 

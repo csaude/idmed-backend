@@ -45,6 +45,19 @@ class PackageMigrationRecord extends AbstractMigrationRecord{
         List<MigrationLog> logs = new ArrayList<>()
         Pack.withTransaction {
             MigrationLog patientMigrationLog = MigrationLog.findBySourceIdAndSourceEntityAndIDMEDIdIsNotNull(this.patientid, "Patient")
+
+            Patient patient = Patient.findById(patientMigrationLog.getiDMEDId())
+
+            PatientVisit existingPatientVisit = findPatientVisitByPatientAndDate(this.pickupdatepack, patient)
+
+            if (existingPatientVisit != null) {
+                existingPatientVisit.patientVisitDetails.each {item ->
+                    if (item.episode.patientServiceIdentifier.service.code == (this.tipodedoenca == "TB" ? "TPT" : this.tipodedoenca)) {
+                        throw new RuntimeException("O paciente ja possui um registo de dispensa para este servico de saude na data [" + this.pickupdatepack + "], impossivel gravar esta dispensa.")
+                    }
+                }
+            }
+
             MigrationLog prescriptionMigrationLog = MigrationLog.findBySourceIdAndSourceEntityAndIDMEDIdIsNotNull(this.prescriptionid, "Prescription")
             MigrationLog episodeMigrationLog
             Episode episodeStartDate
@@ -87,19 +100,7 @@ class PackageMigrationRecord extends AbstractMigrationRecord{
             Clinic clinic = Clinic.findByUuid(clinicuuid)
             if (clinic == null) clinic = Clinic.findByMainClinic(true)
 
-            Patient patient = Patient.findById(patientMigrationLog.getiDMEDId())
-
             Pack pack = getMigratedRecord()
-
-           PatientVisit existingPatientVisit = findPatientVisitByPatientAndDate(this.pickupdatepack, patient)
-
-            if (existingPatientVisit != null) {
-                existingPatientVisit.patientVisitDetails.each {item ->
-                    if (item.episode.patientServiceIdentifier.service.code == (this.tipodedoenca == "TB" ? "TPT" : this.tipodedoenca)) {
-                        throw new RuntimeException("O paciente ja possui um registo de dispensa para este servico de saude na data [" + this.pickupdatepack + "], impossivel gravar esta dispensa.")
-                    }
-                }
-            }
 
           //  if (isDuplicatedPack(this.pickupdatepack, patient)) throw new RuntimeException("O paciente ja possui um registo de dispensa na data [" + this.pickupdatepack + "], impossivel gravar esta dispensa.")
 
@@ -115,9 +116,6 @@ class PackageMigrationRecord extends AbstractMigrationRecord{
             pack.setPickupDate(this.pickupdatepack)
             pack.setId(UUID.randomUUID().toString())
 
-
-
-
             PatientVisitDetails patientVisitDetails = new PatientVisitDetails()
             patientVisitDetails.setId(UUID.randomUUID().toString())
             patientVisitDetails.setClinic(clinic)
@@ -125,8 +123,6 @@ class PackageMigrationRecord extends AbstractMigrationRecord{
             patientVisitDetails.setEpisode(episode)
 
             patientVisitDetails.setPack(pack)
-
-
 
             //Date nxtPickDt = ConvertDateUtils.createDate(StringUtils.replace(this.nextpickupdate, " ", "-"), "dd-MMM-yyyy")
             pack.setNextPickUpDate(this.nextpickupdate)

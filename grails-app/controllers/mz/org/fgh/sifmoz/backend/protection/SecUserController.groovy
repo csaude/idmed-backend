@@ -22,7 +22,7 @@ import grails.gorm.transactions.Transactional
 @ReadOnly
 class SecUserController extends RestfulController {
 
-    ISecUserService secUserService
+//    ISecUserService secUserService
 
     static responseFormats = ['json', 'xml']
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
@@ -33,11 +33,11 @@ class SecUserController extends RestfulController {
 
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        render JSONSerializer.setObjectListJsonResponse(secUserService.list(params)) as JSON
+        render JSONSerializer.setObjectListJsonResponse(SecUser.list(params)) as JSON
     }
 
     def show(Long id) {
-        render JSONSerializer.setJsonObjectResponse(secUserService.get(id)) as JSON
+        render JSONSerializer.setJsonObjectResponse(SecUser.get(id)) as JSON
     }
 
     @Transactional
@@ -53,7 +53,7 @@ class SecUserController extends RestfulController {
         }
 
         try {
-            secUserService.save(secUser)
+            secUser.save()
                     if( secUser.roles != null && secUser.accountLocked == false && secUser.roles.length > 0) {
                         SecUserRole.removeAll(secUser)
                         for(String role : secUser.roles) {
@@ -89,7 +89,12 @@ class SecUserController extends RestfulController {
         }
 
         try {
-            secUserService.save(secUser)
+           if(secUser.enabled){
+               secUser.accountLocked = false
+               secUser.accountExpired = false
+               secUser.passwordExpired = false
+           }
+            secUser.save()
             if (secUser.username == 'iDMED') {
                 def userText = secUser.username + ':' + secUser.password
                 byte[] bytes = userText.getBytes();
@@ -125,7 +130,10 @@ class SecUserController extends RestfulController {
 
     @Transactional
     def delete(Long id) {
-        if (id == null || secUserService.delete(id) == null) {
+
+        SecUser secUser = SecUser.get(secUser.id)
+
+        if (id == null || secUser.delete() == null) {
             render status: NOT_FOUND
             return
         }
@@ -133,11 +141,25 @@ class SecUserController extends RestfulController {
         render status: NO_CONTENT
     }
 
+//    @Transactional
+//    void saveSecUserAndRoles(SecUser secUser,List<Role> roles) {
+//
+//      secUserService.saveSecUserAndRoles(secUser ,roles)
+//
+//        respond secUser, [status: CREATED, view:"show"]
+//    }
     @Transactional
-    void saveSecUserAndRoles(SecUser secUser,List<Role> roles) {
+    void saveSecUserAndRoles(SecUser secUser, List<Role> roles) {
+        if (secUser.hasErrors()) {
+            transactionStatus.setRollbackOnly()
+            respond secUser.errors
+            return
+        }
 
-      secUserService.saveSecUserAndRoles(secUser ,roles)
-
+        secUser.save()
+        for (Role role : roles) {
+            SecUserRole.create secUser, role
+        }
         respond secUser, [status: CREATED, view:"show"]
     }
 }

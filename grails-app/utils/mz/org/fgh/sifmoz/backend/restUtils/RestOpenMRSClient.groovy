@@ -88,7 +88,8 @@ class RestOpenMRSClient {
             connection.setRequestMethod(method)
             connection.setRequestProperty("Content-Type", "application/json; utf-8")
             connection.setDoInput(true)
-            connection.setDoOutput(true);
+            connection.setConnectTimeout(10000)
+            connection.setDoOutput(true)
             DataOutputStream wr = new DataOutputStream(connection.getOutputStream())
             wr.writeBytes(object)
             wr.flush()
@@ -122,7 +123,8 @@ class RestOpenMRSClient {
             connection.setRequestMethod(method)
             connection.setRequestProperty("Content-Type", "application/json; utf-8")
             connection.setDoInput(true)
-            connection.setDoOutput(true);
+            connection.setDoOutput(true)
+            connection.setConnectTimeout(10000)
 
             code = connection.getResponseCode()
 
@@ -162,7 +164,8 @@ class RestOpenMRSClient {
             connection.setRequestMethod(method)
             connection.setRequestProperty("Content-Type", "application/json; utf-8")
             connection.setDoInput(true)
-            connection.setDoOutput(true);
+            connection.setDoOutput(true)
+            connection.setConnectTimeout(10000)
             DataOutputStream wr = new DataOutputStream(connection.getOutputStream())
             wr.writeBytes(object)
             wr.flush()
@@ -383,7 +386,7 @@ class RestOpenMRSClient {
                 String openmrsJSON  =
                          "{\"person\":"
                                 .concat("{")
-                                .concat( "\"gender\": \"" + patient.gender + "\",")
+                                .concat( "\"gender\": \"" + patient?.gender?.toString()?.charAt(0)?.toUpperCase() + "\",")
                                 .concat( "\"names\":")
                                 .concat("[{\"givenName\": \"" + patient.firstNames + "\", \"middleName\": \"" + patient.middleNames + "\", \"familyName\": \"" + patient.lastNames + "\"}], \"birthdate\": \"" + dateOfBirthFormated+ "\"")
                                 .concat( "},")

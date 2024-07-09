@@ -117,7 +117,7 @@ class InventoryController extends RestfulController{
         inventoryDb.adjustments.eachWithIndex { item, index ->
             objectJSON.adjustments.eachWithIndex { item2, index2 ->
                 if (item.adjustedStockId == objectJSON.adjustments[index2].adjustedStockId)
-                item.id = UUID.fromString(objectJSON.adjustments[index].id)
+                    item.id = UUID.fromString(objectJSON.adjustments[index].id)
             }
         }
 

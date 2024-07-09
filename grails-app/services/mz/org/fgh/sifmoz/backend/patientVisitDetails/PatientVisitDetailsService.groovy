@@ -100,7 +100,7 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
                 "inner join therapeutic_line tl on tl.id = pd.therapeutic_line_id " +
                 "inner join dispense_type dt on pd.dispense_type_id = dt.id " +
                 "inner join pack pack on pack.id = pvd.pack_id " +
-                "inner join clinic cl on cl.id = r1.referral_clinic_id "
+                "left join clinic cl on cl.id = r1.referral_clinic_id "
 
         Session session = sessionFactory.getCurrentSession()
         def query = session.createSQLQuery(queryString)
@@ -166,7 +166,7 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
                         "inner join therapeutic_line tl on tl.id = pd.therapeutic_line_id " +
                         "inner join dispense_type dt on pd.dispense_type_id = dt.id " +
                         "inner join pack pack on pack.id = pvd.pack_id and pack.next_pick_up_date >= :startDate and pack.next_pick_up_date <= :endDate and DATE(pack.next_pick_up_date) + interval '3 DAY' <= :endDate " +
-                        "inner join clinic cl on cl.id = r1.referral_clinic_id"
+                        "left join clinic cl on cl.id = r1.referral_clinic_id"
 
         Session session = sessionFactory.getCurrentSession()
         def query = session.createSQLQuery(queryString)
