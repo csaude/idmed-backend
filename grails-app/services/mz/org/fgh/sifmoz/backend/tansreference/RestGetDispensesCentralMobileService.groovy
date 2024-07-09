@@ -317,13 +317,13 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
 
         def dispenseMode = DispenseMode.findByCode('DC_PS')
         if (clinicSector) {
-            if (clinicSector?.clinicSectorType?.code?.equalsIgnoreCase("PROVEDOR"))
+            if (clinicSector?.facilityType?.code?.equalsIgnoreCase("PROVEDOR"))
                 dispenseMode = DispenseMode.findByCode('DC_PS')
-            if (clinicSector?.clinicSectorType?.code?.equalsIgnoreCase("APE"))
+            if (clinicSector?.facilityType?.code?.equalsIgnoreCase("APE"))
                 dispenseMode = DispenseMode.findByCode('DC_APE')
-            if (clinicSector?.clinicSectorType?.code?.equalsIgnoreCase("CLINICA_MOVEL"))
+            if (clinicSector?.facilityType?.code?.equalsIgnoreCase("CLINICA_MOVEL"))
                 dispenseMode = DispenseMode.findByCode('DC_CM_HN')
-            if (clinicSector?.clinicSectorType?.code?.equalsIgnoreCase("BRIGADA_MOVEL"))
+            if (clinicSector?.facilityType?.code?.equalsIgnoreCase("BRIGADA_MOVEL"))
                 dispenseMode = DispenseMode.findByCode('DC_BM_HN')
         }
 

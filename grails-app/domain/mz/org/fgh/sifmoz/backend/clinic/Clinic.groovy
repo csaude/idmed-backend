@@ -9,6 +9,7 @@ import mz.org.fgh.sifmoz.backend.nationalClinic.NationalClinic
 import mz.org.fgh.sifmoz.backend.protection.Menu
 import mz.org.fgh.sifmoz.backend.protection.SecUser
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaReport
+import mz.org.fgh.sifmoz.backend.service.ClinicalService
 
 class Clinic extends BaseEntity {
     String id
@@ -23,6 +24,10 @@ class Clinic extends BaseEntity {
     boolean mainClinic
     boolean active
     String uuid
+
+    Clinic parentClinic
+    String syncStatus
+    String matchFC
     static belongsTo = [NationalClinic, SecUser]
     static hasMany = [sectors: ClinicSector, mmiaReports: MmiaReport, users: SecUser]
 
@@ -43,9 +48,11 @@ class Clinic extends BaseEntity {
         notes nullable: true, blank: true
         telephone nullable: true, matches: /\d+/, maxSize: 12, minSize: 9
         clinicName nullable: false, unique: ['province','district']
-        sectors nullable: true
+       // sectors nullable: true
         nationalClinic nullable: true
         uuid unique: true
+        parentClinic(nullable: true)
+        matchFC nullable:  true
     }
 
     boolean equals(o) {

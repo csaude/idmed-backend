@@ -22,6 +22,7 @@ class StartStopReason extends BaseEntity {
     public static final String FIM_PPE = "FIM_PPE"
     public static final String TSPC = "TSPC"
     public static final String VOLTOU_A_SER_REFERIDO_PARA = "VOLTOU_A_SER_REFERIDO_PARA"
+    public static final String REFERIDO_SECTOR_CLINICO = "REFERIDO_SECTOR_CLINICO"
     public static final String OUTRO = "OUTRO"
 
     String id

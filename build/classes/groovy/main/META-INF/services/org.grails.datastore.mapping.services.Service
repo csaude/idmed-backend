@@ -52,13 +52,17 @@ mz.org.fgh.sifmoz.backend.provincialServer.$ProvincialServerServiceImplementatio
 mz.org.fgh.sifmoz.backend.reports.common.$ReportProcessMonitorServiceImplementation
 mz.org.fgh.sifmoz.backend.reports.monitoringAndEvaluation.$ArvDailyRegisterReportServiceImplementation
 mz.org.fgh.sifmoz.backend.reports.monitoringAndEvaluation.$NotSynchronizingPacksOpenMrsReportServiceImplementation
+mz.org.fgh.sifmoz.backend.reports.monitoringAndEvaluation.$PossiblePatientDuplicatesServiceImplementation
 mz.org.fgh.sifmoz.backend.reports.patients.$ActivePatientReportServiceImplementation
+mz.org.fgh.sifmoz.backend.reports.patients.$ExpectedPatientReportServiceImplementation
+mz.org.fgh.sifmoz.backend.reports.patients.$PatientWithoutDispenseReportServiceImplementation
 mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.$AbsentPatientsReportServiceImplementation
 mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.historicoLevantamento.$HistoricoLevantamentoReportServiceImplementation
 mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.$MmiaRegimenSubReportServiceImplementation
 mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.$MmiaReportServiceImplementation
 mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.$MmiaStockSubReportServiceImplementation
 mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.$ReferredPatientsReportServiceImplementation
+mz.org.fgh.sifmoz.backend.reports.stock.$InventoryReportServiceImplementation
 mz.org.fgh.sifmoz.backend.reports.stock.$StockReportServiceImplementation
 mz.org.fgh.sifmoz.backend.reports.stock.$UsedStockReportServiceImplementation
 mz.org.fgh.sifmoz.backend.screening.$AdherenceScreeningServiceImplementation

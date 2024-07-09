@@ -3,11 +3,8 @@ package mz.org.fgh.sifmoz.backend.stock
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
-import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
-import mz.org.fgh.sifmoz.backend.patient.Patient
-import mz.org.fgh.sifmoz.backend.prescriptionDrug.PrescribedDrug
-import mz.org.fgh.sifmoz.backend.stockcenter.StockCenter
+import mz.org.fgh.sifmoz.backend.stockDistributorBatch.IStockDistributorBatchService
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
 
@@ -16,7 +13,6 @@ import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.NO_CONTENT
 import static org.springframework.http.HttpStatus.OK
 
-import grails.gorm.transactions.ReadOnly
 import grails.gorm.transactions.Transactional
 
 class StockController extends RestfulController{
@@ -113,8 +109,8 @@ class StockController extends RestfulController{
         render status: NO_CONTENT
     }
 //    @Transactional
-    def checkStockStatus(String idPrescribedDrug, Date prescriptionDate, int qtyPrescribed) {
-        def isValid = stockService.validateStock(idPrescribedDrug, prescriptionDate, qtyPrescribed)
+    def checkStockStatus(String idPrescribedDrug, Date prescriptionDate, int qtyPrescribed, String clinicId) {
+        def isValid = stockService.validateStock(idPrescribedDrug, prescriptionDate, qtyPrescribed, clinicId)
         render isValid
     }
 
@@ -122,5 +118,9 @@ class StockController extends RestfulController{
     def getValidStockByDrugAndPickUpDate(String idPackagedDrug, Date packageDate) {
         def stocks = stockService.getValidStockByDrugAndPickUpDate(idPackagedDrug, packageDate)
         render JSONSerializer.setObjectListJsonResponse(stocks) as JSON
+    }
+
+    def getByClinicId(String clinicId, int offset, int max) {
+        respond stockService.getAllByClinicId(clinicId, offset, max)
     }
 }

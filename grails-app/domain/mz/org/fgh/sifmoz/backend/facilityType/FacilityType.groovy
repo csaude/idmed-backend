@@ -8,6 +8,7 @@ class FacilityType extends BaseEntity {
     String id
     String code
     String description
+    String type
 
     static mapping = {
         id generator: "assigned"

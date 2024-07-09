@@ -146,4 +146,11 @@ class PackController extends RestfulController{
 
         render JSONSerializer.setObjectListJsonResponse(packs) as JSON
     }
+
+    def getAllByPackIds() {
+        def objectJSON = request.JSON
+        List<String> ids = objectJSON
+        render JSONSerializer.setObjectListJsonResponse(Pack.findAllByIdInList(ids)) as JSON
+    }
+
 }

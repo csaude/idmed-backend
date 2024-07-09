@@ -7,6 +7,7 @@ import groovy.json.JsonSlurper
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.clinicSectorType.ClinicSectorType
+import mz.org.fgh.sifmoz.backend.facilityType.FacilityType
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.screening.AdherenceScreening
 import mz.org.fgh.sifmoz.backend.screening.RAMScreening
@@ -90,8 +91,8 @@ class ClinicalServiceController extends RestfulController {
         (objectJSON.clinicSectors as List).collect { item ->
             if (item) {
                 def clinicSectorObject = ClinicSector.get(item.id)
-                clinicSectorObject.clinicSectorType = ClinicSectorType.get(item.clinic_sector_type_id)
-                clinicSectorObject.clinic = Clinic.get(item.clinic_id)
+                clinicSectorObject.facilityType = FacilityType.get(item.facilityTypeId)
+                clinicSectorObject.parentClinic = Clinic.get(item.parentClinic_id)
 //                clinicSectorObject.save(flush: true)
                 clinicalService.addToClinicSectors(clinicSectorObject)
             }
@@ -114,10 +115,11 @@ class ClinicalServiceController extends RestfulController {
 
         def result = JSONSerializer.setJsonObjectResponse(clinicalService)
 
+
         def clinicSectorJSON = JSONSerializer.setLightObjectListJsonResponse(clinicalService.clinicSectors as List)
         def therapeuticRegimensJSON = JSONSerializer.setLightObjectListJsonResponse(clinicalService.therapeuticRegimens as List)
 
-        if(clinicSectorJSON.length() > 0){
+            if(clinicSectorJSON.length() > 0){
             result.put('clinicSectors', clinicSectorJSON)
         }else{
             result.remove('clinicSectors')
@@ -128,6 +130,7 @@ class ClinicalServiceController extends RestfulController {
         }else{
             result.remove('therapeuticRegimens')
         }
+
 
         render result as JSON
     }

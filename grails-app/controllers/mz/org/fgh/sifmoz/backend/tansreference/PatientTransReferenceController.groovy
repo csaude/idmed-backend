@@ -6,6 +6,8 @@ import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
+import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.episode.IEpisodeService
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
@@ -21,6 +23,7 @@ import grails.gorm.transactions.Transactional
 class PatientTransReferenceController extends RestfulController{
 
     IPatientTransReferenceService patientTransReferenceService
+    IEpisodeService episodeService
 
     static responseFormats = ['json', 'xml']
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
@@ -112,9 +115,20 @@ class PatientTransReferenceController extends RestfulController{
 
 
         def objectJSON = request.JSON
-        def clinic = Clinic.findByMainClinic(true)
+    //    def clinic = Clinic.findByMainClinic(true)
         def patientIdentifier = PatientServiceIdentifier.findByValue(objectJSON.identifier)
-        def lastPickupString = ConvertDateUtils.convertDDMMYYYYToYYYYMMDD(objectJSON.lastPickup)
+       //  def lastPickupString = ConvertDateUtils.convertDDMMYYYYToYYYYMMDD(objectJSON.lastPickup)
+
+        Episode episode = episodeService.getLastWithVisitByIndentifier(patientIdentifier,patientIdentifier.getClinic())
+
+        if (episode.isAbandonmentDC)  {
+            render status: CONFLICT
+        } else {
+            episode.setIsAbandonmentDC(true)
+            episode.save()
+        }
+
+        /*
          def patientTransreferenceExists = PatientTransReference.findByIdentifierAndOperationDate(patientIdentifier , lastPickupString)
        if (patientTransreferenceExists != null)  {
            render status: CONFLICT
@@ -126,7 +140,7 @@ class PatientTransReferenceController extends RestfulController{
         patientTransReference.creationDate = new Date()
         patientTransReference.operationType =  PatientTransReferenceType.findByCode("REFERENCIA_DC")
         patientTransReference.origin = clinic
-        patientTransReference.destination = clinic.id
+        patientTransReference.destination = clinic.uuid
         patientTransReference.patient = patientIdentifier?.patient
         patientTransReference.identifier = patientIdentifier
         patientTransReference.patientStatus = objectJSON.type
@@ -147,5 +161,8 @@ class PatientTransReferenceController extends RestfulController{
         }
         respond patientTransReference, [status: CREATED, view:"show"]
        }
+
+         */
+
     }
 }

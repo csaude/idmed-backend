@@ -6,14 +6,13 @@ import groovy.sql.Sql
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
-import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
+import mz.org.fgh.sifmoz.backend.stockentrance.StockEntrance
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
+import org.apache.commons.lang3.time.DateUtils
 
 import javax.sql.DataSource
 import java.sql.Timestamp
-import org.apache.commons.lang3.time.DateUtils
- 
 
 @Transactional
 @Service(Stock)
@@ -44,12 +43,13 @@ abstract class StockService implements IStockService {
         return list
     }
 
-    boolean validateStock(String drugId, Date dateToCompare, int qtyPrescribed) {
+    boolean validateStock(String drugId, Date dateToCompare, int qtyPrescribed, String clinicId) {
         Drug drug = Drug.findById(drugId)
+        Clinic clinic = Clinic.findById(clinicId)
         List<Stock> list = Stock.executeQuery("select  s from Stock  s " +
                 " where s.expireDate > :prescriptionDate  AND " +
-                " s.stockMoviment > 0  AND s.drug = :drug ",
-                [drug: drug, prescriptionDate:  Utilities.addDaysInDate(dateToCompare, drug.packSize)])
+                " s.stockMoviment > 0  AND s.drug = :drug AND s.clinic =:clinic ",
+                [drug: drug, prescriptionDate:  Utilities.addDaysInDate(dateToCompare, drug.packSize),clinic: clinic])
 
         if (list.size() > 0) {
             int qtyInStock = 0
@@ -73,6 +73,15 @@ abstract class StockService implements IStockService {
                 " where s.expireDate > :prescriptionDate  AND " +
                 " s.stockMoviment > 0  AND s.drug = :drug order by s.expireDate asc",
                 [drug: drug, prescriptionDate: dateToCompare]);
+
+        return list;
+    }
+
+
+    List<Stock> getValidStockByDrug(Drug drug) {
+        List<Stock> list = Stock.executeQuery("select  s from Stock  s " +
+                " where  s.expireDate > current_timestamp() and s.stockMoviment > 0  AND s.drug = :drug order by s.expireDate asc",
+                [drug: drug ]);
 
         return list;
     }
@@ -507,5 +516,21 @@ abstract class StockService implements IStockService {
         def list = sql.rows(query, params)
         return list
     }
+
+
+    @Override
+    boolean existsBatchNumber(String batchNumber, String clinicId) {
+        return !Objects.isNull( Stock.findByBatchNumberAndClinic(batchNumber, Clinic.findById(clinicId)))
+    }
+
+    @Override
+    List<Stock> getAllByClinicId(String clinicId, int offset, int max) {
+        return Stock.findAllByClinic(Clinic.findById(clinicId), [offset: offset, max: max])
+    }
+
+    @Override
+    Stock getStockByBatchNumberAndClinic(String batchNumber, String clinicId) {
+        return Stock.findByBatchNumberAndClinic(batchNumber, Clinic.findById(clinicId))
+}
 }
 
