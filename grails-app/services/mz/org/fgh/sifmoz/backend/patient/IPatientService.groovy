@@ -1,6 +1,7 @@
 package mz.org.fgh.sifmoz.backend.patient
 
 import grails.gorm.services.Service
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
 
@@ -27,7 +28,7 @@ interface IPatientService {
 
     List getPatientWithoutDispense(ReportSearchParams reportSearchParams)
 
-    List<Patient> getAllPatientsInClinicSector(ClinicSector clinicSector,int offset , int limit)
+    List<Patient> getAllPatientsInClinicSector(Clinic clinicSector, int offset, int limit)
 
     List getAllExpectedPatients(ReportSearchParams reportSearchParams)
   

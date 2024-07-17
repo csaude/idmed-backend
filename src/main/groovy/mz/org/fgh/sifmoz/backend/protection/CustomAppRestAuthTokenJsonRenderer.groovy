@@ -4,6 +4,7 @@ package mz.org.fgh.sifmoz.backend.protection
 import grails.plugin.springsecurity.rest.token.AccessToken
 import grails.plugin.springsecurity.rest.token.rendering.AccessTokenJsonRenderer
 import groovy.json.JsonBuilder
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import org.springframework.security.core.GrantedAuthority
 
@@ -22,6 +23,8 @@ class CustomAppRestAuthTokenJsonRenderer implements AccessTokenJsonRenderer  {
         def source = ''
         def rolesMenus = new ArrayList()
         def clinicSectorUsers = new HashSet()
+        def clinicUsers = new HashSet()
+        def userFacilityTypeCode = new HashSet()
 
 
         SecUser.withTransaction {
@@ -40,8 +43,12 @@ class CustomAppRestAuthTokenJsonRenderer implements AccessTokenJsonRenderer  {
             HashSet secUsers = new HashSet()
             secUsers.add(secUser)
            // userClinicSectors = secUser.clinicSectors
-            for (ClinicSector clinicSector : secUser.clinicSectors) {
-                clinicSectorUsers.add(clinicSector.code)
+            for (Clinic clinic : secUser.clinics) {
+                if (!clinic.mainClinic) {
+                    clinicUsers.add(clinic.code)
+                    userFacilityTypeCode.add(clinic.facilityType.code)
+                }
+
             }
         }
 
@@ -59,7 +66,8 @@ class CustomAppRestAuthTokenJsonRenderer implements AccessTokenJsonRenderer  {
                 mainEntity   : mainEntityAssociated,
                 source       : source,
                 menus        : rolesMenus,
-                clinicSectorUsers: clinicSectorUsers
+                clinicUsers: clinicUsers,
+                userFacilityTypeCode: userFacilityTypeCode
 
         ]
 

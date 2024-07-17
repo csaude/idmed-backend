@@ -23,7 +23,7 @@ class Episode extends BaseEntity {
     @JsonManagedReference
     EpisodeType episodeType
     @JsonManagedReference
-    ClinicSector clinicSector
+    Clinic clinicSector
     @JsonIgnore
     Clinic clinic
 

@@ -78,7 +78,8 @@ class EpisodeController extends RestfulController {
                 patientTransReferenceCloseMobileEpisode(episode).save()
                 createCloseEpisodeForOtherPatientIdentifiersWhenPatientReferred(episode)
             }
-            if (episode.startStopReason.code.equalsIgnoreCase(StartStopReason.REFERIDO_SECTOR_CLINICO)) {
+            if (episode.startStopReason.code.equalsIgnoreCase(StartStopReason.REFERIDO_SECTOR_CLINICO) ||
+                    episode.startStopReason.code.equalsIgnoreCase("REFERIDO_PARA")) {
                 createCloseEpisodeForOtherPatientIdentifiersWhenPatientReferred(episode)
                 createStartEpisodeOnSectorAfterReferingToSector(episode)
             }
