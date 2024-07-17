@@ -33,7 +33,7 @@ class SecUser implements Serializable, IRoleMenu {
 
     static transients = ['roles']
 
-    static hasMany = [clinics: Clinic, clinicSectors: ClinicSector]
+    static hasMany = [clinics: Clinic]
 
     SecUser(String username,String password, String fullname, String contact,String email, String openmrsPassword){
         this()
@@ -56,7 +56,7 @@ class SecUser implements Serializable, IRoleMenu {
         openmrsPassword nullable: true, blank: true
         contact nullable: true, blank: true
         roles bindable: true
-        clinicSectors bindable: true
+//        clinicSectors bindable: true
         loginRetries nullable: false
         lastLogin nullable: false
 

@@ -3,6 +3,7 @@ package mz.org.fgh.sifmoz.backend.protection
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSectorUsers
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
@@ -61,13 +62,15 @@ class SecUserController extends RestfulController {
                             SecUserRole.create(secUser, secRole)
                         }
                     }
-            if( secUser.clinicSectors != null && secUser.accountLocked == false) {
-                ClinicSectorUsers.removeAll(secUser)
-                for(ClinicSector clinicSector : secUser.clinicSectors) {
-                    ClinicSector secSector= ClinicSector.get(clinicSector.id)
-                    ClinicSectorUsers.create(secUser, secSector)
+            /*
+            if( secUser.clinics != null && secUser.accountLocked == false) {
+             //   ClinicSectorUsers.removeAll(secUser)
+                for(Clinic clinicSector : secUser.clinics) {
+                  //  ClinicSector secSector= ClinicSector.get(clinicSector.id)
+                  //  ClinicSectorUsers.create(secUser, secSector)
                 }
             }
+             */
         } catch (ValidationException e) {
             respond secUser.errors
             return
@@ -113,6 +116,7 @@ class SecUserController extends RestfulController {
                     SecUserRole.create(secUser, secRole)
                 }
             }
+            /*
             if( secUser.clinicSectors != null && secUser.accountLocked == false) {
                 ClinicSectorUsers.removeAll(secUser)
                 for (ClinicSector clinicSector : secUser.clinicSectors) {
@@ -120,6 +124,7 @@ class SecUserController extends RestfulController {
                     ClinicSectorUsers.create(secUser, secSector)
                 }
             }
+             */
         } catch (ValidationException e) {
             respond secUser.errors
             return
