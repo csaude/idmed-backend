@@ -14,7 +14,7 @@ class RAMScreening extends BaseEntity {
    // boolean referedToUSRam
     @JsonBackReference
     PatientVisit visit
-
+    Clinic clinic
     static belongsTo = [PatientVisit]
 
     static mapping = {
@@ -24,6 +24,7 @@ class RAMScreening extends BaseEntity {
 
     static constraints = {
         adverseReaction(nullable: true, blank: true)
+        clinic nullable: false
     }
 
     def beforeInsert() {

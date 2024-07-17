@@ -22,7 +22,7 @@ class TBScreening extends BaseEntity {
 
     @JsonBackReference
     PatientVisit visit
-
+    Clinic clinic
     static belongsTo = [PatientVisit]
 
     static mapping = {
@@ -33,6 +33,7 @@ class TBScreening extends BaseEntity {
     static constraints = {
         startTreatmentDate(nullable: true, blank: true)
         visit(nullable: true, blank: true)
+        clinic nullable: false
     }
 
     def beforeInsert() {

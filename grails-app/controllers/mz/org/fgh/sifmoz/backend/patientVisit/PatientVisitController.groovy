@@ -6,6 +6,7 @@ import grails.gorm.transactions.Transactional
 import grails.rest.RestfulController
 import grails.validation.ValidationException
 import groovy.json.JsonSlurper
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
@@ -65,7 +66,7 @@ class PatientVisitController extends RestfulController {
     def save() {
         PatientVisit visit = new PatientVisit()
         def objectJSON = request.JSON
-
+        Clinic clinic = Clinic.findWhere(mainClinic: true)
         if (!objectJSON?.patientVisitDetails?.isEmpty()) {
             def amtPerTimePackaged = objectJSON?.patientVisitDetails[0]?.pack?.packagedDrugs[0]?.amtPerTime + ""
             objectJSON?.patientVisitDetails[0]?.pack?.packagedDrugs[0]?.amtPerTime = amtPerTimePackaged ? Double.parseDouble(amtPerTimePackaged) : 0
@@ -88,13 +89,16 @@ class PatientVisitController extends RestfulController {
                 item.prescription.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.id)
                 item.prescription.prescribedDrugs.eachWithIndex { item2, index2 ->
                     item2.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.prescribedDrugs[index2].id)
+                    item2.clinic = clinic
                 }
                 item.prescription.prescriptionDetails.eachWithIndex { item3, index3 ->
                     item3.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.prescriptionDetails[index3].id)
+                    item3.clinic = clinic
                 }
                 item.pack.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.id)
                 item.pack.packagedDrugs.eachWithIndex { item4, index4 ->
                     item4.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.packagedDrugs[index4].id)
+                    item4.clinic = clinic
                     item4.packagedDrugStocks.eachWithIndex { item5, index5 ->
                         item5.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.packagedDrugs[index4].packagedDrugStocks[index5].id)
                     }
@@ -103,18 +107,23 @@ class PatientVisitController extends RestfulController {
 
             visit.adherenceScreenings.eachWithIndex { item, index ->
                 item.id = UUID.fromString(objectJSON.adherenceScreenings[index].id)
+                item.clinic = clinic
             }
             visit.vitalSignsScreenings.eachWithIndex { item, index ->
                 item.id = UUID.fromString(objectJSON.vitalSignsScreenings[index].id)
+                item.clinic = clinic
             }
             visit.pregnancyScreenings.eachWithIndex { item, index ->
                 item.id = UUID.fromString(objectJSON.pregnancyScreenings[index].id)
+                item.clinic = clinic
             }
             visit.tbScreenings.eachWithIndex { item, index ->
                 item.id = UUID.fromString(objectJSON.tbScreenings[index].id)
+                item.clinic = clinic
             }
             visit.ramScreenings.eachWithIndex { item, index ->
                 item.id = UUID.fromString(objectJSON.ramScreenings[index].id)
+                item.clinic = clinic
             }
         }
 

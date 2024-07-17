@@ -1,6 +1,7 @@
 package mz.org.fgh.sifmoz.backend.prescriptionDetail
 
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.dispenseType.DispenseType
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.prescription.SpetialPrescriptionMotive
@@ -18,6 +19,7 @@ class PrescriptionDetail extends BaseEntity {
     Prescription prescription
     SpetialPrescriptionMotive spetialPrescriptionMotive
     Date creationDate = new Date()
+    Clinic clinic
     static belongsTo = [Prescription]
 
     static mapping = {
@@ -32,6 +34,7 @@ class PrescriptionDetail extends BaseEntity {
         therapeuticLine nullable: true
         spetialPrescriptionMotive nullable: true
         creationDate nullable: true
+        clinic nullable: false
     }
 
     def beforeInsert() {

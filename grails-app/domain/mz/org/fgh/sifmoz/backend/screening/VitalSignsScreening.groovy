@@ -17,6 +17,7 @@ class VitalSignsScreening extends BaseEntity {
 
     @JsonBackReference
     PatientVisit visit
+    Clinic clinic
 
     static belongsTo = [PatientVisit]
     static mapping = {
@@ -26,6 +27,7 @@ class VitalSignsScreening extends BaseEntity {
 
     static constraints = {
         distort (nullable: false)
+        clinic nullable: false
     }
 
     def beforeInsert() {
