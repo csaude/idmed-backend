@@ -544,7 +544,7 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
     }
 
 
-    List<PatientVisitDetails> getAllByListPatientId(List<String> patientIds, ClinicSector clinicSector1) {
+    List<PatientVisitDetails>  getAllByListPatientId(List<String> patientIds, ClinicSector clinicSector1) {
         /*
         List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
         patientIds.each {it ->
@@ -560,29 +560,31 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
         *
          */
         List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
-
-            patientIds.each { it ->
-                def visitDetails = Patient.executeQuery("select pvd from PatientVisitDetails pvd " +
-                        "inner join pvd.episode ep " +
-                        "inner join ep.startStopReason stp " +
-                        "inner join ep.patientServiceIdentifier psi " +
-                        "inner join psi.patient p " +
-                        "inner join ep.clinic c " +
-                        "where ep.clinicSector = :clinicSector " +
-                        "and p.id = :patientId " +
-                        "and ep.episodeDate = ( " +
-                        "  SELECT MAX(e.episodeDate)" +
-                        "  FROM Episode e" +
-                        " inner join e.patientServiceIdentifier psi2" +
-                        "  WHERE psi2 = ep.patientServiceIdentifier and e.clinicSector = :clinicSector" +
-                        ")" +
-                        "order by ep.episodeDate desc", [clinicSector: clinicSector1,patientId:it])
-                if (visitDetails.size() == 0) {
-                    List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it), [sort: 'visitDate', order: 'desc'])
-                    PatientVisit pvLast = patientVisitList.get(0)
-                    patientVisitDetailsLists.addAll(pvLast.patientVisitDetails)
-                }
+        patientIds.each {
+            def visitDetails = Patient.executeQuery("select pvd from PatientVisitDetails pvd " +
+                    "inner join fetch pvd.episode ep " +
+                    "inner join fetch ep.patientServiceIdentifier psi " +
+                    "inner join fetch psi.patient p " +
+                    "inner join fetch ep.clinic c " +
+                    "inner join fetch pvd.patientVisit pv " +
+                    "where ep.clinicSector = :clinicSector " +
+                    "and p.id = :patientId " +
+                    "and ep.episodeDate = ( " +
+                    "  SELECT MAX(e.episodeDate)" +
+                    "  FROM Episode e" +
+                    " inner join e.patientServiceIdentifier psi2" +
+                    "  WHERE psi2 = ep.patientServiceIdentifier and e.clinicSector = :clinicSector" +
+                    ")" +
+                    "order by ep.episodeDate desc", [clinicSector: clinicSector1, patientId: it])
+            if (visitDetails.size() == 0) {
+                List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it), [sort: 'visitDate', order: 'desc'])
+                PatientVisit pvLast = patientVisitList.get(0)
+                patientVisitDetailsLists.addAll(pvLast.patientVisitDetails)
+            } else {
+                patientVisitDetailsLists.addAll(visitDetails)
             }
+        }
+
         return patientVisitDetailsLists
     }
 }
