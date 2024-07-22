@@ -24,12 +24,13 @@ class RAMScreening extends BaseEntity {
 
     static constraints = {
         adverseReaction(nullable: true, blank: true)
-        clinic nullable: false
+        clinic blank: true, nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
+            clinic = Clinic.findWhere(mainClinic: true)
         }
     }
 

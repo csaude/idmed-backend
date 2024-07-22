@@ -30,7 +30,6 @@ class PackagedDrug extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_PackagedDrug_Idx'
-
     }
 
     static constraints = {
@@ -39,12 +38,13 @@ class PackagedDrug extends BaseEntity {
         form nullable: true
         nextPickUpDate nullable: true
         creationDate nullable: true
-        clinic nullable: false
+        clinic blank: true, nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
+            clinic = Clinic.findWhere(mainClinic: true)
         }
     }
 
