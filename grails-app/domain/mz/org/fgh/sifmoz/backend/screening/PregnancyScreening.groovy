@@ -25,7 +25,7 @@ class PregnancyScreening extends BaseEntity {
 
     static constraints = {
         lastMenstruation(nullable: true, blank: true)
-        clinic nullable: false
+      //  clinic nullable: false
     }
 
     def beforeInsert() {

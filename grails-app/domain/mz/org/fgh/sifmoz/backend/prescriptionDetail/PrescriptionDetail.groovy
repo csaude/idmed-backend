@@ -34,12 +34,13 @@ class PrescriptionDetail extends BaseEntity {
         therapeuticLine nullable: true
         spetialPrescriptionMotive nullable: true
         creationDate nullable: true
-        clinic nullable: false
+        clinic blank: true, nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
+            clinic = Clinic.findWhere(mainClinic: true)
         }
     }
 

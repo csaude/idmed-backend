@@ -27,12 +27,13 @@ class VitalSignsScreening extends BaseEntity {
 
     static constraints = {
         distort (nullable: false)
-        clinic nullable: false
+        clinic blank: true, nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
+            clinic = Clinic.findWhere(mainClinic: true)
         }
     }
 

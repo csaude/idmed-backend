@@ -29,12 +29,13 @@ class PrescribedDrug extends BaseEntity {
     }
     static constraints = {
         timesPerDay(min: 1)
-        clinic nullable: false
+        clinic blank: true, nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
+            clinic = Clinic.findWhere(mainClinic: true)
         }
     }
 
