@@ -146,6 +146,7 @@ public class ReportSearchParams implements Validateable {
     }
 
     private void adjustEndDateIfAfterCurrentDate(Date currentDate) {
+        if(getReportType() != null)
         if (!getReportType().equalsIgnoreCase("EXPECTED_PATIENTS") && endDate.after(currentDate)) {
             setEndDate(currentDate);
         }
