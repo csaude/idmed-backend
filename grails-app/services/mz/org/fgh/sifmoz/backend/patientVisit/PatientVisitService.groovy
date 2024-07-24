@@ -48,4 +48,18 @@ abstract class PatientVisitService implements IPatientVisitService{
         List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(patientId), [sort: ['visitDate': 'desc']])
         return patientVisitList.get(0)
     }
+
+    List<PatientVisit> getAllLastWithScreeningByPatientIds(List<String> patientIds) {
+        Session session = sessionFactory.getCurrentSession()
+
+        String queryString ="select *  " +
+                "from patient_last_visit_screening_vw  " +
+                "where patient_id in (:patientIds)"
+
+
+        def query = session.createSQLQuery(queryString).addEntity(PatientVisit.class)
+        query.setParameter("patientIds", patientIds)
+        List<PatientVisitDetails> result = query.list()
+        return result
+    }
 }
