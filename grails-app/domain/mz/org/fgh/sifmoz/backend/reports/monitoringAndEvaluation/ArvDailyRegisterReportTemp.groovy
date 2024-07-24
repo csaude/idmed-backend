@@ -40,6 +40,9 @@ class ArvDailyRegisterReportTemp extends BaseEntity{
     String patientVisitDetailId
     static hasMany = ['drugQuantityTemps': DrugQuantityTemp]
 
+    static mapping = {
+        datasource 'ALL'
+    }
 
     static constraints = {
         id generator: "uuid"

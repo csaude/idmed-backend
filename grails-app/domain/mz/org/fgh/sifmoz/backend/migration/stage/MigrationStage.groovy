@@ -15,6 +15,7 @@ class MigrationStage {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_MigrationStage_Idx'
+        datasource 'ALL'
     }
 
     def beforeInsert() {

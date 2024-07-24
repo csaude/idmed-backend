@@ -26,6 +26,10 @@ class StockReportTemp extends BaseEntity{
     String manufacture
     String batchNumber
 
+    static mapping = {
+        datasource 'ALL'
+    }
+
 
     static constraints = {
         id generator: "uuid"

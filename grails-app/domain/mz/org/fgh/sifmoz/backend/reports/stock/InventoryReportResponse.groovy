@@ -14,6 +14,10 @@ class InventoryReportResponse  extends BaseEntity{
         id generator: "uuid"
     }
 
+    static mapping = {
+        datasource 'ALL'
+    }
+
     @Override
     List<Menu> hasMenus() {
         List<Menu> menus = new ArrayList<>()

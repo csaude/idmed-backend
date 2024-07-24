@@ -21,6 +21,7 @@ class ReportProcessMonitor {
 
     static mapping = {
         id generator: "uuid"
+        datasource 'ALL'
     }
     static constraints = {
     }

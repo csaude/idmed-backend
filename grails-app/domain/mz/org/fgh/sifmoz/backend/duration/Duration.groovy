@@ -12,6 +12,7 @@ class Duration extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_Duration_Idx'
+        datasource 'ALL'
     }
 
     def beforeInsert() {

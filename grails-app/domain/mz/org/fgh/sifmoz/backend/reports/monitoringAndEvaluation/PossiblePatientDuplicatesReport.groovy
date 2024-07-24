@@ -26,6 +26,9 @@ class PossiblePatientDuplicatesReport extends BaseEntity{
     String gender
     String numberOfTimes
 
+    static mapping = {
+        datasource 'ALL'
+    }
 
     static constraints = {
         id generator: "uuid"

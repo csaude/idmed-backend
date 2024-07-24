@@ -27,6 +27,7 @@ class NotSynchronizingPacksOpenMrsReport extends BaseEntity{
 
     static mapping = {
         jsonRequest type: 'text'
+        datasource 'ALL'
     }
 
     static constraints = {

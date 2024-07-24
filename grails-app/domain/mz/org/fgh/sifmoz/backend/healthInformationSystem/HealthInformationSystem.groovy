@@ -19,6 +19,7 @@ class HealthInformationSystem extends BaseEntity {
         id generator: "assigned"
         id column: 'id', index: 'Pk_HealthInformationSystem_Idx'
       //  interoperabilityAttributes (cascade: "all-delete-orphan")
+        datasource 'ALL'
     }
 
     def beforeInsert() {

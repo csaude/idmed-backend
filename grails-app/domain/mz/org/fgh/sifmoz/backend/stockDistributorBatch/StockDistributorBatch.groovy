@@ -19,6 +19,7 @@ class StockDistributorBatch extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_Stock_Batch_Idx'
+        datasource 'ALL'
     }
 
 

@@ -17,6 +17,7 @@ class GroupPackHeader extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_GroupPackHeader_Idx'
+        datasource 'ALL'
     }
 
     static constraints = {

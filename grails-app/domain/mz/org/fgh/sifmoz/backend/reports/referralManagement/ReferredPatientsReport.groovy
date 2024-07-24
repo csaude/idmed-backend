@@ -34,6 +34,10 @@ class ReferredPatientsReport extends BaseEntity{
     Date returnedPickUp
     Date lastPickUpDate
 
+    static mapping = {
+        datasource 'ALL'
+    }
+
     static constraints = {
         id generator: "uuid"
         pharmacyId nullable: true

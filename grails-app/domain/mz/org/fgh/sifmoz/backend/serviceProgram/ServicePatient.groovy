@@ -21,6 +21,10 @@ class ServicePatient {
     boolean prefered
 
     static belongsTo = [patient: Patient]
+
+    static mapping = {
+        datasource 'ALL'
+    }
     static constraints = {
         startReason nullable: false
         startNotes nullable: false

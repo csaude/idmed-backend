@@ -23,6 +23,7 @@ class OpenmrsErrorLog  {
         id generator: "assigned"
         id column: 'id', index: 'Pk_OpenmrsErrorLog_Idx'
         errorDescription type: 'text'
+        datasource 'ALL'
     }
 
     def beforeInsert() {

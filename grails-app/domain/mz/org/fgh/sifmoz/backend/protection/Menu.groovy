@@ -24,6 +24,7 @@ class Menu extends BaseEntity{
     static mapping = {
         id generator: "uuid"
         roles joinTable: [name:"role_menu", key:"menus_id", column:"roles_id"]
+        datasource 'ALL'
     }
 
     @Override

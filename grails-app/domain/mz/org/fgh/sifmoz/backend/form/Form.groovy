@@ -11,6 +11,7 @@ class Form extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_Form_Idx'
+        datasource 'ALL'
     }
 
     def beforeInsert() {

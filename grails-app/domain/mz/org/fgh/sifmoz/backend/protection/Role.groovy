@@ -44,6 +44,7 @@ class Role implements Serializable, IRoleMenu  {
 	static mapping = {
 		cache true
 		menus joinTable: [name:"role_menu", key:"roles_id", column:"menus_id"]
+		datasource 'ALL'
 	}
 
 	@Override

@@ -26,6 +26,7 @@ class PrescribedDrug extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_PrescribedDrug_Idx'
+        datasource 'ALL'
     }
     static constraints = {
         timesPerDay(min: 1)
@@ -35,7 +36,9 @@ class PrescribedDrug extends BaseEntity {
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-            clinic = Clinic.findWhere(mainClinic: true)
+        }
+        if (clinic && clinic.parentClinic) {
+            clinic = clinic.parentClinic
         }
     }
 

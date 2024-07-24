@@ -13,6 +13,7 @@ class Localidade extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_Localidade_Idx'
+        datasource 'ALL'
     }
     static constraints = {
         code nullable: false, unique: true

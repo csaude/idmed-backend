@@ -14,6 +14,7 @@ class InventoryStockAdjustment extends StockAdjustment{
         id generator: "assigned"
         id column: 'id', index: 'Pk_InventoryStockAdjustment_Idx'
         inventory updateable: false
+        datasource 'ALL'
     }
 
     InventoryStockAdjustment() {

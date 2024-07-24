@@ -20,6 +20,7 @@ class RAMScreening extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_RAMScreening_Idx'
+        datasource 'ALL'
     }
 
     static constraints = {
@@ -30,7 +31,9 @@ class RAMScreening extends BaseEntity {
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-            clinic = Clinic.findWhere(mainClinic: true)
+        }
+        if (clinic && clinic.parentClinic) {
+            clinic = clinic.parentClinic
         }
     }
 

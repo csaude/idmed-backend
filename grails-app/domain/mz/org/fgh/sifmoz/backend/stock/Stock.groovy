@@ -30,6 +30,7 @@ class Stock extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_Stock_Idx'
+        datasource 'ALL'
     }
 
     static constraints = {

@@ -17,6 +17,10 @@ class DrugQuantityTemp {
     long quantity
     static belongsTo = ['arvDailyRegisterReportTemp': ArvDailyRegisterReportTemp]
 
+    static mapping = {
+        datasource 'ALL'
+    }
+
     DrugQuantityTemp() {
 
     }

@@ -59,6 +59,7 @@ class Patient extends BaseEntity implements Auditable{
         id generator: "assigned"
         id column: 'id', index: 'Pk_Patient_Idx'
         identifiers cascade: 'none'
+        datasource 'ALL'
     }
 
     static constraints = {
@@ -87,6 +88,9 @@ class Patient extends BaseEntity implements Auditable{
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
+        }
+        if (clinic && clinic.parentClinic) {
+            clinic = clinic.parentClinic
         }
 //        if (!clinic) {
 //            clinic = Clinic.findByMainClinic(true)

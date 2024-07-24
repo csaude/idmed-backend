@@ -17,6 +17,7 @@ class DispenseType extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_DispenseType_Idx'
+        datasource 'ALL'
     }
 
     def beforeInsert() {

@@ -12,6 +12,7 @@ class PatientTransReferenceType extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_PatientTransReferenceType_Idx'
+        datasource 'ALL'
     }
 
     def beforeInsert() {

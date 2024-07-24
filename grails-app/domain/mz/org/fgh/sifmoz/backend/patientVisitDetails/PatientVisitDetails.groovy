@@ -26,6 +26,7 @@ class PatientVisitDetails extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_patientVisitDetails_Idx'
+        datasource 'ALL'
     }
     static constraints = {
         pack nullable: false
@@ -36,8 +37,8 @@ class PatientVisitDetails extends BaseEntity {
         if (!id) {
             id = UUID.randomUUID()
         }
-        if (!clinic) {
-            clinic = Clinic.findByMainClinic(true)
+        if (clinic && clinic.parentClinic) {
+            clinic = clinic.parentClinic
         }
     }
 

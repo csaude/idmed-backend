@@ -57,6 +57,7 @@ class PatientWithoutDispenseReport  extends BaseEntity{
 
     static mapping = {
         id generator: "uuid"
+        datasource 'ALL'
     }
 
 

@@ -17,6 +17,7 @@ class ClinicSector extends Clinic {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_ClinicSector_Idx'
+        datasource 'ALL'
     }
 
     def beforeInsert() {

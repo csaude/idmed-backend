@@ -36,6 +36,9 @@ class InventoryReportTemp extends BaseEntity {
     String notes
     String operation_type
 
+    static mapping = {
+        datasource 'ALL'
+    }
 
 
     static constraints = {

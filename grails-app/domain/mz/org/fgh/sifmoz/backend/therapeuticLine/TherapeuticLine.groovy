@@ -11,6 +11,7 @@ class TherapeuticLine extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_TherapeuticLine_Idx'
+        datasource 'ALL'
     }
 
     def beforeInsert() {

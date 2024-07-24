@@ -29,6 +29,7 @@ class Drug extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_Drug_Idx'
+        datasource 'ALL'
     }
     def beforeInsert() {
         if (!id) {

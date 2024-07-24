@@ -840,6 +840,7 @@ class BootStrap {
         List<Object> usersList = new ArrayList<>()
         usersList.add(new LinkedHashMap(username: 'admin', password: 'admin', fullName: 'admin', contact: 'admin', email: 'admin@gmail.com', openmrsPassword: Utilities.getMd5('admin')))
         usersList.add(new LinkedHashMap(username: 'iDMED', password: 'iDMED123', fullName: 'iDMED', contact: 'iDMED', email: 'iDMED@gmail.com', openmrsPassword: Utilities.getMd5('iDMED123')))
+        usersList.add(new LinkedHashMap(username: 'user.sync', password: 'user.sync', fullName: 'Usuario Sincronizacao', contact: 'USER.SYNC', email: 'user.sync@gmail.com', openmrsPassword: Utilities.getMd5('userSync')))
 
         return usersList
     }

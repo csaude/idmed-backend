@@ -36,6 +36,7 @@ class Clinic extends BaseEntity {
         id column: 'id', index: 'Pk_Clinic_Idx'
         mmiaReports joinTable: [name:"mmia_report_clinic", key:"clinic_id", column:"mmia_report_clinic_id"]
         users  joinTable: [name: "clinic_users", key: "clinic_id", column: "sec_user_id"]
+        datasource 'ALL'
     }
     def beforeInsert() {
         if (!id) {

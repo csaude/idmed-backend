@@ -22,6 +22,7 @@ class Inventory extends BaseEntity {
         id generator: "assigned"
         id column: 'id', index: 'Pk_Inventory_Idx'
         adjustments cascade: 'all-delete-orphan'
+        datasource 'ALL'
     }
 
     static constraints = {

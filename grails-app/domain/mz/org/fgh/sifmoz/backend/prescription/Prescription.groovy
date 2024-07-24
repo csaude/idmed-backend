@@ -46,6 +46,7 @@ class Prescription extends BaseEntity{
     static mapping = {
        id generator: "assigned"
        id column: 'id', index: 'Pk_prescription_Idx'
+        datasource 'ALL'
     }
     static constraints = {
         prescriptionDate(nullable: false, blank: false,  validator: { prescriptionDate, urc ->
@@ -66,8 +67,8 @@ class Prescription extends BaseEntity{
         if (!id) {
             id = UUID.randomUUID()
         }
-        if (!clinic) {
-            clinic = Clinic.findByMainClinic(true)
+        if (clinic && clinic.parentClinic) {
+            clinic = clinic.parentClinic
         }
     }
 

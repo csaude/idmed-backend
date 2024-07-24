@@ -29,6 +29,7 @@ class TBScreening extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_TBScreening_Idx'
+        datasource 'ALL'
     }
 
     static constraints = {
@@ -40,7 +41,9 @@ class TBScreening extends BaseEntity {
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-            clinic = Clinic.findWhere(mainClinic: true)
+        }
+        if (clinic && clinic.parentClinic) {
+            clinic = clinic.parentClinic
         }
     }
 

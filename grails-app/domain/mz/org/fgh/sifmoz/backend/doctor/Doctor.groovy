@@ -23,6 +23,7 @@ class Doctor extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_Doctor_Idx'
+        datasource 'ALL'
     }
 
     static constraints = {

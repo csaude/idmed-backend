@@ -15,6 +15,7 @@ class ClinicalServiceAttribute extends BaseEntity {
 
     static mapping = {
         id generator: "assigned"
+        datasource 'ALL'
     }
 
     static constraints = {

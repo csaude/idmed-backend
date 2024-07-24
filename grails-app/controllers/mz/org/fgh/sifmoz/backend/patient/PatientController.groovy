@@ -53,11 +53,11 @@ class PatientController extends RestfulController {
     @Transactional
     def save() {
         Patient patient = new Patient()
-        Clinic clinic = Clinic.findByMainClinic(true)
+
         def objectJSON = request.JSON
         patient = objectJSON as Patient
         patient.identifiers = [].withDefault { new PatientServiceIdentifier() }
-        patient.clinic = clinic
+
         patient.beforeInsert()
 
         if (patient.getMatchId() == null) {

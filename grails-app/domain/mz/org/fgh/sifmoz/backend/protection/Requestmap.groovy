@@ -25,5 +25,6 @@ class Requestmap implements Serializable {
 
 	static mapping = {
 		cache true
+		datasource 'ALL'
 	}
 }

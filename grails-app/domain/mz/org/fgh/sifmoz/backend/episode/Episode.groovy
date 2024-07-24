@@ -40,6 +40,7 @@ class Episode extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_episode_Idx'
+        datasource 'ALL'
     }
 
     static fetchMode = [patientVisitDetails: 'lazy']

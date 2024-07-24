@@ -36,6 +36,7 @@ class MmiaRegimenSubReport {
     }
     static mapping = {
         id generator: "uuid"
+        datasource 'ALL'
     }
     static constraints = {
         mmiaReport nullable: true

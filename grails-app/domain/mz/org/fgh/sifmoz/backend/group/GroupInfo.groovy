@@ -27,6 +27,7 @@ class GroupInfo extends BaseEntity {
         id generator: "assigned"
         id column: 'id', index: 'Pk_GroupInfo_Idx'
         table 'group_info'
+        datasource 'ALL'
     }
 
     static constraints = {

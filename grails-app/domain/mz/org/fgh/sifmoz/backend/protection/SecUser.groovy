@@ -66,6 +66,7 @@ class SecUser implements Serializable, IRoleMenu {
 	    password column: '`password`'
         clinics  joinTable: [name: "clinic_users", key: "sec_user_id", column: "clinic_id"]
         id column: 'id', index: 'Pk_SecUser_Idx'
+        datasource 'ALL'
     }
 
     @Override

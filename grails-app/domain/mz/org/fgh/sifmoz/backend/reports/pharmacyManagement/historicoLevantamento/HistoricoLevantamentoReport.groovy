@@ -62,6 +62,9 @@ class HistoricoLevantamentoReport extends BaseEntity {
         idmeduser nullable: true
     }
 
+    static mapping = {
+        datasource 'ALL'
+    }
 
     @Override
     public String toString() {

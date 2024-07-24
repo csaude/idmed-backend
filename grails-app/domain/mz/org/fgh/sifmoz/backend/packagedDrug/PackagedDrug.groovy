@@ -30,6 +30,7 @@ class PackagedDrug extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_PackagedDrug_Idx'
+        datasource 'ALL'
     }
 
     static constraints = {
@@ -44,7 +45,9 @@ class PackagedDrug extends BaseEntity {
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-            clinic = Clinic.findWhere(mainClinic: true)
+        }
+        if (clinic && clinic.parentClinic) {
+            clinic = clinic.parentClinic
         }
     }
 

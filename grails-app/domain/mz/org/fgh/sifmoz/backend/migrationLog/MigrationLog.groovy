@@ -25,6 +25,7 @@ class MigrationLog extends BaseEntity{
     }
 
 
+
     MigrationLog() {
     }
 
@@ -48,6 +49,7 @@ class MigrationLog extends BaseEntity{
     static mapping = {
         id generator: "uuid"
         sort: "source_entity"
+        datasource 'ALL'
     }
 
     @Override

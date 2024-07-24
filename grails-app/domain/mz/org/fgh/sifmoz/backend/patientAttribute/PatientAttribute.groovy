@@ -16,6 +16,7 @@ class PatientAttribute extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_PatientAttribute_Idx'
+        datasource 'ALL'
     }
     static constraints = {
         attributeType nullable: false

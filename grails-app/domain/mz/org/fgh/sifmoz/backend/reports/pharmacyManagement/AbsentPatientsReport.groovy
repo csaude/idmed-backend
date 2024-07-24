@@ -44,6 +44,10 @@ class AbsentPatientsReport extends BaseEntity{
         returnedPickUp nullable: true
     }
 
+    static mapping = {
+        datasource 'ALL'
+    }
+
     @Override
     List<Menu> hasMenus() {
         List<Menu> menus = new ArrayList<>()

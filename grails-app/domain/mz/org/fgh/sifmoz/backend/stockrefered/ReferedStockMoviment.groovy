@@ -20,6 +20,7 @@ class ReferedStockMoviment extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_ReferedStockMoviment_Idx'
+        datasource 'ALL'
     }
 
     static constraints = {

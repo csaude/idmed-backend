@@ -20,6 +20,7 @@ class NationalClinic extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_NationalClinic_Idx'
+        datasource 'ALL'
     }
 
     static constraints = {

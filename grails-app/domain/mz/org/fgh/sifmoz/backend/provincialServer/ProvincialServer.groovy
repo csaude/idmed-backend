@@ -17,6 +17,7 @@ class ProvincialServer extends BaseEntity{
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_ProvincialServer_Idx'
+        datasource 'ALL'
     }
 
     def beforeInsert() {

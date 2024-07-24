@@ -24,6 +24,7 @@ class PatientTransReference extends BaseEntity{
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_PatientTransReference_Idx'
+        datasource 'ALL'
     }
 
     static constraints = {

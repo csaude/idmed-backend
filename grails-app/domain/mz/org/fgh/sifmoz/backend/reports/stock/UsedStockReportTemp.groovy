@@ -32,6 +32,11 @@ class UsedStockReportTemp extends BaseEntity{
     String notes
     String packSize
 
+    static mapping = {
+        datasource 'ALL'
+    }
+
+
     static constraints = {
         id generator: "uuid"
         pharmacyId nullable: true

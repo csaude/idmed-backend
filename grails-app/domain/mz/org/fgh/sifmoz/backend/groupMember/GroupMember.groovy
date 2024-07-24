@@ -20,6 +20,7 @@ class GroupMember extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_GroupMember_Idx'
+        datasource 'ALL'
     }
 
     static constraints = {

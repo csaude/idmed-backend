@@ -33,6 +33,7 @@ class Pack extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_pack_Idx'
+        datasource 'ALL'
     }
 
     static constraints = {
@@ -56,8 +57,8 @@ class Pack extends BaseEntity {
         if (!id) {
             id = UUID.randomUUID()
         }
-        if (!clinic) {
-            clinic = Clinic.findByMainClinic(true)
+        if (clinic && clinic.parentClinic) {
+            clinic = clinic.parentClinic
         }
     }
 
