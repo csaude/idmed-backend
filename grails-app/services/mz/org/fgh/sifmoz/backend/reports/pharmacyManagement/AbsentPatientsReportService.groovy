@@ -84,7 +84,7 @@ abstract class AbsentPatientsReportService implements IAbsentPatientsReportServi
                     processMonitor.save(flush: true)
                 }
             }
-        }
+            }
         }
     }
 

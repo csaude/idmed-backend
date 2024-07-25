@@ -7,6 +7,7 @@ import groovy.sql.Sql
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.dispenseType.DispenseType
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
+import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.linhasUsadas.LinhasUsadasReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaRegimenSubReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaReport
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
@@ -1262,6 +1263,85 @@ abstract class PackService implements IPackService {
             return mmiaRegimenSubReports
         }
     }
+
+    def addLinhaUsadaInList(Object item, List<LinhasUsadasReport> linhasUsadasReports) {
+        LinhasUsadasReport linhaUsadaReport = new LinhasUsadasReport()
+        linhaUsadaReport.setCodigoRegime(String.valueOf(item[0]))
+        linhaUsadaReport.setRegimeTerapeutico(String.valueOf(item[1]))
+        linhaUsadaReport.setLinhaTerapeutica(String.valueOf(item[2]))
+        linhaUsadaReport.setEstado(String.valueOf(item[3]))
+        linhaUsadaReport.setTotalPrescricoes(Integer.valueOf(String.valueOf(item[4])))
+        linhasUsadasReports.add(linhaUsadaReport)
+    }
+
+    @Override
+    List<LinhasUsadasReport> getLinhasUsadas(ClinicalService service, Clinic clinic, Date startDate, Date endDate) {
+
+        def starter = new java.sql.Date(startDate.time)
+        def finalDate = new java.sql.Date(endDate.time)
+        def params = [startDate: starter, endDate: finalDate, clinic: clinic.id, clinicalService: service.code]
+        def sql = new Sql(dataSource as DataSource)
+        List<LinhasUsadasReport> linhasUsadasReports = new ArrayList<>()
+
+        String query = ""
+
+        if (service.isTarv()) {
+            query =
+                    """
+                    WITH unique_prescriptions AS (
+                        SELECT DISTINCT
+                            pd.id AS prescription_detail_id,
+                            pd.therapeutic_regimen_id,
+                            pd.therapeutic_line_id,
+                            p.prescription_date
+                        FROM
+                            prescription_detail pd
+                        INNER JOIN
+                            prescription p ON pd.prescription_id = p.id
+                        INNER JOIN
+                            patient_visit_details pvd ON pvd.prescription_id = p.id
+                        INNER JOIN 
+                            clinic clinic ON pvd.clinic_id = '121CF50D-72F5-4FF9-AB96-EAC07B44D05C'
+                        WHERE
+                            p.prescription_date BETWEEN :startDate AND :endDate
+                    )
+                    SELECT
+                        tr.code AS regime_code,
+                        tr.description AS regime_description,
+                        tl.description AS line_description,
+                        tr.active AS regime_status,
+                        COUNT(up.prescription_detail_id) AS total_prescriptions
+                    FROM
+                        unique_prescriptions up
+                    INNER JOIN
+                        therapeutic_regimen tr ON up.therapeutic_regimen_id = tr.id
+                    INNER JOIN
+                        therapeutic_line tl ON up.therapeutic_line_id = tl.id
+                    INNER JOIN 
+                        clinical_service cs ON cs.id = tr.clinical_service_id
+                    WHERE
+                        cs.code = 'TARV'
+                    GROUP BY
+                        tr.code, tr.description, tl.description, tr.active
+                    ORDER BY
+                        tr.code, tl.description;
+
+                    """
+        } else {
+            // Futuramente
+        }
+
+        def list = sql.rows(query, params)
+
+        if (Utilities.listHasElements(list as ArrayList<?>)) {
+            for (int i = 0; i < list.size(); i++) {
+                addLinhaUsadaInList(list[i], linhasUsadasReports)
+            }
+            return linhasUsadasReports
+        }
+    }
+
+
 
     def addMmiaRegimenStatisticInList(Object item, List<MmiaRegimenSubReport> mmiaRegimenSubReports) {
         MmiaRegimenSubReport mmiaRegimenSubReport = new MmiaRegimenSubReport()
