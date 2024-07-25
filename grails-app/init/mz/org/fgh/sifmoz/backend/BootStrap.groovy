@@ -159,7 +159,7 @@ class BootStrap {
         }
 
         ClinicSector.withTransaction {
-       //    insertClinicSectorsOnClinics()
+        //   insertClinicSectorsOnClinics()
      //       compareClinics()
          //   dropClinicSector()
         }
@@ -930,7 +930,7 @@ class BootStrap {
         facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c8025ea10002', code: 'APE', description: 'Agente Polivalente Elementar', type: "clinic_sector"))
         facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c8029c890003', code: 'CLINICA_MOVEL', description: 'Clinica Móvel', type: "clinic_sector"))
         facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0004', code: 'BRIGADA_MOVEL', description: 'Brigada Móvel', type: "clinic_sector"))
-      //  facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0006', code: 'NORMAL', description: 'Atendimento Normal', type: "clinic_sector"))
+       facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0006', code: 'NORMAL', description: 'Atendimento Normal', type: "clinic_sector"))
 
 
         return facilityTypeList
@@ -1049,6 +1049,7 @@ class BootStrap {
         startStopReasonList.add(new LinkedHashMap(id: 'ff8081817c9791ee017c99bbb2aa0016', isStartReason: false, reason: 'Outro', code: 'OUTRO'))
         startStopReasonList.add(new LinkedHashMap(id: 'ff8081817c9791ee017c99bbb2aa0017', isStartReason: false, reason: 'Referido para dispensa comunitária', code: 'REFERIDO_DC'))
         startStopReasonList.add(new LinkedHashMap(id: 'ff8081817c9791ee017c99bbb2aa0018', isStartReason: false, reason: 'Referido para Sector Clinico', code: 'REFERIDO_SECTOR_CLINICO'))
+        startStopReasonList.add(new LinkedHashMap(id: 'ff8081817c9791ee017c99bbb2aa0019', isStartReason: false, reason: 'Voltou Para Farmacia US', code: 'VOLTOU_FARMACIA_US'))
         return startStopReasonList
 
     }

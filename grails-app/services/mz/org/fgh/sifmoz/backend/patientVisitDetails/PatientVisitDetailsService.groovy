@@ -578,11 +578,24 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
                     "order by ep.episodeDate desc", [clinicSector: clinicSector1, patientId: it])
             if (visitDetails.size() == 0) {
                 List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it), [sort: 'visitDate', order: 'desc'])
-                PatientVisit pvLast = patientVisitList.get(0)
-                patientVisitDetailsLists.addAll(pvLast.patientVisitDetails)
+                if (patientVisitList.size() > 0) {
+                    PatientVisit pvLast = patientVisitList.get(0)
+                    patientVisitDetailsLists.addAll(pvLast.patientVisitDetails)
+                }
             } else {
                 patientVisitDetailsLists.addAll(visitDetails)
             }
+        }
+
+        return patientVisitDetailsLists
+    }
+
+    List<PatientVisitDetails> getLastAllByListPatientId(List<String> patientIds){
+        List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
+        patientIds.each {
+                List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it), [sort: 'visitDate', order: 'desc'])
+                PatientVisit pvLast = patientVisitList.get(0)
+                patientVisitDetailsLists.addAll(pvLast.patientVisitDetails)
         }
 
         return patientVisitDetailsLists

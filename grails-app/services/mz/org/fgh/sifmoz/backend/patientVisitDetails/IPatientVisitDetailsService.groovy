@@ -36,6 +36,8 @@ interface IPatientVisitDetailsService{
 
     List<PatientVisitDetails> getAllByListPatientId(List<String> patientIds, ClinicSector clinicSector1)
 
+    List<PatientVisitDetails> getLastAllByListPatientId(List<String> patientIds)
+
     // NOVOS REPORTS
     List<PatientVisitDetails> getPREPDailyReport(String clinicId, Date startDate, Date endDate, String clinicalServiceId)
     List<PatientVisitDetails> getTPTDailyReport(String clinicId, Date startDate, Date endDate, String clinicalServiceId)

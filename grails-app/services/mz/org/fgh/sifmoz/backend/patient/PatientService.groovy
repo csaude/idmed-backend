@@ -270,4 +270,19 @@ abstract class PatientService implements IPatientService {
         return list
     }
 
+    List<Patient> getAllPatientsIsAbandonment(int offset, int max) {
+        def patients = Patient.executeQuery("select distinct(p) from Episode ep " +
+                "inner join ep.startStopReason stp " +
+                "inner join ep.patientServiceIdentifier psi " +
+                "inner join psi.patient p " +
+                "inner join ep.clinic c " +
+                "where ep.isAbandonmentDC = true " +
+                "and ep.episodeDate = ( " +
+                "  SELECT MAX(e.episodeDate)" +
+                "  FROM Episode e" +
+                " inner join e.patientServiceIdentifier psi2" +
+                "  WHERE psi2 = ep.patientServiceIdentifier" +
+                ")",[max: max, offset: offset])
+        return patients
+    }
 }

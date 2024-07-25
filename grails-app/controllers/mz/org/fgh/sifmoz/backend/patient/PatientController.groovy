@@ -433,9 +433,11 @@ class PatientController extends RestfulController {
                 }
             }
         }
-
-
          */
 
+    }
+
+    def getAllPatientsIsAbandonment(int offset, int max) {
+        render JSONSerializer.setObjectListJsonResponse(patientService.getAllPatientsIsAbandonment(offset,max)) as JSON
     }
 }
