@@ -7,6 +7,7 @@ import groovy.sql.Sql
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.dispenseType.DispenseType
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
+import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.linhasUsadas.LinhasUsadasReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaRegimenSubReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.segundasLinhas.SegundasLinhasReport
@@ -1264,7 +1265,17 @@ abstract class PackService implements IPackService {
         }
     }
 
-    def addLinhaUsadaInList(Object item, List<SegundasLinhasReport> segundasLinhasReports) {
+    def addLinhaUsadaInList(Object item, List<LinhasUsadasReport> linhasUsadasReports) {
+        LinhasUsadasReport linhasUsadasReport = new LinhasUsadasReport()
+        linhasUsadasReport.setCodigoRegime(String.valueOf(item[0]))
+        linhasUsadasReport.setRegimeTerapeutico(String.valueOf(item[1]))
+        linhasUsadasReport.setLinhaTerapeutica(String.valueOf(item[2]))
+        linhasUsadasReport.setEstado(String.valueOf(item[3]))
+        linhasUsadasReport.setTotalPrescricoes(Integer.valueOf(String.valueOf(item[4])))
+        linhasUsadasReports.add(linhasUsadasReport)
+    }
+
+    def addSegundasLinhasInList(Object item, List<SegundasLinhasReport> segundasLinhasReports) {
         SegundasLinhasReport segundasLinhasReport = new SegundasLinhasReport()
         segundasLinhasReport.setCodigoRegime(String.valueOf(item[0]))
         segundasLinhasReport.setRegimeTerapeutico(String.valueOf(item[1]))
@@ -1275,13 +1286,13 @@ abstract class PackService implements IPackService {
     }
 
     @Override
-    List<SegundasLinhasReport> getLinhasUsadas(ClinicalService service, Clinic clinic, Date startDate, Date endDate) {
+    List<LinhasUsadasReport> getLinhasUsadas(ClinicalService service, Clinic clinic, Date startDate, Date endDate) {
 
         def starter = new java.sql.Date(startDate.time)
         def finalDate = new java.sql.Date(endDate.time)
         def params = [startDate: starter, endDate: finalDate, clinic: clinic.id, clinicalService: service.code]
         def sql = new Sql(dataSource as DataSource)
-        List<SegundasLinhasReport> segundasLinhasReports = new ArrayList<>()
+        List<LinhasUsadasReport> linhasUsadasReports = new ArrayList<>()
 
         String query = ""
 
@@ -1335,9 +1346,9 @@ abstract class PackService implements IPackService {
 
         if (Utilities.listHasElements(list as ArrayList<?>)) {
             for (int i = 0; i < list.size(); i++) {
-                addLinhaUsadaInList(list[i], segundasLinhasReports)
+                addLinhaUsadaInList(list[i], linhasUsadasReports)
             }
-            return segundasLinhasReports
+            return linhasUsadasReports
         }
     }
 
@@ -1401,7 +1412,7 @@ abstract class PackService implements IPackService {
 
         if (Utilities.listHasElements(list as ArrayList<?>)) {
             for (int i = 0; i < list.size(); i++) {
-                addLinhaUsadaInList(list[i], segundasLinhasReports)
+                addSegundasLinhasInList(list[i], segundasLinhasReports)
             }
             return segundasLinhasReports
         }
