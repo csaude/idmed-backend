@@ -1379,7 +1379,7 @@ abstract class PackService implements IPackService {
                         INNER JOIN
                             patient_visit_details pvd ON pvd.prescription_id = p.id
                         INNER JOIN 
-                            clinic clinic ON pvd.clinic_id = '121CF50D-72F5-4FF9-AB96-EAC07B44D05C'
+                            clinic clinic ON pvd.clinic_id = :clinic
                         WHERE
                             p.prescription_date BETWEEN :startDate AND :endDate  
                     )
@@ -2235,6 +2235,63 @@ abstract class PackService implements IPackService {
                 """
         def list = Pack.executeQuery(sqlAbsent,
                 [serviceCode: clinicalService.code, clinicId: clinic.id, startDate: startDate, endDate: endDate, days: 3])
+
+        return list
+    }
+
+    @Override
+    List getAbandonmentByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService, Clinic clinic, Date startDate, Date endDate) {
+        def queryString =
+                """
+                WITH ResultTable AS (
+                    SELECT DISTINCT ON (p.id)
+                        pk.next_pick_up_date AS nextPickUpDate,
+                        c.id AS clinicId,
+                        p.id AS patient_id
+                    FROM patient p
+                    INNER JOIN (
+                        SELECT
+                            MAX(pack.pickup_date) pickupDate,
+                            p.id patientid
+                        FROM patient_visit_details pvdails
+                        INNER JOIN pack ON pack.id = pvdails.pack_id
+                        INNER JOIN patient_visit pv ON pvdails.patient_visit_id = pv.id
+                        INNER JOIN patient p ON pv.patient_id = p.id
+                        INNER JOIN patient_service_identifier psi ON psi.patient_id = pv.patient_id
+                        INNER JOIN clinical_service cs ON cs.id = psi.service_id
+                        WHERE cs.code = 'TARV'
+                        GROUP BY 2
+                    ) packAux ON packAux.patientid = p.id
+                    INNER JOIN patient_visit pv ON pv.patient_id = p.id
+                    INNER JOIN patient_visit_details pvd ON pvd.patient_visit_id = pv.id
+                    INNER JOIN pack pk ON pk.id = pvd.pack_id AND pk.pickup_date = packAux.pickupDate
+                    INNER JOIN clinic c ON pk.clinic_id = c.id AND c.id = :clinic_id
+                    WHERE (pk.next_pick_up_date + INTERVAL '60 DAY') <= :endDate
+                    GROUP BY p.id, pk.next_pick_up_date, clinicId
+                )
+                
+                SELECT DISTINCT ON (psi.patient_id)
+                    psi.value,
+                    pat.first_names,
+                    pat.middle_names,
+                    pat.last_names,
+                    pat.cellphone AS contact,
+                    last_packs.nextPickUpDate,
+                    last_packs.nextPickUpDate + INTERVAL '60 DAY' AS dateMissedPickUp
+                FROM patient_service_identifier psi
+                INNER JOIN ResultTable last_packs ON last_packs.patient_id = psi.patient_id
+                INNER JOIN episode e ON psi.id = e.patient_service_identifier_id
+                INNER JOIN start_stop_reason ssr ON e.start_stop_reason_id = ssr.id 
+                    AND ssr.code IN ('NOVO_PACIENTE', 'INICIO_CCR', 'TRANSFERIDO_DE', 'ABANDONO', 'VOLTOU_REFERENCIA', 'REINICIO_TRATAMENTO', 'REFERIDO_DC', 'MANUTENCAO', 'OUTRO')
+                INNER JOIN clinical_service cs ON psi.service_id = cs.id AND cs.code = 'TARV'
+                INNER JOIN patient pat ON pat.id = last_packs.patient_id;    
+                """
+
+        Session session = sessionFactory.getCurrentSession()
+        def query = session.createSQLQuery(queryString)
+        query.setParameter("endDate", endDate)
+        query.setParameter("clinic_id", clinic.id)
+        List<Object[]> list = query.list()
 
         return list
     }
