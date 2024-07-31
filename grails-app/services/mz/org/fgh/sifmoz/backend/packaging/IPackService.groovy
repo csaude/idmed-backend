@@ -48,6 +48,8 @@ interface IPackService {
 
     List<Pack> getAbsentReferredPatientsByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
 
+    List<Pack> getAbandonmentByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
+
     List<Pack> getAbsentPatientsByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
 
     List<Pack> getAbsentPatientsDTByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
