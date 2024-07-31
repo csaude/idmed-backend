@@ -36,7 +36,7 @@ class DashBoardController {
     def getActivePatientPercentage (int year, String clinicId, String serviceCode) {
         ReportSearchParams reportSearchParams = ReportSearchParams.generateAnnualPeriod(year)
 
-        respond dashBoardService.getActivePatientPercentage(reportSearchParams.getEndDate(), clinicId, serviceCode)
+        respond dashBoardService.getActivePatientPercentage(reportSearchParams.getStartDate(),reportSearchParams.getEndDate(), clinicId, serviceCode)
     }
 
     def getDispenseByAge (int year, String clinicId, String serviceCode) {
@@ -69,6 +69,6 @@ class DashBoardController {
     def getDashboardServiceButton (int year, String clinicId) {
         ReportSearchParams reportSearchParams = ReportSearchParams.generateAnnualPeriod(year)
 
-        respond dashBoardService.getDashboardServiceButton(reportSearchParams.getEndDate(), clinicId)
+        respond dashBoardService.getDashboardServiceButton(reportSearchParams.getStartDate(),reportSearchParams.getEndDate(), clinicId)
     }
 }
