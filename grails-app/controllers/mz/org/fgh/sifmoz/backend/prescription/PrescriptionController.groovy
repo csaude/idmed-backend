@@ -130,9 +130,9 @@ class PrescriptionController extends RestfulController{
     // Futuramente reduzir para 2 ultimas prescricoes
     def getAllPrescriptionByPatientId(String patientId){
         def patient = Patient.get(patientId)
-        def lastPatientVisit = PatientVisit.findAllByPatient(patient)
+        def lastPatientVisit = PatientVisit.findAllByPatient(patient, [max: 3, sort: "visitDate", order:"desc"])
         def patientVisitDetails = PatientVisitDetails.findAllByPatientVisitInList(lastPatientVisit)
-        def prescriptions = Prescription.findAllByIdInList(patientVisitDetails?.prescription?.id)
+        def prescriptions = Prescription.findAllByIdInList(patientVisitDetails?.prescription?.id, [max: 3, sort: "prescriptionDate", order:"desc"])
 
         render JSONSerializer.setObjectListJsonResponse(prescriptions) as JSON
     }

@@ -140,9 +140,9 @@ class PackController extends RestfulController{
     // Futuramente reduzir para 2 ultimas prescricoes
     def getAllPackByPatientId(String patientId){
         def patient = Patient.get(patientId)
-        def lastPatientVisit = PatientVisit.findAllByPatient(patient)
+        def lastPatientVisit = PatientVisit.findAllByPatient(patient,[max: 3, sort: "visitDate", order:"desc"])
         def patientVisitDetails = PatientVisitDetails.findAllByPatientVisitInList(lastPatientVisit)
-        def packs = Pack.findAllByIdInList(patientVisitDetails?.pack?.id)
+        def packs = Pack.findAllByIdInList(patientVisitDetails?.pack?.id, [max: 3, sort: "pickupDate", order:"desc"])
 
         render JSONSerializer.setObjectListJsonResponse(packs) as JSON
     }

@@ -465,19 +465,34 @@ class PatientVisitController extends RestfulController {
                 def quantityControl = pcDrugs.quantitySupplied
 
                 while (quantityControl > 0) {
+                    PackagedDrugStock packagedDrugStock = new PackagedDrugStock()
+                    packagedDrugStock.beforeInsert()
                     Stock stock = Stock.get(getFirstExpiredBatchFromDrug(pcDrugs.drug, pack.pickupDate))
 
                     if (stock) {
-                        if (stock.stockMoviment <= quantityControl && stock.stockMoviment < 0) {
+                        packagedDrugStock.stock = stock
+                        packagedDrugStock.packagedDrug = pcDrugs
+                        packagedDrugStock.drug = pcDrugs.drug
+
+                        if (stock.stockMoviment < 0){
+                            packagedDrugStock.quantitySupplied = 0
+                            stock.stockMoviment = 0
+                            quantityControl = 0
+                        }else if (stock.stockMoviment <= quantityControl) {
                             quantityControl -= stock.stockMoviment
+                            packagedDrugStock.quantitySupplied = stock.stockMoviment
                             stock.stockMoviment = 0
                         } else {
                             stock.stockMoviment -= quantityControl
+                            packagedDrugStock.quantitySupplied = quantityControl
                             quantityControl = 0
                         }
+
                         stock.packagedDrugs = []
                         stock.save(flush: true)
                     }
+
+                    pcDrugs.packagedDrugStocks.add(packagedDrugStock)
                 }
             }
         }

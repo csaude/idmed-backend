@@ -141,7 +141,7 @@ class PatientVisitDetailsController extends RestfulController {
     }
 
     def getLastByPatientId(String patientId) {
-        render JSONSerializer.setObjectListJsonResponse(PatientVisitDetails.findAllByPatientVisitInList(PatientVisit.findAllByPatient(Patient.get(patientId)))) as JSON
+        render JSONSerializer.setObjectListJsonResponse(PatientVisitDetails.findAllByPatientVisitInList(PatientVisit.findAllByPatient(Patient.get(patientId), [max: 3, sort: "visitDate", order:"desc"]), [max: 3, sort: "creationDate", order:"desc"])) as JSON
     }
 
     def getAllofPrecription(String prescriptionId) {
