@@ -106,6 +106,7 @@ class UrlMappings {
 
         get "/api/patientVisitDetails/getAllByPatient/$patientId(.$format)?"(controller:'patientVisitDetails', action:'getAllByPatientId')
         get "/api/groupMember/groupMemberInfo/$groupId(.$format)?"(controller:'groupMember', action:'getMembersInfoByGroupId')
+        get "/api/groupMember/groupMemberInfoPatient/$patientId(.$format)?"(controller:'groupMember', action:'getMembersInfoByPatientId')
         get "/api/patientServiceIdentifier/value/$nidValue(.$format)?"(controller:'patientServiceIdentifier', action:'getByNidValue')
         post "/api/patient/mergeUnitePatients/$patientToHoldId/$patientToDeleteId(.$format)?"(controller:'patient', action:'mergeUnitePatients')
         get "/api/drug/getInventoryDrugs/$id(.$format)?"(controller:'drug', action:'getDrugsByInventoryId')
