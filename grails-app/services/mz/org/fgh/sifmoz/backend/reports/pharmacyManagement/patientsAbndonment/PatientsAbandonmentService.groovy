@@ -32,9 +32,15 @@ abstract class PatientsAbandonmentService implements IPatientsAbandonmentService
     void processReportAbandonmetDispenseRecords(ReportSearchParams searchParams, ReportProcessMonitor processMonitor) {
         Clinic clinic = Clinic.findById(searchParams.clinicId)
         ClinicalService clinicalService = ClinicalService.findById(searchParams.clinicalService)
-        List patientsAbandonmentList = packService.getAbandonmentByClinicalServiceAndClinicOnPeriod(clinicalService,clinic,searchParams.startDate,searchParams.endDate)
+        List patientsAbandonmentList
+        if(searchParams.reportType.equalsIgnoreCase("PATIENTES_ABANDONMENT")) {
+            patientsAbandonmentList = packService.getAbandonmentByClinicalServiceAndClinicOnPeriod(clinicalService, clinic, searchParams.startDate, searchParams.endDate)
+        }
+        if(searchParams.reportType.equalsIgnoreCase("PATIENTES_ABANDONMENT_RETURNED")) {
+            patientsAbandonmentList = packService.getAbandonmentAndReturnByClinicalServiceAndClinicOnPeriod(clinicalService, clinic, searchParams.startDate, searchParams.endDate)
+        }
 
-        String reportId = searchParams.getId()
+                String reportId = searchParams.getId()
         List<PatientsAbandonmentReport> resultList = new ArrayList<>()
 
 
@@ -84,7 +90,10 @@ abstract class PatientsAbandonmentService implements IPatientsAbandonmentService
         patientsAbandonmentReport.setName(firstName + ' ' + lastName)
 
         patientsAbandonmentReport.setDateMissedPickUp(item[5] as Date)
-            patientsAbandonmentReport.setDateIdentifiedAbandonment(item[6] as Date)
+        patientsAbandonmentReport.setDateIdentifiedAbandonment(item[6] as Date)
+        if(searchParams.reportType.equalsIgnoreCase("PATIENTES_ABANDONMENT_RETURNED")) {
+            patientsAbandonmentReport.setReturnedPickUp(item[7] as Date)
+        }
         if (item[4] != null) {
             patientsAbandonmentReport.setContact(String.valueOf(item[4]))
         }

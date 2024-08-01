@@ -2297,6 +2297,72 @@ abstract class PackService implements IPackService {
     }
 
     @Override
+    List getAbandonmentAndReturnByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService, Clinic clinic, Date startDate, Date endDate) {
+        def queryString =
+                """               
+                    WITH OrnemDeLivantamentos AS ( -- Pega todas packs de pacientes que nao estao na situacao de abandono em TARV e ordena de forna decrescente pela data de levantamento identificando as linhas 'ROW_NUMBER()'
+                        SELECT
+                            p.id AS patient_id,
+                            pk.pickup_date,
+                            pk.next_pick_up_date,
+                            ROW_NUMBER() OVER (PARTITION BY p.id ORDER BY pk.pickup_date DESC) AS row_num
+                        FROM patient p
+                        INNER JOIN patient_visit pv ON pv.patient_id = p.id
+                        INNER JOIN patient_visit_details pvd ON pvd.patient_visit_id = pv.id
+                        INNER JOIN pack pk ON pk.id = pvd.pack_id
+                        INNER JOIN patient_service_identifier psi ON psi.patient_id = p.id
+                        INNER JOIN clinical_service cs ON cs.id = psi.service_id
+                        INNER JOIN clinic c ON pk.clinic_id = c.id AND c.id = :clinic_id
+                        WHERE cs.code = 'TARV'
+                    )
+                    , SelectedPenultimoLevantamentoAbandono AS (-- Selecionar Os penultimos levantamentos que foram abandonos
+                        SELECT
+                            ol.patient_id,
+                            ol.pickup_date AS penultimaPickUpDate,
+                    ol.next_pick_up_date AS penultmaDPL,
+                            ol.next_pick_up_date + INTERVAL '60 DAY' AS dateMissedPickUp
+                        FROM OrnemDeLivantamentos ol
+                        WHERE ol.row_num = 2
+                        AND (ol.next_pick_up_date + INTERVAL '60 DAY') <= :endDate
+                    )
+                    , LastNextPickupDate AS ( -- Ultimo levantamento que e' na verdade a data de retorno dos nao voltaram a bandonar no periodo
+                        SELECT
+                            ol1.patient_id,
+                            ol1.pickup_date AS dateReturned,
+                            ol1.next_pick_up_date
+                        FROM OrnemDeLivantamentos ol1
+                        WHERE ol1.row_num = 1
+                        AND (ol1.next_pick_up_date + INTERVAL '60 DAY') >= :endDate
+                    )
+                    SELECT DISTINCT ON (psi.patient_id)
+                        psi.value,
+                        pat.first_names,
+                        pat.middle_names,
+                        pat.last_names,
+                        pat.cellphone AS contact,
+                    penultimos.penultmaDPL as next_pick_up_date,
+                        penultimos.dateMissedPickUp,
+                        ultimos.dateReturned
+                    FROM patient_service_identifier psi
+                    INNER JOIN SelectedPenultimoLevantamentoAbandono penultimos ON penultimos.patient_id = psi.patient_id
+                    INNER JOIN LastNextPickupDate ultimos ON ultimos.patient_id = psi.patient_id
+                    INNER JOIN episode e ON psi.id = e.patient_service_identifier_id
+                    INNER JOIN start_stop_reason ssr ON e.start_stop_reason_id = ssr.id AND ssr.code IN ('NOVO_PACIENTE', 'INICIO_CCR', 'TRANSFERIDO_DE', 'ABANDONO', 'VOLTOU_REFERENCIA', 'REINICIO_TRATAMENTO', 'REFERIDO_DC', 'MANUTENCAO', 'OUTRO')
+                    INNER JOIN clinical_service cs ON psi.service_id = cs.id AND cs.code = 'TARV'
+                    INNER JOIN patient pat ON pat.id = ultimos.patient_id
+                    WHERE ultimos.dateReturned > penultimos.dateMissedPickUp  
+                """
+
+        Session session = sessionFactory.getCurrentSession()
+        def query = session.createSQLQuery(queryString)
+        query.setParameter("endDate", endDate)
+        query.setParameter("clinic_id", clinic.id)
+        List<Object[]> list = query.list()
+
+        return list
+    }
+
+    @Override
     List getAbsentPatientsByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService, Clinic clinic, Date startDate, Date endDate) {
         def queryString =
                 """
