@@ -409,6 +409,7 @@ class DashBoardService {
                 " where cs.code = :service  " +
                 " and cs.code = :service " +
                 " and svw.clinic_id = :clinicId  " +
+                " and d.active = true " +
                 " GROUP BY d.id) as  stock_consuption";
 
         Session session = sessionFactory.getCurrentSession()
