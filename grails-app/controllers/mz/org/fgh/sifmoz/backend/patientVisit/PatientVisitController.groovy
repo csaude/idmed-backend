@@ -13,6 +13,8 @@ import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
 import mz.org.fgh.sifmoz.backend.packaging.Pack
+import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.IPatientVisitDetailsService
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.prescription.IPrescriptionService
@@ -167,6 +169,8 @@ class PatientVisitController extends RestfulController {
                         incrementPrescriptionSeq(item.prescription, item.episode)
                         prescriptionService.save(item.prescription)
                     }
+                    if(!syncStatus)
+                        item.pack.isreferalsynced = true
                     packService.save(item.pack)
                     reduceStock(item.pack, syncStatus)
                 }
@@ -190,10 +194,14 @@ class PatientVisitController extends RestfulController {
                             packagedDrugs.drug.clinicalService = clinicalService
                         }
                     }
+                    if(!syncStatus)
+                        item.pack.isreferalsynced = true
+
                     incrementPrescriptionSeq(item.prescription, item.episode)
                     prescriptionService.save(item.prescription)
                     packService.save(item.pack)
-                    reduceStock(item.pack, syncStatus)
+                    if(!syncStatus)
+                        reduceStock(item.pack, syncStatus)
                 }
             }
 
@@ -378,19 +386,6 @@ class PatientVisitController extends RestfulController {
             respond visit.errors
             return
         }
-//        try {
-//            patientVisitDB.patientVisitDetails.each { item ->
-//                if (item.pack) {
-//                    restoreStock(item.pack, syncStatus)
-//                    reduceStock(item.pack, syncStatus)
-//                    packService.save(item.pack)
-//                }
-//            }
-//            patientVisitService.save(patientVisitDB)
-//        } catch (ValidationException e) {
-//            respond patientVisitDB.errors
-//            return
-//        }
 
         render JSONSerializer.setJsonObjectResponse(patientVisitDB) as JSON
     }
@@ -431,7 +426,19 @@ class PatientVisitController extends RestfulController {
     }
 
     def getByPatientId(String patientId) {
-        render JSONSerializer.setObjectListJsonResponse(patientVisitService.getAllByPatientId(patientId)) as JSON
+
+        def patient = Patient.get(patientId)
+        def patientVisitList = new ArrayList<PatientVisit>()
+        def patientVisitToAdd = PatientVisit.createCriteria().list {
+            eq('patient', patient)
+            isNotEmpty("vitalSignsScreenings")
+            maxResults(3)
+            order("visitDate", "desc")
+        }
+
+        patientVisitList.addAll(patientVisitToAdd as List<PatientVisit>)
+
+        render JSONSerializer.setObjectListJsonResponse(patientVisitList) as JSON
     }
 
     def getLastVisitOfPatient(String patientId) {
