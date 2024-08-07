@@ -4,11 +4,13 @@ import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
+import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugService
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStockService
 import mz.org.fgh.sifmoz.backend.clinic.ClinicService
 import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
@@ -25,7 +27,7 @@ import static org.springframework.http.HttpStatus.OK
 
 import grails.gorm.transactions.Transactional
 
-class PackController extends RestfulController{
+class PackController extends RestfulController {
 
     IPackService packService
     StockService stockService
@@ -59,12 +61,12 @@ class PackController extends RestfulController{
         pack.beforeInsert()
         pack.validate()
 
-        if(objectJSON.id){
+        if (objectJSON.id) {
             pack.id = UUID.fromString(objectJSON.id)
             pack.packagedDrugs.eachWithIndex { item, index ->
                 item.id = UUID.fromString(objectJSON.packagedDrugs[index].id)
                 item.drug.stockList = null
-                item.packagedDrugStocks.eachWithIndex{ item2, index2 ->
+                item.packagedDrugStocks.eachWithIndex { item2, index2 ->
                     item2.id = UUID.fromString(objectJSON.packagedDrugs[index].packagedDrugStocks[index2].id)
                 }
             }
@@ -83,7 +85,7 @@ class PackController extends RestfulController{
             return
         }
 
-        respond pack, [status: CREATED, view:"show"]
+        respond pack, [status: CREATED, view: "show"]
     }
 
     @Transactional
@@ -115,7 +117,7 @@ class PackController extends RestfulController{
             return
         }
 
-        respond pack, [status: OK, view:"show"]
+        respond pack, [status: OK, view: "show"]
     }
 
     @Transactional
@@ -138,13 +140,61 @@ class PackController extends RestfulController{
     }
 
     // Futuramente reduzir para 2 ultimas prescricoes
-    def getAllPackByPatientId(String patientId){
-        def patient = Patient.get(patientId)
-        def lastPatientVisit = PatientVisit.findAllByPatient(patient,[max: 3, sort: "visitDate", order:"desc"])
-        def patientVisitDetails = PatientVisitDetails.findAllByPatientVisitInList(lastPatientVisit)
-        def packs = Pack.findAllByIdInList(patientVisitDetails?.pack?.id, [max: 3, sort: "pickupDate", order:"desc"])
+    def getLastPackByPatientId(String patientId) {
 
-        render JSONSerializer.setObjectListJsonResponse(packs) as JSON
+        def patient = Patient.get(patientId)
+        List<Pack> packsList = new ArrayList<Pack>()
+
+        if (patient) {
+            def patientServiceIdentifierList = PatientServiceIdentifier.createCriteria().list {
+                eq("patient", patient)
+            }
+
+            patientServiceIdentifierList.each { patientServiceIdentifier ->
+                def episode = Episode.createCriteria().get {
+                    eq("patientServiceIdentifier", patientServiceIdentifier)
+                    maxResults(1)
+                    order("episodeDate", "desc")
+                }
+
+                if (episode) {
+                    def patientVisitDetails = PatientVisitDetails.createCriteria().list {
+                        eq("episode", episode)
+                    }
+
+                    if (!patientVisitDetails.isEmpty()) {
+
+                        def prescriptionIds = patientVisitDetails.collect { it.prescription.id }
+                        def prescription = Prescription.createCriteria().get {
+                            'in'("id", prescriptionIds)
+                            maxResults(1)
+                            order("prescriptionDate", "desc")
+                        }
+
+                        if(prescription){
+                            def pdvList = PatientVisitDetails.findAllByPrescription(prescription as Prescription)
+                            packsList.addAll(pdvList.pack as List<Pack>)
+                        }
+                    }
+                }
+            }
+        }
+
+        render JSONSerializer.setObjectListJsonResponse(packsList) as JSON
+    }
+
+
+    def getAllPackByPatientId(String patientId) {
+
+        def patient = Patient.get(patientId)
+        List<Pack> packsList = new ArrayList<Pack>()
+
+        if (patient) {
+           def patientVisitDetails = PatientVisitDetails.findAllByPatientVisitInList( PatientVisit.findAllByPatient(patient))
+            packsList.addAll(patientVisitDetails.pack as List<Pack>)
+        }
+
+        render JSONSerializer.setObjectListJsonResponseLevel3(packsList) as JSON
     }
 
     def getAllByPackIds() {
