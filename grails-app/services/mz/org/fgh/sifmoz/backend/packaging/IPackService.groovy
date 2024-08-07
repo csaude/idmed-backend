@@ -10,6 +10,7 @@ import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.linhasUsadas.LinhasU
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaRegimenSubReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.segundasLinhas.SegundasLinhasReport
+import mz.org.fgh.sifmoz.backend.reports.stock.BalanceteReport
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 
 
@@ -37,6 +38,8 @@ interface IPackService {
     List<LinhasUsadasReport> getLinhasUsadas(ClinicalService service, Clinic clinic, Date startDate, Date endDate)
 
     List<SegundasLinhasReport> getSegundasLinhas(ClinicalService service, Clinic clinic, Date startDate, Date endDate)
+
+    List<BalanceteReport> getBalanceteReport(ClinicalService service, Clinic clinic, Date startDate, Date endDate)
 
     Object getMMIADispenseTypeStatisticOnPeriod(ClinicalService service, Clinic clinic, Date startDate, Date endDate)
 

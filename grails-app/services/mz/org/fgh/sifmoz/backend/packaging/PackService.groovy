@@ -11,6 +11,7 @@ import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.linhasUsadas.LinhasU
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaRegimenSubReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.segundasLinhas.SegundasLinhasReport
+import mz.org.fgh.sifmoz.backend.reports.stock.BalanceteReport
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.therapeuticLine.TherapeuticLine
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
@@ -21,6 +22,7 @@ import com.google.gson.Gson
 
 import javax.sql.DataSource
 import java.sql.Timestamp
+import java.text.ParseException
 import java.text.SimpleDateFormat
 
 @Transactional
@@ -1285,6 +1287,36 @@ abstract class PackService implements IPackService {
         segundasLinhasReports.add(segundasLinhasReport)
     }
 
+    def addBalanceteInList(Object item, List<BalanceteReport> balanceteReports) {
+        BalanceteReport balanceteReport = new BalanceteReport()
+        balanceteReport.setFnm(String.valueOf(item[0]))
+        balanceteReport.setMedicamento(String.valueOf(item[1]))
+        try {
+            // Converter a string "YYYY-MM-DD" para um objeto Date
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date date = inputFormat.parse(String.valueOf(item[2]))
+
+            // Definir o dia do evento com o formato desejado
+            balanceteReport.setDiaDoEvento(date)
+            // Converter a string para Double e depois para Integer
+            balanceteReport.setEntradas((int) Math.round(Double.valueOf(String.valueOf(item[3]))));
+            balanceteReport.setSaidas((int) Math.round(Double.valueOf(String.valueOf(item[4]))));
+            int perdasEAjustes = (int) Math.round(Double.valueOf(String.valueOf(item[5]))) +
+                    (int) Math.round(Double.valueOf(String.valueOf(item[7]))) +
+                    (int) Math.round(Double.valueOf(String.valueOf(item[8])));
+
+            balanceteReport.setPerdasEAjustes(perdasEAjustes);
+    //        balanceteReport.setStockExistente(Integer.valueOf(String.valueOf(item[6])))
+            balanceteReport.setStockExistente(0)
+            balanceteReport.setNotas("")
+            balanceteReport.setValidadeMedicamento(new Date()) // POR TERMINAR
+            balanceteReport.setUnidade("") // POR TERMINAR
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        balanceteReports.add(balanceteReport)
+    }
+
     @Override
     List<LinhasUsadasReport> getLinhasUsadas(ClinicalService service, Clinic clinic, Date startDate, Date endDate) {
 
@@ -1415,6 +1447,311 @@ abstract class PackService implements IPackService {
                 addSegundasLinhasInList(list[i], segundasLinhasReports)
             }
             return segundasLinhasReports
+        }
+    }
+
+    @Override
+    List<BalanceteReport> getBalanceteReport(ClinicalService service, Clinic clinic, Date startDate, Date endDate){
+
+        def starter = new java.sql.Date(startDate.time)
+        def finalDate = new java.sql.Date(endDate.time)
+        def params = [startDate: starter, endDate: finalDate, clinic: clinic.id, clinicalService: service.code]
+        def sql = new Sql(dataSource as DataSource)
+        List<BalanceteReport> balanceteReports = new ArrayList<>()
+
+        String query = ""
+
+        if (service.isTarv()) {
+            query =
+                    """
+                     WITH entrada AS (
+                        SELECT 
+                            s.drug_id,
+                            d.fnm_code,
+                            d.name,
+                            date(se.date_received) AS event_date,
+                            SUM(CEIL(s.units_received::double precision)) AS incomes,
+                            0 AS outcomes,
+                            0 AS positiveadjustment,
+                            0 AS negativeadjustment,
+                            0 AS losses,
+                            s.id AS stock
+                        FROM 
+                            stock_entrance se
+                        JOIN 
+                            stock s ON se.id::text = s.entrance_id::text
+                        JOIN 
+                            drug d ON s.drug_id = d.id
+                        GROUP BY 
+                            date(se.date_received), s.drug_id, d.fnm_code, d.name, s.id
+                        ORDER BY 
+                            date(se.date_received) DESC
+                    ),
+                    saida AS (
+                        SELECT 
+                            pd.drug_id,
+                            d.fnm_code,
+                            d.name,
+                            date(p.pickup_date) AS event_date,
+                            0 AS incomes,
+                            SUM(CEIL(pd.quantity_supplied)) AS outcomes,
+                            0 AS positiveadjustment,
+                            0 AS negativeadjustment,
+                            0 AS losses,
+                            s.id AS stock
+                        FROM 
+                            packaged_drug pd
+                        JOIN 
+                            packaged_drug_stock pds ON pd.id::text = pds.packaged_drug_id::text
+                        JOIN 
+                            stock s ON s.id::text = pds.stock_id::text
+                        JOIN 
+                            drug d ON s.drug_id = d.id
+                        JOIN 
+                            pack p ON p.id::text = pd.pack_id::text
+                        GROUP BY 
+                            date(p.pickup_date), pd.drug_id, d.fnm_code, d.name, s.id
+                        ORDER BY 
+                            date(p.pickup_date) DESC
+                    ),
+                    ajuste_positivo AS (
+                        SELECT 
+                            s.drug_id,
+                            d.fnm_code,
+                            d.name,
+                            date(rsm.date) AS event_date,
+                            0 AS incomes,
+                            0 AS outcomes,
+                            SUM(sa.adjusted_value) AS positiveadjustment,
+                            0 AS negativeadjustment,
+                            0 AS losses,
+                            s.id AS stock
+                        FROM 
+                            stock_adjustment sa
+                        JOIN 
+                            refered_stock_moviment rsm ON sa.reference_id::text = rsm.id::text
+                        JOIN 
+                            stock s ON sa.adjusted_stock_id::text = s.id::text
+                        JOIN 
+                            drug d ON s.drug_id = d.id
+                        JOIN 
+                            stock_operation_type sot ON sa.operation_id::text = sot.id::text
+                        WHERE 
+                            sot.code = 'AJUSTE_POSETIVO'
+                        GROUP BY 
+                            date(rsm.date), s.drug_id, d.fnm_code, d.name, s.id
+                        ORDER BY 
+                            date(rsm.date) DESC
+                    ),
+                    ajuste_negativo AS (
+                        SELECT 
+                            s.drug_id,
+                            d.fnm_code,
+                            d.name,
+                            date(rsm.date) AS event_date,
+                            0 AS incomes,
+                            0 AS outcomes,
+                            0 AS positiveadjustment,
+                            SUM(CEIL(sa.adjusted_value::double precision)) AS negativeadjustment,
+                            0 AS losses,
+                            s.id AS stock
+                        FROM 
+                            stock_adjustment sa
+                        JOIN 
+                            refered_stock_moviment rsm ON sa.reference_id::text = rsm.id::text
+                        JOIN 
+                            stock s ON sa.adjusted_stock_id::text = s.id::text
+                        JOIN 
+                            drug d ON s.drug_id = d.id
+                        JOIN 
+                            stock_operation_type sot ON sa.operation_id::text = sot.id::text
+                        WHERE 
+                            sot.code = 'AJUSTE_NEGATIVO'
+                        GROUP BY 
+                            date(rsm.date), s.drug_id, d.fnm_code, d.name, s.id
+                        ORDER BY 
+                            date(rsm.date) DESC
+                    ),
+                    perda AS (
+                        SELECT 
+                            s.drug_id,
+                            d.fnm_code,
+                            d.name,
+                            date(ds.date) AS event_date,
+                            0 AS incomes,
+                            0 AS outcomes,
+                            0 AS positiveadjustment,
+                            0 AS negativeadjustment,
+                            SUM(CEIL(sa.adjusted_value::double precision)) AS losses,
+                            s.id AS stock
+                        FROM 
+                            stock_adjustment sa
+                        JOIN 
+                            destroyed_stock ds ON sa.destruction_id::text = ds.id::text
+                        JOIN 
+                            stock s ON sa.adjusted_stock_id::text = s.id::text
+                        JOIN 
+                            drug d ON s.drug_id = d.id
+                        GROUP BY 
+                            date(ds.date), s.drug_id, d.fnm_code, d.name, s.id
+                        ORDER BY 
+                            date(ds.date) DESC
+                    ),
+                    inventario AS (
+                        SELECT 
+                            s.drug_id,
+                            d.fnm_code,
+                            d.name,
+                            date(i.end_date) AS event_date,
+                            0 AS incomes,
+                            0 AS outcomes,
+                            SUM(
+                                CASE
+                                    WHEN sot.code = 'AJUSTE_POSETIVO' THEN sa.adjusted_value
+                                    ELSE 0
+                                END
+                            ) AS positiveadjustment,
+                            SUM(
+                                CASE
+                                    WHEN sot.code = 'AJUSTE_NEGATIVO' THEN sa.adjusted_value
+                                    ELSE 0
+                                END
+                            ) AS negativeadjustment,
+                            0 AS losses,
+                            s.id AS stock
+                        FROM 
+                            stock_adjustment sa
+                        JOIN 
+                            inventory i ON sa.inventory_id::text = i.id::text
+                        JOIN 
+                            stock s ON sa.adjusted_stock_id::text = s.id::text
+                        JOIN 
+                            drug d ON s.drug_id = d.id
+                        JOIN 
+                            stock_operation_type sot ON sa.operation_id::text = sot.id::text
+                        WHERE 
+                            i.end_date IS NOT NULL
+                        GROUP BY 
+                            date(i.end_date), s.drug_id, d.fnm_code, d.name, s.id
+                        ORDER BY 
+                            date(i.end_date) DESC
+                    )
+                    
+                    SELECT DISTINCT ON (event_date, fnm_code, name, incomes, outcomes, losses, stock, positiveadjustment, negativeadjustment)
+                        fnm_code,
+                        name,
+                        event_date,
+                        incomes,
+                        outcomes,
+                        losses,
+                        stock,
+                        positiveadjustment,
+                        negativeadjustment
+                    FROM (
+                        SELECT 
+                            fnm_code,
+                            name,
+                            event_date,
+                            incomes,
+                            outcomes,
+                            losses,
+                            stock,
+                            positiveadjustment,
+                            negativeadjustment
+                        FROM 
+                            entrada
+                        
+                        UNION ALL
+                        
+                        SELECT 
+                            fnm_code,
+                            name,
+                            event_date,
+                            incomes,
+                            outcomes,
+                            losses,
+                            stock,
+                            positiveadjustment,
+                            negativeadjustment
+                        FROM 
+                            saida
+                        
+                        UNION ALL
+                        
+                        SELECT 
+                            fnm_code,
+                            name,
+                            event_date,
+                            incomes,
+                            outcomes,
+                            losses,
+                            stock,
+                            positiveadjustment,
+                            negativeadjustment
+                        FROM 
+                            ajuste_positivo
+                        
+                        UNION ALL
+                        
+                        SELECT 
+                            fnm_code,
+                            name,
+                            event_date,
+                            incomes,
+                            outcomes,
+                            losses,
+                            stock,
+                            positiveadjustment,
+                            negativeadjustment
+                        FROM 
+                            ajuste_negativo
+                        
+                        UNION ALL
+                        
+                        SELECT 
+                            fnm_code,
+                            name,
+                            event_date,
+                            incomes,
+                            outcomes,
+                            losses,
+                            stock,
+                            positiveadjustment,
+                            negativeadjustment
+                        FROM 
+                            perda
+                        
+                        UNION ALL
+                        
+                        SELECT 
+                            fnm_code,
+                            name,
+                            event_date,
+                            incomes,
+                            outcomes,
+                            losses,
+                            stock,
+                            positiveadjustment,
+                            negativeadjustment
+                        FROM 
+                            inventario
+                    ) AS combined
+                    WHERE 
+                        event_date BETWEEN :startDate AND :endDate
+                    ORDER BY 
+                        event_date;
+                    """
+        } else {
+            // Futuramente
+        }
+
+        def list = sql.rows(query, params)
+
+        if (Utilities.listHasElements(list as ArrayList<?>)) {
+            for (int i = 0; i < list.size(); i++) {
+                addBalanceteInList(list[i], balanceteReports)
+            }
+            return balanceteReports
         }
     }
 
