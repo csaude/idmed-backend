@@ -4,8 +4,7 @@ import grails.web.*
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
-
-import java.nio.charset.StandardCharsets
+import org.hibernate.collection.internal.PersistentSet
 
 class JSONSerializer {
     def target
@@ -21,6 +20,46 @@ class JSONSerializer {
         this.target = target
         this.searchMode = searchMode
         this.toInclude = toInclude
+    }
+
+    HashSet<String> excludedProperties = ['class', 'metaClass', 'logExcluded', 'auditablePropertyNames', 'logIgnoreEvents',
+                                          'logVerboseEvents', 'auditableDirtyPropertyNames', 'logMaskProperties', 'clearQueueEnabled',
+                                          'newlyInstantiated'] as HashSet
+
+    boolean isExclusiveProperty(String propName) {
+        return excludedProperties.contains(propName)
+    }
+
+    static boolean isObject(Object propValue) {
+        return propValue instanceof Object
+    }
+
+    static boolean isPersistentSet(Object propValue) {
+        return propValue instanceof PersistentSet || propValue instanceof Collection || propValue instanceof List
+    }
+
+    static JSONArray getSerializedArray(Object propValue) {
+        JSONArray array = new JSONArray()
+        propValue.each { object ->
+            def serializedObject = new JSONObject(new JSONSerializer(object).getJSON())
+            array.add(serializedObject)
+        }
+        return array
+    }
+
+    String getJSONLevel0() {
+        Closure jsonFormat = {
+            // Set the delegate of buildJSON to ensure that missing methods called thereby are routed to the JSONBuilder
+            if (this.searchMode) {
+                buildLightJSON.delegate = delegate
+                buildLightJSON(target)
+            } else {
+                buildLightJSON.delegate = delegate
+                buildLightJSON(target)
+            }
+        }
+        def json = new JSONBuilder().build(jsonFormat)
+        return json.toString(true)
     }
 
     String getJSON() {
@@ -39,146 +78,109 @@ class JSONSerializer {
         return json.toString(true)
     }
 
+    String getJSONLevel2() {
+        Closure jsonFormat = {
+            // Set the delegate of buildJSON to ensure that missing methods called thereby are routed to the JSONBuilder
+
+            if (this.searchMode) {
+                buildJSONChild.delegate = delegate
+                buildJSONChild(target)
+            } else {
+                buildJSONChild.delegate = delegate
+                buildJSONChild(target)
+            }
+        }
+        def json = new JSONBuilder().build(jsonFormat)
+        return json.toString(true)
+    }
+
     String getJSONLevel3() {
         Closure jsonFormat = {
             // Set the delegate of buildJSON to ensure that missing methods called thereby are routed to the JSONBuilder
-
             if (this.searchMode) {
-                buildJSONChild.delegate = delegate
-                buildJSONChild(target)
+                buildJSONParentChild.delegate = delegate
+                buildJSONParentChild(target)
             } else {
-                buildJSONChild.delegate = delegate
-                buildJSONChild(target)
+                buildJSONParentChild.delegate = delegate
+                buildJSONParentChild(target)
             }
         }
         def json = new JSONBuilder().build(jsonFormat)
         return json.toString(true)
-    }
-
-    String getJSONLevel0() {
-        Closure jsonFormat = {
-            // Set the delegate of buildJSON to ensure that missing methods called thereby are routed to the JSONBuilder
-            if (this.searchMode) {
-                buildLightJSON.delegate = delegate
-                buildLightJSON(target)
-            } else {
-                buildLightJSON.delegate = delegate
-                buildLightJSON(target)
-            }
-        }
-        def json = new JSONBuilder().build(jsonFormat)
-        return json.toString(true)
-    }
-
-    private buildJSON = { obj ->
-        setProperty("id", obj.id)
-        obj.properties.each { propName, propValue ->
-            if (!['class', 'metaClass'].contains(propName)) {
-
-                if (isSimple(propValue)) {
-                    // It seems "propName = propValue" doesn't work when propName is dynamic so we need to
-                    // set the property on the builder using this syntax instead
-                    setProperty(propName, propValue)
-                } else {
-                        Closure nestedObject = {
-                            buildJSON(propValue)
-                        }
-                        setProperty(propName, nestedObject)
-                    }
-
-                }
-            }
-        }
-
-    private buildJSONChild = { obj ->
-        setProperty("id", obj.id)
-        obj.properties.each { propName, propValue ->
-            if (!['class', 'metaClass'].contains(propName)) {
-
-                if (isSimpleProp(propValue)) {
-                    // It seems "propName = propValue" doesn't work when propName is dynamic so we need to
-                    // set the property on the builder using this syntax instead
-                    setProperty(propName, propValue)
-                } else {
-                    if (propValue instanceof org.hibernate.collection.internal.PersistentSet) {
-                        for (object in propValue) {
-                            def serializedObject = new JSONObject(new JSONSerializer(object).getJSON())
-                            Closure nestedObject = {
-                                buildJSONChild(serializedObject)
-                            }
-                            setProperty(propName, nestedObject)
-                        }
-                    } else {
-                        // propValue is a list of objects, so serialize each object in the list and add it to the JSON array
-                        Closure nestedObject = {
-                            buildJSONChild(propValue)
-                        }
-                        setProperty(propName, nestedObject)
-                    }
-                }
-
-            }
-        }
-    }
-
-    private buildJSONChildTest = { obj ->
-        setProperty("id", obj.id)
-        obj.properties.each { propName, propValue ->
-            if (!['class', 'metaClass'].contains(propName)) {
-
-                if (isSimpleProp(propValue)) {
-                    // It seems "propName = propValue" doesn't work when propName is dynamic so we need to
-                    // set the property on the builder using this syntax instead
-                    setProperty(propName, propValue)
-                } else {
-                    println(propValue)
-                    if (propValue instanceof Object) {
-                        if (propValue instanceof org.hibernate.collection.internal.PersistentSet) {
-                            JSONArray array = new JSONArray()
-                            // ArrayList array = new ArrayList()
-                            for (object in propValue) {
-                                def serializedObject = new JSONObject(new JSONSerializer(object).getJSON())
-                                array.add(serializedObject)
-                                // Object nestedObject = {
-                                //    buildJSON(object)
-                                // }
-                            }
-                            setProperty(propName, array)
-                        } else {
-                            // create a nested JSON object and recursively call this function to serialize it
-                            Closure nestedObject = {
-                                buildJSONChild(propValue)
-                            }
-                            setProperty(propName, nestedObject)
-                        }
-                    } else {
-                        // propValue is a list of objects, so serialize each object in the list and add it to the JSON array
-                        JSONArray array = new JSONArray()
-                        for (object in propValue) {
-                            Closure nestedObject = {
-                                buildJSONChild(object)
-                            }
-                            array.add(nestedObject)
-                        }
-                        setProperty(propName, array)
-                    }
-                }
-            }
-        }
     }
 
     private buildLightJSON = { obj ->
         setProperty("id", obj.id)
         obj.properties.each { propName, propValue ->
-            if (!['class', 'metaClass'].contains(propName)) {
+            if (isExclusiveProperty(propName as String)) return
 
-                if (isSimpleProp(propValue)) {
-                    setProperty(propName, propValue)
-                }
+            if (isSimpleProp(propValue)) {
+                setProperty(propName as String, propValue)
+                return
             }
         }
     }
 
+    private buildJSON = { obj ->
+        setProperty("id", obj.id)
+        obj.properties.each { propName, propValue ->
+
+            if (isExclusiveProperty(propName as String)) return
+
+            if (isSimple(propValue)) {
+                setProperty(propName as String, propValue)
+                return
+            }
+
+            Closure nestedObject = {
+                buildJSON(propValue)
+            }
+            setProperty(propName as String, nestedObject)
+        }
+    }
+
+    private buildJSONChild = { obj ->
+        setProperty("id", obj.id)
+        obj.properties.each { propName, propValue ->
+            if (isExclusiveProperty(propName as String)) return
+
+            if (isSimpleProp(propValue)) {
+                setProperty(propName as String, propValue)
+                return
+            }
+
+            if (isPersistentSet(propValue)) {
+                setProperty(propName as String, setJsonObjectResponse(propValue as List))
+                return
+            }
+            // propValue is a list of objects, so serialize each object in the list and add it to the JSON array
+            Closure nestedObject = {
+                buildJSONChild(propValue)
+            }
+            setProperty(propName as String, nestedObject)
+        }
+    }
+
+    private buildJSONParentChild = { obj ->
+        setProperty("id", obj.id)
+        obj.properties.each { propName, propValue ->
+            if (isExclusiveProperty(propName as String)) return
+
+            if (isSimpleProp(propValue)) {
+                setProperty(propName as String, propValue)
+                return
+            }
+
+            if (isObject(propValue)) {
+                if (isPersistentSet(propValue)) {
+                    setProperty(propName as String, setObjectListJsonResponseLevel2(propValue as List))
+                    return
+                }
+                setProperty(propName as String, setJsonObjectResponseLevel2(propValue))
+                return
+            }
+        }
+    }
 
     private boolean isSimpleIncluded(String propName) {
         if (Utilities.listHasElements(this.toInclude as ArrayList<?>)) {
@@ -233,28 +235,7 @@ class JSONSerializer {
         // for whether propValue is an instanceof Number, String, Boolean, Char, etc.
         propValue instanceof Serializable || propValue == null
     }
-
-    static JSONArray setObjectListJsonResponse(List objectList) {
-        JSONArray patientList = new JSONArray()
-
-        for (object in objectList) {
-            JSONObject jo = new JSONObject(new JSONSerializer(object).getJSON())
-            patientList.add(jo)
-        }
-
-        return patientList
-    }
-
-    static JSONObject setJsonObjectResponse(Object object) {
-
-        return new JSONObject(new JSONSerializer(object).getJSON())
-    }
-
-    static JSONObject setJsonObjectResponseLevel3(Object object) {
-
-        return new JSONObject(new JSONSerializer(object).getJSONLevel3())
-    }
-
+    // Level 0
     static JSONObject setJsonLightObjectResponse(Object object) {
 
         return new JSONObject(new JSONSerializer(object).getJSONLevel0())
@@ -271,5 +252,48 @@ class JSONSerializer {
         return patientList
     }
 
+    // Level 1
+    static JSONObject setJsonObjectResponse(Object object) {
 
+        return new JSONObject(new JSONSerializer(object).getJSON())
+    }
+    static JSONArray setObjectListJsonResponse(List objectList) {
+        JSONArray allObjectList = new JSONArray()
+
+        for (object in objectList) {
+            JSONObject jo = new JSONObject(new JSONSerializer(object).getJSON())
+            allObjectList.add(jo)
+        }
+        return allObjectList
+    }
+    // Level 2
+    static JSONObject setJsonObjectResponseLevel2(Object object) {
+
+        return new JSONObject(new JSONSerializer(object).getJSON())
+    }
+    static JSONArray setObjectListJsonResponseLevel2(List objectList) {
+        JSONArray allObjectList = new JSONArray()
+
+        for (object in objectList) {
+            JSONObject jo = new JSONObject(new JSONSerializer(object).getJSONLevel2())
+            allObjectList.add(jo)
+        }
+        return allObjectList
+    }
+
+    // Level 3
+    static JSONObject setJsonObjectResponseLevel3(Object object) {
+
+        return new JSONObject(new JSONSerializer(object).getJSONLevel3())
+    }
+    static JSONArray setObjectListJsonResponseLevel3(List objectList) {
+        JSONArray allObjectList = new JSONArray()
+
+        for (object in objectList) {
+            JSONObject jo = new JSONObject(new JSONSerializer(object).getJSONLevel3())
+            allObjectList.add(jo)
+        }
+
+        return allObjectList
+    }
 }
