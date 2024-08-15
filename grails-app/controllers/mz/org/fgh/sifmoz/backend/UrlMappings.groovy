@@ -58,7 +58,7 @@ class UrlMappings {
         get "/api/patientVisit/lastofPatient/$patientId(.$format)?"(controller:'patientVisit', action:'getLastVisitOfPatient')
         get "/api/pack/prescription/$prescriptionId(.$format)?"(controller:'pack', action:'getAllByPrescriptionId')
         get "/api/pack/patient/$patientId(.$format)?"(controller:'pack', action:'getLastPackByPatientId')
-        get "/api/pack/getAllByPatient/$patientId(.$format)?"(controller:'pack', action:'getAllPackByPatientId')
+        get "/api/pack/getAllByPatient/$patientId/$serviceCode(.$format)?"(controller:'pack', action:'getAllPackByPatientId')
         get "/api/patient/reportActiveByServiceCode/"(controller:'patient', action:'getReportActiveByServiceCode')
         get "/api/migrationLog/printReport/"(controller:'migration', action:'printReport')
         post "/api/$controller/initReportProcess(.$format)?"(action:'initReportProcess')
