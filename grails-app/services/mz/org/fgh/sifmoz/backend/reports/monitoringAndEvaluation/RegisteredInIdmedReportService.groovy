@@ -20,9 +20,25 @@ abstract class RegisteredInIdmedReportService implements IRegisteredInIdmedRepor
 
     @Override
     void processReportRecords(ReportSearchParams searchParams, ReportProcessMonitor processMonitor) {
-        def result = Patient.findAllByHisIsNullAndCreationDateBetween(
-                searchParams.getStartDate(),
-                searchParams.getEndDate())
+
+        def result = Patient.createCriteria().list {
+            or {
+                and {
+                    isNull("his")
+                    eq("hisSyncStatus", 'N' as char)
+                }
+                and {
+                    isNull("his")
+                    eq("hisSyncStatus", 'R' as char)
+                }
+                and {
+                    isNotNull("his")
+                    eq("hisSyncStatus", 'S' as char)
+                }
+            }
+            between("creationDate", searchParams.getStartDate(), searchParams.getEndDate())
+        }
+
 
         double percentageUnit = 0
         if (result.size() == 0) {
