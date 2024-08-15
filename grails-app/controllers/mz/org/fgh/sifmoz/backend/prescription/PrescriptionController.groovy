@@ -5,7 +5,10 @@ import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.doctor.DoctorService
+import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
@@ -130,11 +133,42 @@ class PrescriptionController extends RestfulController{
     // Futuramente reduzir para 2 ultimas prescricoes
     def getAllPrescriptionByPatientId(String patientId){
         def patient = Patient.get(patientId)
-        def lastPatientVisit = PatientVisit.findAllByPatient(patient, [max: 3, sort: "visitDate", order:"desc"])
-        def patientVisitDetails = PatientVisitDetails.findAllByPatientVisitInList(lastPatientVisit)
-        def prescriptions = Prescription.findAllByIdInList(patientVisitDetails?.prescription?.id, [max: 3, sort: "prescriptionDate", order:"desc"])
+        List<Prescription> prescriptionList = new ArrayList<Prescription>()
 
-        render JSONSerializer.setObjectListJsonResponse(prescriptions) as JSON
+        if(patient){
+            def patientServiceIdentifierList = PatientServiceIdentifier.createCriteria().list {
+                eq("patient", patient)
+            }
+
+            patientServiceIdentifierList.each { patientServiceIdentifier ->
+                def episode = Episode.createCriteria().get {
+                    eq("patientServiceIdentifier", patientServiceIdentifier)
+                    maxResults(1)
+                    order("episodeDate", "desc")
+                }
+
+                if(episode){
+                    def patientVisitDetails = PatientVisitDetails.createCriteria().list {
+                        eq("episode", episode)
+                    }
+
+                    if(!patientVisitDetails.isEmpty()){
+                        def prescriptionIds = patientVisitDetails.collect { it.prescription.id }
+                        def prescription = Prescription.createCriteria().get {
+                            'in'("id", prescriptionIds)
+                            maxResults(1)
+                            order("prescriptionDate", "desc")
+                        }
+
+                        if(prescription){
+                            prescriptionList.add(prescription as Prescription)
+                        }
+                    }
+                }
+            }
+        }
+
+        render JSONSerializer.setObjectListJsonResponse(prescriptionList) as JSON
     }
 
     def getAllLastPrescriptionOfClinic(String clinicId, int offset, int max) {

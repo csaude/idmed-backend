@@ -14,6 +14,8 @@ import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 
+import java.util.stream.Collectors
+
 @Transactional
 @Service(PatientVisitDetails)
 abstract class PatientVisitDetailsService implements IPatientVisitDetailsService {
@@ -558,9 +560,9 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
             print(patientVisitDetailsList.size())
         }
         *
-         */
+      */
         List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
-        patientIds.each {
+       // patientIds.each {
             def visitDetails = Patient.executeQuery("select pvd from PatientVisitDetails pvd " +
                     "inner join fetch pvd.episode ep " +
                     "inner join fetch ep.patientServiceIdentifier psi " +
@@ -568,23 +570,57 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
                     "inner join fetch ep.clinic c " +
                     "inner join fetch pvd.patientVisit pv " +
                     "where ep.clinicSector = :clinicSector " +
-                    "and p.id = :patientId " +
+                    "and p.id in :patientIds " +
                     "and ep.episodeDate = ( " +
                     "  SELECT MAX(e.episodeDate)" +
                     "  FROM Episode e" +
                     " inner join e.patientServiceIdentifier psi2" +
                     "  WHERE psi2 = ep.patientServiceIdentifier and e.clinicSector = :clinicSector" +
                     ")" +
-                    "order by ep.episodeDate desc", [clinicSector: clinicSector1, patientId: it])
-            if (visitDetails.size() == 0) {
-                List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it), [sort: 'visitDate', order: 'desc'])
-                if (patientVisitList.size() > 0) {
-                    PatientVisit pvLast = patientVisitList.get(0)
-                    patientVisitDetailsLists.addAll(pvLast.patientVisitDetails)
-                }
-            } else {
-                patientVisitDetailsLists.addAll(visitDetails)
+                    "order by ep.episodeDate desc", [clinicSector: clinicSector1, patientIds: patientIds])
+
+
+        // Grouping the details by patient ID
+        def groupedByPatient = visitDetails.groupBy { it.episode.patientServiceIdentifier.patient.id }
+
+   // Extracting the last 3 visit details for each patient
+        def lastThreeVisitDetails = groupedByPatient.collect { patientId, detailsList ->
+          //  detailsList.sort { -it.patientVisit.visitDate.time }[0..2]
+            def sortedDetailsList = detailsList.sort { -it.patientVisit.visitDate.time }
+            sortedDetailsList.take(3)
+        }.flatten()
+
+        patientVisitDetailsLists.addAll(lastThreeVisitDetails);
+
+        Set<String> patientsWithVisitDetails = visitDetails.stream()
+                .map(pvd -> pvd.episode.patientServiceIdentifier.patient.id)
+                .collect(Collectors.toSet());
+
+        Set<String> remainingPatientIds = new HashSet<>(patientIds);
+        remainingPatientIds.removeAll(patientsWithVisitDetails);
+        if (!remainingPatientIds.isEmpty()) {
+            List<PatientVisit> fallbackVisitDetails = PatientVisit.executeQuery("""
+        select pv
+        from PatientVisit pv
+        inner join fetch pv.patientVisitDetails pvd
+        inner join fetch pv.patient p
+        where p.id in :patientIds
+        and pv.id = (
+            select max(pvInner.id)
+            from PatientVisit pvInner
+            where pvInner.patient.id = p.id
+        )
+        order by pv.visitDate desc
+    """, [patientIds: remainingPatientIds]);
+
+            List<PatientVisitDetails> patientsWithVisitDetails1 = fallbackVisitDetails.stream()
+                    .map(pv -> pv.patientVisitDetails)
+                    .collect(Collectors.toList());
+            // Add the fallback visit details to the final list
+            patientsWithVisitDetails1.each {it ->
+                patientVisitDetailsLists.addAll(it);
             }
+
         }
 
         return patientVisitDetailsLists

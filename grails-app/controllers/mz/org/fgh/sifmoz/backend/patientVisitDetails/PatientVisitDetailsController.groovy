@@ -11,6 +11,7 @@ import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.IPatientVisitService
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.prescription.IPrescriptionService
@@ -18,6 +19,7 @@ import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.stock.IStockService
 import mz.org.fgh.sifmoz.backend.stock.Stock
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
+
 //import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer2
 
 import javax.transaction.TransactionalException
@@ -117,7 +119,7 @@ class PatientVisitDetailsController extends RestfulController {
             restoreStock(patientVisitDetail.pack)
             packService.delete(patientVisitDetail.pack.id)
             updateErrorLog(id)
-            if(PatientVisitDetails.countByPrescription(patientVisitDetail.prescription) == 1)
+            if (PatientVisitDetails.countByPrescription(patientVisitDetail.prescription) == 1)
                 prescriptionService.delete(patientVisitDetail.prescription.id)
             render status: NO_CONTENT
             return
@@ -141,7 +143,45 @@ class PatientVisitDetailsController extends RestfulController {
     }
 
     def getLastByPatientId(String patientId) {
-        render JSONSerializer.setObjectListJsonResponse(PatientVisitDetails.findAllByPatientVisitInList(PatientVisit.findAllByPatient(Patient.get(patientId), [max: 3, sort: "visitDate", order:"desc"]), [max: 3, sort: "creationDate", order:"desc"])) as JSON
+
+        def patient = Patient.get(patientId)
+        def patientServiceIdentifierList = PatientServiceIdentifier.createCriteria().list {
+            eq('patient', patient)
+        }
+
+        def patientVisitDetailsList = new ArrayList<PatientVisitDetails>()
+        patientServiceIdentifierList.each { patientServiceIdentifier ->
+            def episode = Episode.createCriteria().get {
+                eq('patientServiceIdentifier', patientServiceIdentifier)
+                maxResults(1)
+                order("episodeDate", "desc")
+            }
+
+            if (episode) {
+                def patientVisitDetails = PatientVisitDetails.createCriteria().list {
+                    eq('episode', episode)
+                }
+
+                if(!patientVisitDetails.isEmpty()){
+                    def prescriptionIds = patientVisitDetails.collect { it.prescription.id }
+                    def prescription = Prescription.createCriteria().get {
+                        'in'("id", prescriptionIds)
+                        maxResults(1)
+                        order("prescriptionDate", "desc")
+                    }
+
+                    if(prescription){
+                        patientVisitDetails.each { it ->
+                            if (it.prescription.id == prescription.id)
+                                patientVisitDetailsList.add(it as PatientVisitDetails)
+                        }
+                    }
+                }
+            }
+        }
+
+//        render JSONSerializer.setLightObjectListJsonResponse(PatientVisitDetails.findAllByPatientVisitInList(PatientVisit.findAllByPatient(patient))) as JSON
+        render JSONSerializer.setObjectListJsonResponseLevel3(patientVisitDetailsList) as JSON
     }
 
     def getAllofPrecription(String prescriptionId) {
@@ -190,9 +230,9 @@ class PatientVisitDetailsController extends RestfulController {
         }
     }
 
-    def updateErrorLog(String patientVisitDetails){
+    def updateErrorLog(String patientVisitDetails) {
         OpenmrsErrorLog patientVisitDetailsInLog = OpenmrsErrorLog.findByPatientVisitDetails(patientVisitDetails)
-        if(patientVisitDetailsInLog){
+        if (patientVisitDetailsInLog) {
             patientVisitDetailsInLog.returnPickupDate = new Date()
             patientVisitDetailsInLog.save()
         }
@@ -206,10 +246,10 @@ class PatientVisitDetailsController extends RestfulController {
 
         def objectJSON = request.JSON
         List<String> ids = objectJSON.ids
-       def clinicSector = objectJSON.clinicSector
+        def clinicSector = objectJSON.clinicSector
 
-       ClinicSector clinicSector2 = ClinicSector.get(clinicSector.id)
-        def result = patientVisitDetailsService.getAllByListPatientId(ids,clinicSector2)
+        ClinicSector clinicSector2 = ClinicSector.get(clinicSector.id)
+        def result = patientVisitDetailsService.getAllByListPatientId(ids, clinicSector2)
 
         render JSONSerializer.setObjectListJsonResponse(result) as JSON
     }
