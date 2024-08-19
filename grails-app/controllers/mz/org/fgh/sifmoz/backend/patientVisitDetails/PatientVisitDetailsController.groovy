@@ -151,36 +151,39 @@ class PatientVisitDetailsController extends RestfulController {
 
         def patientVisitDetailsList = new ArrayList<PatientVisitDetails>()
         patientServiceIdentifierList.each { patientServiceIdentifier ->
-            def episode = Episode.createCriteria().get {
+
+            def episodeList = Episode.createCriteria().list {
                 eq('patientServiceIdentifier', patientServiceIdentifier)
-                maxResults(1)
+                maxResults(2)
                 order("episodeDate", "desc")
             }
 
-            if (episode) {
-                def patientVisitDetails = PatientVisitDetails.createCriteria().list {
-                    eq('episode', episode)
-                }
+            if (!episodeList.isEmpty()) {
 
-                if(!patientVisitDetails.isEmpty()){
-                    def prescriptionIds = patientVisitDetails.collect { it.prescription.id }
-                    def prescription = Prescription.createCriteria().get {
-                        'in'("id", prescriptionIds)
-                        maxResults(1)
-                        order("prescriptionDate", "desc")
+                episodeList.each { episode ->
+                    def patientVisitDetails = PatientVisitDetails.createCriteria().list {
+                        eq('episode', episode)
                     }
 
-                    if(prescription){
-                        patientVisitDetails.each { it ->
-                            if (it.prescription.id == prescription.id)
-                                patientVisitDetailsList.add(it as PatientVisitDetails)
+                    if(!patientVisitDetails.isEmpty()){
+                        def prescriptionIds = patientVisitDetails.collect { it.prescription.id }
+                        def prescription = Prescription.createCriteria().get {
+                            'in'("id", prescriptionIds)
+                            maxResults(1)
+                            order("prescriptionDate", "desc")
+                        }
+
+                        if(prescription){
+                            patientVisitDetails.each { it ->
+                                if (it.prescription.id == prescription.id)
+                                    patientVisitDetailsList.add(it as PatientVisitDetails)
+                            }
                         }
                     }
                 }
             }
         }
 
-//        render JSONSerializer.setLightObjectListJsonResponse(PatientVisitDetails.findAllByPatientVisitInList(PatientVisit.findAllByPatient(patient))) as JSON
         render JSONSerializer.setObjectListJsonResponseLevel3(patientVisitDetailsList) as JSON
     }
 

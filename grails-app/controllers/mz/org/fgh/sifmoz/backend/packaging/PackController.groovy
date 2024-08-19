@@ -14,6 +14,7 @@ import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
+import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.stock.Stock
 import mz.org.fgh.sifmoz.backend.stock.StockService
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
@@ -184,19 +185,20 @@ class PackController extends RestfulController {
     }
 
 
-    def getAllPackByPatientId(String patientId) {
+    def getAllPackByPatientId(String patientId, String serviceCode) {
 
         def patient = Patient.get(patientId)
+        def service = ClinicalService.findByCode(serviceCode)
+        def patientServiceIdentifier = PatientServiceIdentifier.findAllByPatientAndService(patient, service)
         List<Pack> packsList = new ArrayList<Pack>()
 
         if (patient) {
-           def patientVisitDetails = PatientVisitDetails.findAllByPatientVisitInList( PatientVisit.findAllByPatient(patient))
-            packsList.addAll(patientVisitDetails.pack as List<Pack>)
+            def patientVisitDetails = PatientVisitDetails.findAllByPatientVisitInListAndEpisodeInList( PatientVisit.findAllByPatient(patient), patientServiceIdentifier.episodes)
+            packsList.addAll(patientVisitDetails.pack.toList().sort {it.packDate}.reverse())
         }
 
         render JSONSerializer.setObjectListJsonResponseLevel3(packsList) as JSON
     }
-
     def getAllByPackIds() {
         def objectJSON = request.JSON
         List<String> ids = objectJSON
