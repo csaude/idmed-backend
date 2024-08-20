@@ -2692,7 +2692,8 @@ abstract class PackService implements IPackService {
                     pat.last_names,
                     pat.cellphone AS contact,
                     last_packs.nextPickUpDate,
-                    last_packs.nextPickUpDate + INTERVAL '60 DAY' AS dateMissedPickUp
+                    last_packs.nextPickUpDate + INTERVAL '60 DAY' AS dateMissedPickUp,
+                    pat.address
                 FROM patient_service_identifier psi
                 INNER JOIN ResultTable last_packs ON last_packs.patient_id = psi.patient_id
                 INNER JOIN episode e ON psi.id = e.patient_service_identifier_id
@@ -2757,7 +2758,8 @@ abstract class PackService implements IPackService {
                         pat.cellphone AS contact,
                     penultimos.penultmaDPL as next_pick_up_date,
                         penultimos.dateMissedPickUp,
-                        ultimos.dateReturned
+                        ultimos.dateReturned,
+                        pat.address
                     FROM patient_service_identifier psi
                     INNER JOIN SelectedPenultimoLevantamentoAbandono penultimos ON penultimos.patient_id = psi.patient_id
                     INNER JOIN LastNextPickupDate ultimos ON ultimos.patient_id = psi.patient_id
