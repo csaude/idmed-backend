@@ -3,7 +3,6 @@ package mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.patientsAbndonment
 import grails.gorm.services.Service
 import grails.gorm.transactions.Transactional
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
-import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
 import mz.org.fgh.sifmoz.backend.reports.common.IReportProcessMonitorService
@@ -93,6 +92,14 @@ abstract class PatientsAbandonmentService implements IPatientsAbandonmentService
         patientsAbandonmentReport.setDateIdentifiedAbandonment(item[6] as Date)
         if(searchParams.reportType.equalsIgnoreCase("PATIENTES_ABANDONMENT_RETURNED")) {
             patientsAbandonmentReport.setReturnedPickUp(item[7] as Date)
+
+            if (item[8] != null) {
+                patientsAbandonmentReport.setAddress(String.valueOf(item[8]))
+            }
+        } else {
+            if (item[7] != null) {
+                patientsAbandonmentReport.setAddress(String.valueOf(item[7]))
+            }
         }
         if (item[4] != null) {
             patientsAbandonmentReport.setContact(String.valueOf(item[4]))
