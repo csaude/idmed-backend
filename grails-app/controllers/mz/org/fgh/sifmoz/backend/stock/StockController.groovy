@@ -109,8 +109,8 @@ class StockController extends RestfulController{
         render status: NO_CONTENT
     }
 //    @Transactional
-    def checkStockStatus(String idPrescribedDrug, Date prescriptionDate, int qtyPrescribed, String clinicId) {
-        def isValid = stockService.validateStock(idPrescribedDrug, prescriptionDate, qtyPrescribed, clinicId)
+    def checkStockStatus(String idPrescribedDrug, Date prescriptionDate, int qtyPrescribed, String clinicId, int weeks) {
+        def isValid = stockService.validateStock(idPrescribedDrug, prescriptionDate, qtyPrescribed, clinicId, weeks)
         render isValid
     }
 
