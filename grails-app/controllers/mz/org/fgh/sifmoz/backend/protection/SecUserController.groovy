@@ -3,12 +3,14 @@ package mz.org.fgh.sifmoz.backend.protection
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import groovy.json.JsonSlurper
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSectorUsers
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
 import mz.org.fgh.sifmoz.backend.interoperabilityAttribute.InteroperabilityAttribute
 import mz.org.fgh.sifmoz.backend.interoperabilityType.InteroperabilityType
+import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
@@ -79,8 +81,28 @@ class SecUserController extends RestfulController {
         render JSONSerializer.setJsonObjectResponse(SecUser.get(secUser.id)) as JSON
     }
 
+    private static def parseTo(String jsonString) {
+        return new JsonSlurper().parseText(jsonString)
+    }
+
     @Transactional
-    def update(SecUser secUser) {
+    def update() {
+        def objectJSON = request.JSON
+        def SecUserFromJSON = (parseTo(objectJSON.toString()) as Map) as SecUser
+        SecUser secUser = SecUser.get(objectJSON.id)
+
+        secUser.username = SecUserFromJSON.username
+        secUser.fullName = SecUserFromJSON.fullName
+        secUser.contact = SecUserFromJSON.contact
+        secUser.email = SecUserFromJSON.email
+        secUser.enabled = SecUserFromJSON.enabled
+        secUser.accountExpired = SecUserFromJSON.accountExpired
+        secUser.accountLocked = SecUserFromJSON.accountLocked
+        secUser.passwordExpired = SecUserFromJSON.passwordExpired
+//        secUser.roles = SecUserFromJSON.roles
+        secUser.loginRetries = SecUserFromJSON.loginRetries
+        secUser.lastLogin = SecUserFromJSON.lastLogin
+
         if (secUser == null) {
             render status: NOT_FOUND
             return
@@ -92,7 +114,7 @@ class SecUserController extends RestfulController {
         }
 
         try {
-           if(secUser.enabled){
+           if(secUser.enabled) {
                secUser.accountLocked = false
                secUser.accountExpired = false
                secUser.passwordExpired = false
@@ -109,7 +131,7 @@ class SecUserController extends RestfulController {
                 interoperabilityAttribute.value = encoded
                 interoperabilityAttribute.save(flush:true)
             }
-            if( secUser.roles != null && secUser.accountLocked == false && secUser.roles.length > 0) {
+            if ( secUser.roles != null && secUser.accountLocked == false && secUser.roles.length > 0) {
                 SecUserRole.removeAll(secUser)
                 for(String role : secUser.roles) {
                     Role secRole= Role.findByAuthority(role)
