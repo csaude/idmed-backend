@@ -95,7 +95,7 @@ class UrlMappings {
         get "/api/patient/openmrsProgramSearch/$interoperabilityId/$uuid/$openmrsBase64(.$format)?"(controller:'patient', action:'getOpenMRSPatientProgramDetails')
         get "/api/episode/clinicSector/$clinicSectorId(.$format)?"(controller:'episode', action:'getLastWithVisitByClinicSectors')
         get "/api/patient/clinicSector/$clinicSectorId(.$format)?"(controller:'patient', action:'getPatientsInClinicSector')
-        get "/api/stock/checkStockStatus/$idPrescribedDrug/$prescriptionDate/$qtyPrescribed/$clinicId(.$format)?"(controller:'stock', action:'checkStockStatus')
+        get "/api/stock/checkStockStatus/$idPrescribedDrug/$prescriptionDate/$qtyPrescribed/$clinicId/$weeks(.$format)?"(controller:'stock', action:'checkStockStatus')
         get "/api/stock/getValidStocks/$idPackagedDrug/$packageDate(.$format)?"(controller:'stock', action:'getValidStockByDrugAndPickUpDate')
         get "/api/stockLevel/getStockLevelByClinicAndDrug/$clinicId/$drugId(.$format)?"(controller:'stockLevel', action:'getStockLevelByClinicAndDrug')
 

@@ -43,13 +43,16 @@ abstract class StockService implements IStockService {
         return list
     }
 
-    boolean validateStock(String drugId, Date dateToCompare, int qtyPrescribed, String clinicId) {
+    boolean validateStock(String drugId, Date dateToCompare, int qtyPrescribed, String clinicId, int weeks) {
         Drug drug = Drug.findById(drugId)
         Clinic clinic = Clinic.findById(clinicId)
+        int lostDays = (int) ((weeks / 4) * 2)
+        int daysToAdd = (weeks * 7 ) + lostDays
+
         List<Stock> list = Stock.executeQuery("select  s from Stock  s " +
                 " where s.expireDate > :prescriptionDate  AND " +
                 " s.stockMoviment > 0  AND s.drug = :drug AND s.clinic =:clinic ",
-                [drug: drug, prescriptionDate:  Utilities.addDaysInDate(dateToCompare, drug.packSize),clinic: clinic])
+                [drug: drug, prescriptionDate:  Utilities.addDaysInDate(dateToCompare, daysToAdd),clinic: clinic])
 
         if (list.size() > 0) {
             int qtyInStock = 0

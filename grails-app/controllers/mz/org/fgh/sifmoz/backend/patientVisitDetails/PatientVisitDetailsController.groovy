@@ -154,7 +154,7 @@ class PatientVisitDetailsController extends RestfulController {
 
             def episodeList = Episode.createCriteria().list {
                 eq('patientServiceIdentifier', patientServiceIdentifier)
-                maxResults(2)
+                maxResults(3)
                 order("episodeDate", "desc")
             }
 

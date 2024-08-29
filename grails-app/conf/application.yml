@@ -110,5 +110,5 @@ environments:
   production:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://172.16.60.20:5433/idmed_maputo
+      url: jdbc:postgresql://db:5432/idmed
 
