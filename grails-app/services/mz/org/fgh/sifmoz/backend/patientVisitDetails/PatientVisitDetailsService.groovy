@@ -605,11 +605,14 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
         inner join fetch pv.patientVisitDetails pvd
         inner join fetch pv.patient p
         where p.id in :patientIds
-        and pv.id = (
-            select max(pvInner.id)
+        and pv.visitDate = (
+            select max(pvInner.visitDate)
             from PatientVisit pvInner
-            where pvInner.patient.id = p.id
-        )
+            where pvInner.patient.id = p.id and not exists (
+        select 1 
+        from VitalSignsScreening vsInner 
+        where vsInner.visit.id = pvInner.id
+    ))
         order by pv.visitDate desc
     """, [patientIds: remainingPatientIds]);
 
