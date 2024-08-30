@@ -22,7 +22,7 @@ class BalanceteReport extends BaseEntity{
     int entradas
     int perdasEAjustes
     int saidas
-    int stockExistente
+    Long stockExistente
     String notas
     Date validadeMedicamento
 
