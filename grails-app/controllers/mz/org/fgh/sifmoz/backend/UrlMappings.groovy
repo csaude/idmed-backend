@@ -112,7 +112,6 @@ class UrlMappings {
         post "/api/patient/mergeUnitePatients/$patientToHoldId/$patientToDeleteId(.$format)?"(controller:'patient', action:'mergeUnitePatients')
         get "/api/drug/getInventoryDrugs/$id(.$format)?"(controller:'drug', action:'getDrugsByInventoryId')
         get "/api/inventory/isInventoryPeriod/$clinicId(.$format)?"(controller:'inventory', action:'isInventoryPeriod')
-        get "/api/inventory/hasInventoryInPreviousMonth/$clinicId(.$format)?"(controller:'inventory', action:'hasInventoryInPreviousMonth')
         get "/api/stockDistributorBatch/getStockDistributorBatchByStockDistributorId/$stockDistributorId(.$format)?"(controller:'StockDistributorBatch', action:'getStockDistributorBatchByStockDistributorId')
         patch "/api/drugDistributor/updateDrugDistributorStatus/$idDrugDistributor/$status(.$format)?"(controller:'drugDistributor', action:'updateDrugDistributorStatus')
         get "/api/drugDistributor/getDistributionsByStatus/$clinicSectorId/$status(.$format)?"(controller:'DrugDistributor', action:'getDistributionsByStatus')

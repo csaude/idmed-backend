@@ -48,7 +48,6 @@ class InventoryController extends RestfulController{
         } else {
             try {
                 inventory.close()
-                // ConvertDateUtils.getCurrentDate()
                 inventory.setEndDate(ConvertDateUtils.createDate(endDate, ConvertDateUtils.DDMM_DATE_FORMAT))
                 def adjustmentsTemp = inventory.adjustments
                 inventory.adjustments = []
