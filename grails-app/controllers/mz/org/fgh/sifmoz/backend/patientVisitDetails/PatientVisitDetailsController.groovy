@@ -10,6 +10,7 @@ import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
 import mz.org.fgh.sifmoz.backend.packaging.Pack
+import mz.org.fgh.sifmoz.backend.packaging.PackService
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.IPatientVisitService
@@ -145,6 +146,7 @@ class PatientVisitDetailsController extends RestfulController {
     def getLastByPatientId(String patientId) {
 
         def patient = Patient.get(patientId)
+
         def patientServiceIdentifierList = PatientServiceIdentifier.createCriteria().list {
             eq('patient', patient)
         }
@@ -152,39 +154,28 @@ class PatientVisitDetailsController extends RestfulController {
         def patientVisitDetailsList = new ArrayList<PatientVisitDetails>()
         patientServiceIdentifierList.each { patientServiceIdentifier ->
 
-            def episodeList = Episode.createCriteria().list {
-                eq('patientServiceIdentifier', patientServiceIdentifier)
-                maxResults(3)
-                order("episodeDate", "desc")
-            }
-
-            if (!episodeList.isEmpty()) {
-
-                episodeList.each { episode ->
-                    def patientVisitDetails = PatientVisitDetails.createCriteria().list {
-                        eq('episode', episode)
-                    }
-
-                    if(!patientVisitDetails.isEmpty()){
-                        def prescriptionIds = patientVisitDetails.collect { it.prescription.id }
-                        def prescription = Prescription.createCriteria().get {
-                            'in'("id", prescriptionIds)
-                            maxResults(1)
-                            order("prescriptionDate", "desc")
-                        }
-
-                        if(prescription){
-                            patientVisitDetails.each { it ->
-                                if (it.prescription.id == prescription.id)
-                                    patientVisitDetailsList.add(it as PatientVisitDetails)
-                            }
-                        }
-                    }
+            def lastPrescriptionByService = PatientVisitDetails.createCriteria().get {
+                createAlias('patientVisit', 'pv' )
+                createAlias('prescription', 'p')
+                createAlias('episode', 'e')
+                eq('pv.patient', patient)
+                eq('e.patientServiceIdentifier.id',patientServiceIdentifier.id)
+                projections {
+                    max('p.prescriptionDate')
                 }
             }
+
+            def lastPatientVisitDetails = PatientVisitDetails.createCriteria().list {
+                createAlias('patientVisit', 'pv')
+                eq('pv.patient', patient)
+                createAlias('prescription', 'p')
+                eq('p.prescriptionDate',lastPrescriptionByService)
+            }
+
+            patientVisitDetailsList.addAll(lastPatientVisitDetails as List<PatientVisitDetails>)
         }
 
-        render JSONSerializer.setObjectListJsonResponseLevel3(patientVisitDetailsList) as JSON
+        render JSONSerializer.setObjectListJsonResponseLevel3(patientVisitDetailsList as List) as JSON
     }
 
     def getAllofPrecription(String prescriptionId) {
