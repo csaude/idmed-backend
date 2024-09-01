@@ -40,7 +40,7 @@ class InventoryController extends RestfulController{
     }
 
     @Transactional
-    def close(String id) {
+    def close(String id, String endDate) {
         Inventory inventory = inventoryService.get(id)
 
         if (!Utilities.listHasElements(inventory.adjustments as ArrayList<?>)) {
@@ -48,7 +48,7 @@ class InventoryController extends RestfulController{
         } else {
             try {
                 inventory.close()
-                inventory.setEndDate(ConvertDateUtils.getCurrentDate())
+                inventory.setEndDate(ConvertDateUtils.createDate(endDate, ConvertDateUtils.DDMM_DATE_FORMAT))
                 def adjustmentsTemp = inventory.adjustments
                 inventory.adjustments = []
                 inventoryService.save(inventory)
@@ -159,5 +159,10 @@ class InventoryController extends RestfulController{
     @Transactional
     def isInventoryPeriod(String clinicId) {
         render inventoryService.isInventoryPeriod(clinicId)
+    }
+
+    @Transactional
+    def hasInventoryInPreviousMonth(String clinicId) {
+        render inventoryService.hasInventoryInPreviousMonth(clinicId)
     }
 }

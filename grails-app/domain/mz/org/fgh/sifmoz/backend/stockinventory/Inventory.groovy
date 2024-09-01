@@ -39,7 +39,6 @@ class Inventory extends BaseEntity {
 
     public void close() {
         this.open = false
-        this.endDate = new Date()
     }
 
     @Override

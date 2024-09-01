@@ -9,7 +9,7 @@ class UrlMappings {
         post "/api/$controller(.$format)?"(action:"save")
         put "/api/$controller/$id(.$format)?"(action:"update")
         patch "/api/$controller/$id(.$format)?"(action:"patch")
-        patch "/api/inventory/close/$id(.$format)?"(controller:'inventory', action:'close')
+        patch "/api/inventory/close/$id/$endDate(.$format)?"(controller:'inventory', action:'close')
         patch "/api/patient/updateuuid/$base64(.$format)?"(controller:'patient', action:'updatePatientUUID')
         post "/api/patient/search(.$format)?"(controller:'patient', action:'search')
         post "/api/patient/countSearch(.$format)?"(controller:'patient', action:'countPatientSearchResult')
