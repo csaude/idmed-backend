@@ -7,6 +7,7 @@ import groovy.json.JsonSlurper
 import liquibase.repackaged.org.apache.commons.lang3.time.DateUtils
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
+import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
 import mz.org.fgh.sifmoz.backend.episodeType.EpisodeType
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
@@ -122,11 +123,22 @@ class EpisodeController extends RestfulController {
 
     @Transactional
     def delete(String id) {
+        List<String> startStopReasonList = ['REFERIDO_PARA','REFERIDO_SECTOR_CLINICO' , 'REFERIDO_DC'].asList()
+
         if (id == null || episodeService.delete(id) == null) {
             render status: NOT_FOUND
             return
         }
 
+        Episode episode = Episode.findById(id)
+
+
+       Episode episodeReferred = Episode.findByEpisodeDateBetweenAndIdNotEqualAndPatientServiceIdentifier(
+               ConvertDateUtils.getDateAtStartOfDay(episode.episodeDate),ConvertDateUtils.getDateAtEndOfDay(episode.episodeDate) , episode.id, episode.patientServiceIdentifier)
+
+        if (episodeReferred !== null && startStopReasonList.contains(episodeReferred.startStopReason.getCode())) {
+            episodeService.delete(episodeReferred.id)
+        }
         render status: NO_CONTENT
     }
 
