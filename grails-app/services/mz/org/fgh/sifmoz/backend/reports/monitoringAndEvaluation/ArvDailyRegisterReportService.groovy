@@ -46,8 +46,8 @@ abstract class ArvDailyRegisterReportService implements IArvDailyRegisterReportS
                     searchParams.getEndDate(), searchParams.getClinicalService())
         } else if(searchParams.reportType.equalsIgnoreCase('LIVRO_DIARIO_PREP')) {
             result = patientVisitDetailsService.getPREPDailyReport(searchParams.getClinicId(),
-                searchParams.getStartDate(),
-                searchParams.getEndDate(), searchParams.getClinicalService())
+                    searchParams.getStartDate(),
+                    searchParams.getEndDate(), searchParams.getClinicalService())
         } else {
             result = patientVisitDetailsService.getARVDailyReport(searchParams.getClinicId(),
                     searchParams.getStartDate(),
@@ -114,6 +114,7 @@ abstract class ArvDailyRegisterReportService implements IArvDailyRegisterReportS
         }
         reportProcessMonitorService.save(processMonitor)
     }
+
 
     @Override
     List<ArvDailyRegisterReportTemp> getReportDataByReportId(String reportId) {
