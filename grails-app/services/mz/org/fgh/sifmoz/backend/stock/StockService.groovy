@@ -7,6 +7,7 @@ import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
+import mz.org.fgh.sifmoz.backend.stockDistributor.StockDistributor
 import mz.org.fgh.sifmoz.backend.stockentrance.StockEntrance
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
 import org.apache.commons.lang3.time.DateUtils
@@ -75,6 +76,20 @@ abstract class StockService implements IStockService {
                 [drug: drug, prescriptionDate: dateToCompare]);
 
         return list;
+    }
+
+
+    List<Stock> getStocksByStockDistributor(String clinicId, int offset, int max) {
+        Clinic clinic = Clinic.findById(clinicId)
+        List<Stock> list = Stock.executeQuery("select distinct sd from StockDistributor  s " +
+                " inner join s.drugDistributors  sdb " +
+                " inner join sdb.stockDistributorBatchs  dd " +
+                " inner join dd.stock  sd" +
+                " where sdb.clinic =:clinic ",
+               [clinic: clinic,max: max, offset: offset]
+                );
+        return list;
+
     }
 
 

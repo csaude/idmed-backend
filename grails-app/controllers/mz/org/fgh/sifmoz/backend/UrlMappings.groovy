@@ -97,6 +97,7 @@ class UrlMappings {
         get "/api/patient/clinicSector/$clinicSectorId(.$format)?"(controller:'patient', action:'getPatientsInClinicSector')
         get "/api/stock/checkStockStatus/$idPrescribedDrug/$prescriptionDate/$qtyPrescribed/$clinicId(.$format)?"(controller:'stock', action:'checkStockStatus')
         get "/api/stock/getValidStocks/$idPackagedDrug/$packageDate(.$format)?"(controller:'stock', action:'getValidStockByDrugAndPickUpDate')
+        get "/api/stock/getStocksByStockDistributor/$clinicId/$offset/$max(.$format)?"(controller:'stock', action:'getStocksByStockDistributor')
         get "/api/stockLevel/getStockLevelByClinicAndDrug/$clinicId/$drugId(.$format)?"(controller:'stockLevel', action:'getStockLevelByClinicAndDrug')
 
 

@@ -32,5 +32,8 @@ interface IStockService {
 
     List<Stock> getAllByClinicId(String clinicId, int offset, int max)
 
+    List<Stock> getStocksByStockDistributor(String clinicId,int offset, int max)
+
+
 
 }
