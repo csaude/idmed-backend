@@ -1342,8 +1342,6 @@ abstract class PackService implements IPackService {
                             prescription p ON pd.prescription_id = p.id
                         INNER JOIN
                             patient_visit_details pvd ON pvd.prescription_id = p.id
-                        INNER JOIN 
-                            clinic clinic ON pvd.clinic_id = '121CF50D-72F5-4FF9-AB96-EAC07B44D05C'
                         WHERE
                             p.prescription_date BETWEEN :startDate AND :endDate
                     )
