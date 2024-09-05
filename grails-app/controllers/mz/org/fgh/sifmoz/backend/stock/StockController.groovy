@@ -123,4 +123,9 @@ class StockController extends RestfulController{
     def getByClinicId(String clinicId, int offset, int max) {
         respond stockService.getAllByClinicId(clinicId, offset, max)
     }
+
+    def  getStocksByStockDistributor( String clinicId, int offset,  int max) {
+        def stocks = stockService.getStocksByStockDistributor(clinicId,offset, max)
+        render JSONSerializer.setObjectListJsonResponse(stocks) as JSON
+    }
 }
