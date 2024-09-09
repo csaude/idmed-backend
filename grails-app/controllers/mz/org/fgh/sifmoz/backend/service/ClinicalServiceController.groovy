@@ -86,8 +86,8 @@ class ClinicalServiceController extends RestfulController {
             return
         }
 
-        clinicalService.clinicSectors = [].withDefault {new ClinicSector()}
-      //  clinicalService.therapeuticRegimens = [].withDefault {new TherapeuticRegimen()}
+        clinicalService.clinicSectors = [].withDefault { new ClinicSector() }
+//        clinicalService.therapeuticRegimens = [].withDefault { new TherapeuticRegimen() }
         (objectJSON.clinicSectors as List).collect { item ->
             if (item) {
                 def clinicSectorObject = ClinicSector.get(item.id)
@@ -97,15 +97,16 @@ class ClinicalServiceController extends RestfulController {
                 clinicalService.addToClinicSectors(clinicSectorObject)
             }
         }
-/*
-        (objectJSON.therapeuticRegimens as List).collect { item ->
+
+/*        (objectJSON.therapeuticRegimens as List).collect { item ->
             if (item) {
-                def therapeuticRegimenObject = TherapeuticRegimen.findWhere(id: item.id)
-                if(therapeuticRegimenObject.active)
-                clinicalService.addToTherapeuticRegimens(therapeuticRegimenObject)
+                def therapeuticRegimenObject = TherapeuticRegimen.get(item.id)
+                if (therapeuticRegimenObject.active)
+                    clinicalService.addToTherapeuticRegimens(therapeuticRegimenObject)
             }
         }
 */
+
         try {
             clinicalService.save(flush: true, failOnError: true)
         } catch (ValidationException e) {
@@ -119,15 +120,15 @@ class ClinicalServiceController extends RestfulController {
         def clinicSectorJSON = JSONSerializer.setLightObjectListJsonResponse(clinicalService.clinicSectors as List)
         def therapeuticRegimensJSON = JSONSerializer.setLightObjectListJsonResponse(clinicalService.therapeuticRegimens as List)
 
-            if(clinicSectorJSON.length() > 0){
+        if (clinicSectorJSON.length() > 0) {
             result.put('clinicSectors', clinicSectorJSON)
-        }else{
+        } else {
             result.remove('clinicSectors')
         }
 
-        if(therapeuticRegimensJSON.length() > 0){
+        if (therapeuticRegimensJSON.length() > 0) {
             result.put('therapeuticRegimens', therapeuticRegimensJSON)
-        }else{
+        } else {
             result.remove('therapeuticRegimens')
         }
 
@@ -145,7 +146,7 @@ class ClinicalServiceController extends RestfulController {
         render status: NO_CONTENT
     }
 
-    def clinicSectorSaved(ClinicSector clinicSector){
+    def clinicSectorSaved(ClinicSector clinicSector) {
         ClinicSector.withTransaction {
             return clinicSector.save(flush: true)
         }

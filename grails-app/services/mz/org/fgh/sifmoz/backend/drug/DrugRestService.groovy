@@ -83,7 +83,8 @@ class DrugRestService extends SynchronizerTask {
                                 drugExist.defaultPeriodTreatment = drugObject.getAt(("defaultPeriodTreatment"))
                                 drugExist.fnmCode = drugObject.getAt(("fnmCode"))
                                 drugExist.uuidOpenmrs = drugObject.getAt(("uuidOpenmrs"))
-                                drugExist.clinicalService = ClinicalService.get(drugObject.getAt("clinicalService").getAt("id") as String)
+                                drugExist.clinical_service_id = drugObject.getAt("clinicalService").getAt("id")
+//                                drugExist.clinicalService = ClinicalService.get(drugObject.getAt("clinicalService").getAt("id") as String)
                                 drugExist.form = Form.get(drugObject.getAt("form").getAt("id") as String)
                                 drugExist.active = drugObject.getAt(("active"))
                                 drugExist.save()
@@ -132,7 +133,7 @@ class DrugRestService extends SynchronizerTask {
                                                 regimeExist.code = regimeTerapeutico.getAt("code")
                                                 regimeExist.description = regimeTerapeutico.getAt("description")
                                                 regimeExist.openmrsUuid =  regimeTerapeutico.getAt("uuidOpenmrs")
-                                                regimeExist.clinicalService = regimeTerapeutico.getAt("areaCode").equals("TB") ? ClinicalService.findWhere(code: "TB") : ClinicalService.findWhere(code: "TARV")
+//                                                regimeExist.clinicalService = regimeTerapeutico.getAt("areaCode").equals("TB") ? ClinicalService.findWhere(code: "TB") : ClinicalService.findWhere(code: "TARV")
                                                 regimeExist.beforeInsert()
                                             }
                                             regimeExist.addToDrugs(drugExist)
@@ -167,7 +168,8 @@ class DrugRestService extends SynchronizerTask {
             drugExist.defaultPeriodTreatment = regimeTerapeutico.getAt("areaCode").equals("TB") ? "": "Dia"
             drugExist.fnmCode = drugObject.getAt("fnm")
             drugExist.uuidOpenmrs = drugObject.getAt("uuidOpenmrs")
-            drugExist.clinicalService = regimeTerapeutico.getAt("areaCode").equals("TB") ? ClinicalService.findWhere(code: "TB") : ClinicalService.findWhere(code: "TARV")
+            drugExist.clinical_service_id = regimeTerapeutico.getAt("areaCode").equals("TB") ? ClinicalService.findWhere(code: "TB").id : ClinicalService.findWhere(code: "TARV").id
+//            drugExist.clinicalService = regimeTerapeutico.getAt("areaCode").equals("TB") ? ClinicalService.findWhere(code: "TB") : ClinicalService.findWhere(code: "TARV")
             drugExist.form = findOrSave(drugObject.getAt("pharmaceuticFormDescription") as String)
             drugExist.active = true
             drugExist.beforeInsert()
