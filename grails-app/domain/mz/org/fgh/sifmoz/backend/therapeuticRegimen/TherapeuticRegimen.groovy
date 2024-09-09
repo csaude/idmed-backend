@@ -16,8 +16,7 @@ class TherapeuticRegimen extends BaseEntity {
     String code
     String description
     String openmrsUuid
-    static belongsTo = [clinicalService: ClinicalService]
-    static hasMany = [drugs: Drug]
+    static hasMany = [drugs: Drug, clinicalServices: ClinicalService]
 
     static mapping = {
         id generator: "assigned"
@@ -46,27 +45,27 @@ class TherapeuticRegimen extends BaseEntity {
         return menus
     }
 
-    boolean isTARV(){
-        return this.clinicalService?.code?.contains("TARV")
-    }
-
-    boolean isTPT(){
-        return  this.clinicalService?.code?.contains("TPT")
-    }
-
-    boolean isPreP(){
-        return this.clinicalService?.code?.contains("PREP")
-    }
-
-    boolean isTB() {
-        return this.clinicalService?.code?.contains("TB")
-    }
-
-    boolean isPPE() {
-        return this.clinicalService?.code?.contains("PPE")
-    }
-
-    boolean isMALARIA() {
-        return this.clinicalService?.code?.contains("MALARIA")
-    }
+//    boolean isTARV(){
+//        return this.clinicalService?.code?.contains("TARV")
+//    }
+//
+//    boolean isTPT(){
+//        return  this.clinicalService?.code?.contains("TPT")
+//    }
+//
+//    boolean isPreP(){
+//        return this.clinicalService?.code?.contains("PREP")
+//    }
+//
+//    boolean isTB() {
+//        return this.clinicalService?.code?.contains("TB")
+//    }
+//
+//    boolean isPPE() {
+//        return this.clinicalService?.code?.contains("PPE")
+//    }
+//
+//    boolean isMALARIA() {
+//        return this.clinicalService?.code?.contains("MALARIA")
+//    }
 }

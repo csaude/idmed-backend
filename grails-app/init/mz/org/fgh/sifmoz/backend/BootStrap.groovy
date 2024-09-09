@@ -568,6 +568,7 @@ class BootStrap {
     void initTherapeuticRegimen() {
         for (therapeuticRegimenObject in listTherapeuticRegimen()) {
 
+           ClinicalService clinicalService =  ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
             TherapeuticRegimen therapeuticRegimen1 = TherapeuticRegimen.findById(therapeuticRegimenObject.id.toString().trim())
             TherapeuticRegimen therapeuticRegimen2 = TherapeuticRegimen.findByCode(therapeuticRegimenObject.code)
 
@@ -580,8 +581,9 @@ class BootStrap {
                     therapeuticRegimen.active = therapeuticRegimenObject.active
                     therapeuticRegimen.description = therapeuticRegimenObject.description
                     therapeuticRegimen.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
-                    therapeuticRegimen.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
+                //    therapeuticRegimen.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                     therapeuticRegimen.save(flush: true, failOnError: true)
+                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen)
                 } else {
                     if (therapeuticRegimen2.code.equalsIgnoreCase("X6APed")) {
                         therapeuticRegimen2.regimenScheme = "ABC+3TC+DTG (2DFC+DTG50)"
@@ -591,6 +593,7 @@ class BootStrap {
                     therapeuticRegimen2.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
                     therapeuticRegimen2.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                     therapeuticRegimen2.save(flush: true, failOnError: true)
+                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen2)
                 }
             } else {
                 if (therapeuticRegimen1.code.equalsIgnoreCase("X6APed")) {
@@ -599,9 +602,11 @@ class BootStrap {
                 }
 //                therapeuticRegimen1.active = therapeuticRegimenObject.active
                 therapeuticRegimen1.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
-                therapeuticRegimen1.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
+//                therapeuticRegimen1.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                 therapeuticRegimen1.save(flush: true, failOnError: true)
+                clinicalService.addToTherapeuticRegimens(therapeuticRegimen1)
             }
+            clinicalService.save()
         }
     }
 
@@ -620,13 +625,15 @@ class BootStrap {
                 drug.fnmCode = drugObject.fnm_code
                 drug.uuidOpenmrs = drugObject.uuid_openmrs
                 drug.active = drugObject.active
-                drug.clinicalService = ClinicalService.findById(drugObject.clinical_service_id)
+                drug.clinical_service_id = drugObject.clinical_service_id
+//                drug.clinicalService = ClinicalService.findById(drugObject.clinical_service_id)
                 drug.form = Form.findById(drugObject.form_id)
                 drug.save(flush: true, failOnError: true)
 
             } else {
-                if (drug1.getClinicalService() == null) {
-                    drug1.clinicalService = ClinicalService.findById(drugObject.clinical_service_id)
+                if (drug1.getClinical_service_id() == null) {
+                    drug1.clinical_service_id = drugObject.clinical_service_id
+//                    drug1.clinicalService = ClinicalService.findById(drugObject.clinical_service_id)
                     drug1.save(flush: true, failOnError: true)
                 } else {
                     if (drug1.getUuidOpenmrs() == null || drug1.getUuidOpenmrs().trim().empty) {
