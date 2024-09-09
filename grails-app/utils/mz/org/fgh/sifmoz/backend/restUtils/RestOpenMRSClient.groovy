@@ -327,7 +327,7 @@ class RestOpenMRSClient {
                 .concat("\",\"value\":\"" + Utilities.formatToYYYYMMDD(pack.nextPickUpDate))
                 .concat("\",\"comment\":\"IDMED\"},")
 
-        if(!strCodeDispenseType.compareToIgnoreCase("DM")){
+        if(!strCodeDispenseType.equalsIgnoreCase("DM")){
             strDispenseType = interoperabilityAttributes.find { it.interoperabilityType.code == "QUARTERLY_DISPENSED_TYPE_CONCEPT_UUID" }.value
         }
 
