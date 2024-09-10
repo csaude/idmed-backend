@@ -16,6 +16,7 @@ class TherapeuticRegimen extends BaseEntity {
     String code
     String description
     String openmrsUuid
+    static belongsTo = [ClinicalService]
     static hasMany = [drugs: Drug, clinicalServices: ClinicalService]
 
     static mapping = {

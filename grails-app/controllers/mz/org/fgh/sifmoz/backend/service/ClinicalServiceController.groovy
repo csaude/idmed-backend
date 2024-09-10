@@ -28,8 +28,7 @@ import grails.gorm.transactions.Transactional
 class ClinicalServiceController extends RestfulController {
 
     ClinicalServiceService clinicalServiceService
-    ClinicalServiceAttributeService clinicalServiceAttributeService
-    TherapeuticRegimenService therapeuticRegimenService
+    ClinicalServiceRestService clinicalServiceRestService
 
     static responseFormats = ['json', 'xml']
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
@@ -39,7 +38,7 @@ class ClinicalServiceController extends RestfulController {
     }
 
     def index(Integer max) {
-
+        params.max = Math.min(max ?: 10, 100)
         render JSONSerializer.setObjectListJsonResponse(clinicalServiceService.list(params)) as JSON
     }
 
@@ -87,25 +86,14 @@ class ClinicalServiceController extends RestfulController {
         }
 
         clinicalService.clinicSectors = [].withDefault { new ClinicSector() }
-//        clinicalService.therapeuticRegimens = [].withDefault { new TherapeuticRegimen() }
         (objectJSON.clinicSectors as List).collect { item ->
             if (item) {
                 def clinicSectorObject = ClinicSector.get(item.id)
                 clinicSectorObject.facilityType = FacilityType.get(item.facilityTypeId)
                 clinicSectorObject.parentClinic = Clinic.get(item.parentClinic_id)
-//                clinicSectorObject.save(flush: true)
                 clinicalService.addToClinicSectors(clinicSectorObject)
             }
         }
-
-/*        (objectJSON.therapeuticRegimens as List).collect { item ->
-            if (item) {
-                def therapeuticRegimenObject = TherapeuticRegimen.get(item.id)
-                if (therapeuticRegimenObject.active)
-                    clinicalService.addToTherapeuticRegimens(therapeuticRegimenObject)
-            }
-        }
-*/
 
         try {
             clinicalService.save(flush: true, failOnError: true)
@@ -150,6 +138,10 @@ class ClinicalServiceController extends RestfulController {
         ClinicSector.withTransaction {
             return clinicSector.save(flush: true)
         }
+    }
+
+    def getClinicalServiceFromProvincialServer(int offset) {
+        render JSONSerializer.setLightObjectListJsonResponse(clinicalServiceRestService.loadClinicalServiceFromProvincial(offset)) as JSON
     }
 
     private static def parseTo(String jsonString) {
