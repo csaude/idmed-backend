@@ -89,7 +89,8 @@ class DrugRestService extends SynchronizerTask {
                                 drugExist.active = drugObject.getAt(("active"))
                                 drugExist.save()
                             }
-                            drugList.add(drugExist)
+                            if (drugExist)
+                                drugList.add(drugExist)
                         } catch (Exception e) {
                             e.printStackTrace()
                         } catch (ConnectException e1) {
@@ -132,12 +133,12 @@ class DrugRestService extends SynchronizerTask {
                                                 regimeExist.active = regimeTerapeutico.getAt("status").equals("Activo")
                                                 regimeExist.code = regimeTerapeutico.getAt("code")
                                                 regimeExist.description = regimeTerapeutico.getAt("description")
-                                                regimeExist.openmrsUuid =  regimeTerapeutico.getAt("uuidOpenmrs")
+                                                regimeExist.openmrsUuid = regimeTerapeutico.getAt("uuidOpenmrs")
 //                                                regimeExist.clinicalService = regimeTerapeutico.getAt("areaCode").equals("TB") ? ClinicalService.findWhere(code: "TB") : ClinicalService.findWhere(code: "TARV")
                                                 regimeExist.beforeInsert()
                                             }
                                             regimeExist.addToDrugs(drugExist)
-                                            regimeExist.save(flush:true)
+                                            regimeExist.save(flush: true)
                                         }
                                     }
                                 }
@@ -157,7 +158,7 @@ class DrugRestService extends SynchronizerTask {
         }
     }
 
-    Drug saveDrug(Drug drugExist, def drugObject, def regimeTerapeutico){
+    Drug saveDrug(Drug drugExist, def drugObject, def regimeTerapeutico) {
         try {
             drugExist = new Drug()
             drugExist.id = drugObject.getAt("id")
@@ -165,7 +166,7 @@ class DrugRestService extends SynchronizerTask {
             drugExist.name = drugObject.getAt("fullDescription")
             drugExist.defaultTreatment = 1.0 as double
             drugExist.defaultTimes = 1 as int
-            drugExist.defaultPeriodTreatment = regimeTerapeutico.getAt("areaCode").equals("TB") ? "": "Dia"
+            drugExist.defaultPeriodTreatment = regimeTerapeutico.getAt("areaCode").equals("TB") ? "" : "Dia"
             drugExist.fnmCode = drugObject.getAt("fnm")
             drugExist.uuidOpenmrs = drugObject.getAt("uuidOpenmrs")
             drugExist.clinical_service_id = regimeTerapeutico.getAt("areaCode").equals("TB") ? ClinicalService.findWhere(code: "TB").id : ClinicalService.findWhere(code: "TARV").id
@@ -174,17 +175,17 @@ class DrugRestService extends SynchronizerTask {
             drugExist.active = true
             drugExist.beforeInsert()
             drugExist.validate()
-            drugExist.save(flush:true)
-        }catch (Exception e){
+            drugExist.save(flush: true)
+        } catch (Exception e) {
             e.printStackTrace()
         }
         return drugExist
     }
 
-    Form findOrSave(String formDescription){
+    Form findOrSave(String formDescription) {
         def serachParam = formDescription.substring(0, Math.min(formDescription.size(), 4)).trim()
 
-        if(serachParam.equalsIgnoreCase("Emba"))
+        if (serachParam.equalsIgnoreCase("Emba"))
             serachParam = "Comp"
 
         List<Form> forms = Form.createCriteria().list {
@@ -192,8 +193,8 @@ class DrugRestService extends SynchronizerTask {
         } as List<Form>
 
         def form = forms.size() == 0 ? new Form() : forms.get(0)
-        if(form.id == null){
-           // form = new Form()
+        if (form.id == null) {
+            // form = new Form()
             form.beforeInsert()
             form.code = serachParam
             form.description = formDescription
