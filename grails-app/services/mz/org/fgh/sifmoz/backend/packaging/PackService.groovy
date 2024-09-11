@@ -1126,7 +1126,8 @@ abstract class PackService implements IPackService {
                          count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhsdc1,
                          count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linhadc2,
                          count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linhadc3,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhadcAlt
+                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhadcAlt,                    
+                         count(CASE WHEN ((ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND package.isreferral = true) THEN 1 END) AS totalReferidos
                      FROM
                      (
                      select distinct pat.id,
@@ -1185,7 +1186,7 @@ abstract class PackService implements IPackService {
         } else {
             query =
                     """
-                    select
+                     select
                      tr.code,
                      tr.regimen_scheme,
                      count(CASE WHEN ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentes,
@@ -1228,7 +1229,7 @@ abstract class PackService implements IPackService {
                                      'REFERIDO_PARA',
                                      'VOLTOU_A_SER_REFERIDO_PARA')
                      AND cs.code = :clinicalService
-                     group by 1,4,5,6
+                     group by 1,4,5
                      order by 1
                     ) patientstatistics
                      inner join pack package on package.id = patientstatistics.packid
@@ -1853,6 +1854,7 @@ abstract class PackService implements IPackService {
         mmiaRegimenSubReport.totaldcline4 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[11]))
         mmiaRegimenSubReport.line = ""
         mmiaRegimenSubReport.lineCode = ""
+        mmiaRegimenSubReport.totalReferidos = Integer.valueOf(String.valueOf(item[12]))
         mmiaRegimenSubReports.add(mmiaRegimenSubReport)
     }
 
