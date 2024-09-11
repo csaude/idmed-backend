@@ -190,8 +190,8 @@ class PatientVisitController extends RestfulController {
                     }
                     item.pack.packagedDrugs.each { packagedDrugs ->
                         def clinicalService = item.episode.patientServiceIdentifier.service
-                        if (!packagedDrugs.drug.clinicalService) {
-                            packagedDrugs.drug.clinicalService = clinicalService
+                        if (!packagedDrugs.drug.clinical_service_id) {
+                            packagedDrugs.drug.clinical_service_id = clinicalService.id
                         }
                     }
                     if(!syncStatus)

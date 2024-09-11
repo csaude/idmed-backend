@@ -10,6 +10,11 @@ import mz.org.fgh.sifmoz.backend.serviceattributetype.ClinicalServiceAttributeTy
 import mz.org.fgh.sifmoz.backend.therapeuticRegimen.TherapeuticRegimen
 
 class ClinicalService extends BaseEntity {
+    static final String PREP = "PREP"
+    static final String TARV = "TARV"
+    static final String PPE = "PPE"
+    static final String TPT = "TPT"
+    static final String CCR = "CCR"
 
     String id
     String code
@@ -19,7 +24,6 @@ class ClinicalService extends BaseEntity {
 
     static belongsTo = [ClinicalServiceAttributeType]
     static hasMany = [clinicalServiceAttributes: ClinicalServiceAttributeType, therapeuticRegimens: TherapeuticRegimen, clinicSectors: ClinicSector]
-
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_ClinicalService_Idx'
@@ -36,20 +40,32 @@ class ClinicalService extends BaseEntity {
         description nullable: false
     }
 
-    boolean isPrep() {
-        return this.code == "PREP"
-    }
-
-    boolean isTarv() {
-        return this.code == "TARV"
-    }
-
     @Override
     List<Menu> hasMenus() {
         List<Menu> menus = new ArrayList<>()
         Menu.withTransaction {
-            menus = Menu.findAllByCodeInList(Arrays.asList(patientMenuCode,groupsMenuCode,dashboardMenuCode,administrationMenuCode,reportsMenuCode,homeMenuCode))
+            menus = Menu.findAllByCodeInList(Arrays.asList(patientMenuCode, groupsMenuCode, dashboardMenuCode, administrationMenuCode, reportsMenuCode, homeMenuCode))
         }
         return menus
+    }
+
+    boolean isPREP() {
+        return this.code.equalsIgnoreCase(PREP)
+    }
+
+    boolean isTARV() {
+        return this.code.equalsIgnoreCase(TARV)
+    }
+
+    boolean isPPE() {
+        return this.code.equalsIgnoreCase(PPE)
+    }
+
+    boolean isTPT() {
+        return this.code.equalsIgnoreCase(TPT)
+    }
+
+    boolean isCCR() {
+        return this.code.equalsIgnoreCase(CCR)
     }
 }

@@ -43,26 +43,28 @@ class RestOpenMRSClient {
                 List<String> obsGroups = new ArrayList<>()
                 List<InteroperabilityAttribute> interoperabilityAttributes = Patient.get(patient.id).his.interoperabilityAttributes as List<InteroperabilityAttribute>
                 PatientVisitDetails pvd = PatientVisitDetails.findByPack(pack)
-                PrescriptionDetail prescriptionDetail = PrescriptionDetail.findByPrescription(Prescription.findById(pvd.prescription.id))
+                PatientServiceIdentifier identifier = PatientServiceIdentifier.findById(pvd?.episode?.patientServiceIdentifier?.id)
+                ClinicalService clinicalService = ClinicalService.findById(identifier?.service?.id)
+//                PrescriptionDetail prescriptionDetail = PrescriptionDetail.findByPrescription(Prescription.findById(pvd.prescription.id))
 
-                TherapeuticRegimen therapeuticRegimen = null
+//                TherapeuticRegimen therapeuticRegimen = null
 
-                if(prescriptionDetail.therapeuticRegimen){
-                    therapeuticRegimen = TherapeuticRegimen.findById(prescriptionDetail.therapeuticRegimen.id)
-                    if(therapeuticRegimen.isTARV() || therapeuticRegimen.isPPE()){
+                if(clinicalService){
+//                    therapeuticRegimen = TherapeuticRegimen.findById(prescriptionDetail.therapeuticRegimen.id)
+                    if(clinicalService.isTARV() || clinicalService.isPPE() || clinicalService.isCCR()){
                         inputAddPerson =  setOpenMRSFILA(interoperabilityAttributes, pack, patient, customizedDosage, obsGroupsJson, dispenseMod, packSize, obsGroups)
                     }
-                    if(therapeuticRegimen.isTPT())
+                    if(clinicalService.isTPT())
                         inputAddPerson =  setOpenMRSFILT(interoperabilityAttributes, pack, patient)
                 }else{
                     logger.error("Paciente "+ patient.firstNames +" "+ patient.lastNames+" com prescricao sem Regime Terapeutico")
-                    PrescriptionDetail.withNewTransaction {
-                        List<Drug> drugs = new ArrayList<Drug>()
-                        Drug drug = Drug.findById(pack.packagedDrugs.first().drug.id)
-                        therapeuticRegimen = drug.therapeuticRegimenList.first()
-                        prescriptionDetail.setTherapeuticRegimen(therapeuticRegimen)
-                        prescriptionDetail.save(flush: true, failOnError: true)
-                    }
+//                    PrescriptionDetail.withNewTransaction {
+//                        List<Drug> drugs = new ArrayList<Drug>()
+//                        Drug drug = Drug.findById(pack.packagedDrugs.first().drug.id)
+//                        therapeuticRegimen = drug.therapeuticRegimenList.first()
+//                        prescriptionDetail.setTherapeuticRegimen(therapeuticRegimen)
+//                        prescriptionDetail.save(flush: true, failOnError: true)
+//                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace()
@@ -327,7 +329,7 @@ class RestOpenMRSClient {
                 .concat("\",\"value\":\"" + Utilities.formatToYYYYMMDD(pack.nextPickUpDate))
                 .concat("\",\"comment\":\"IDMED\"},")
 
-        if(!strCodeDispenseType.compareToIgnoreCase("DM")){
+        if(!strCodeDispenseType.equalsIgnoreCase("DM")){
             strDispenseType = interoperabilityAttributes.find { it.interoperabilityType.code == "QUARTERLY_DISPENSED_TYPE_CONCEPT_UUID" }.value
         }
 

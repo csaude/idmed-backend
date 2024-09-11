@@ -89,6 +89,7 @@ grails:
       stampEnabled: true
 dataSource:
   driverClassName: org.postgresql.Driver
+  dialect: hibernate.MyPostgreSQLDialect
   username: postgres
   password: postgres
   pooled: true
@@ -102,7 +103,7 @@ environments:
   development:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://localhost:9876/pescadores
+      url: jdbc:postgresql://localhost:9876/idmed
   test:
     dataSource:
       dbCreate: update
@@ -110,5 +111,5 @@ environments:
   production:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://db:5432/idmed
+      url: jdbc:postgresql://mpdb.idmed.csaude.org.mz:50420/idmed_maputo
 

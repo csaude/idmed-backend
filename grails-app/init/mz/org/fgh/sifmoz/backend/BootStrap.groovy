@@ -119,6 +119,8 @@ class BootStrap {
         Clinic.withTransaction {
 //            initDefaultClinic()
             initClinic()
+            updateClinicName()
+            updateClinicDistrict()
         }
 
 //        ClinicSector.withTransaction { initClinicSector()  }
@@ -568,6 +570,7 @@ class BootStrap {
     void initTherapeuticRegimen() {
         for (therapeuticRegimenObject in listTherapeuticRegimen()) {
 
+           ClinicalService clinicalService =  ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
             TherapeuticRegimen therapeuticRegimen1 = TherapeuticRegimen.findById(therapeuticRegimenObject.id.toString().trim())
             TherapeuticRegimen therapeuticRegimen2 = TherapeuticRegimen.findByCode(therapeuticRegimenObject.code)
 
@@ -580,8 +583,9 @@ class BootStrap {
                     therapeuticRegimen.active = therapeuticRegimenObject.active
                     therapeuticRegimen.description = therapeuticRegimenObject.description
                     therapeuticRegimen.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
-                    therapeuticRegimen.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
+                //    therapeuticRegimen.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                     therapeuticRegimen.save(flush: true, failOnError: true)
+                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen)
                 } else {
                     if (therapeuticRegimen2.code.equalsIgnoreCase("X6APed")) {
                         therapeuticRegimen2.regimenScheme = "ABC+3TC+DTG (2DFC+DTG50)"
@@ -591,6 +595,7 @@ class BootStrap {
                     therapeuticRegimen2.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
                     therapeuticRegimen2.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                     therapeuticRegimen2.save(flush: true, failOnError: true)
+                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen2)
                 }
             } else {
                 if (therapeuticRegimen1.code.equalsIgnoreCase("X6APed")) {
@@ -599,9 +604,11 @@ class BootStrap {
                 }
 //                therapeuticRegimen1.active = therapeuticRegimenObject.active
                 therapeuticRegimen1.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
-                therapeuticRegimen1.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
+//                therapeuticRegimen1.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                 therapeuticRegimen1.save(flush: true, failOnError: true)
+                clinicalService.addToTherapeuticRegimens(therapeuticRegimen1)
             }
+            clinicalService.save()
         }
     }
 
@@ -620,13 +627,15 @@ class BootStrap {
                 drug.fnmCode = drugObject.fnm_code
                 drug.uuidOpenmrs = drugObject.uuid_openmrs
                 drug.active = drugObject.active
-                drug.clinicalService = ClinicalService.findById(drugObject.clinical_service_id)
+                drug.clinical_service_id = drugObject.clinical_service_id
+//                drug.clinicalService = ClinicalService.findById(drugObject.clinical_service_id)
                 drug.form = Form.findById(drugObject.form_id)
                 drug.save(flush: true, failOnError: true)
 
             } else {
-                if (drug1.getClinicalService() == null) {
-                    drug1.clinicalService = ClinicalService.findById(drugObject.clinical_service_id)
+                if (drug1.getClinical_service_id() == null) {
+                    drug1.clinical_service_id = drugObject.clinical_service_id
+//                    drug1.clinicalService = ClinicalService.findById(drugObject.clinical_service_id)
                     drug1.save(flush: true, failOnError: true)
                 } else {
                     if (drug1.getUuidOpenmrs() == null || drug1.getUuidOpenmrs().trim().empty) {
@@ -2626,9 +2635,9 @@ class BootStrap {
         clinicList.add(new LinkedHashMap(uuid: "838BA7DE-B464-43CE-9F54-E9E034FB6A71", sisma_id: "NZDdLAn0PH7", provinceCode: "03", province: "Nampula", districtCode: "22", district: "Rapale", sitename: "Namaita CS", site_nid: "1032008"))
         clinicList.add(new LinkedHashMap(uuid: "4790A926-A6C2-4943-BFDA-A796BA8398E3", sisma_id: "ZqeiHyiaQa7", provinceCode: "03", province: "Nampula", districtCode: "22", district: "Rapale", sitename: "Namucaua CS", site_nid: "1032017"))
         clinicList.add(new LinkedHashMap(uuid: "89E53120-C9B9-40BA-B92E-D367D58AFEB0", sisma_id: "KXuDpfkBJ09", provinceCode: "03", province: "Nampula", districtCode: "22", district: "Rapale", sitename: "Rapale CS", site_nid: "1032006"))
-        clinicList.add(new LinkedHashMap(uuid: "FF278E15-DC0F-4373-BFAF-DA55F1F371F2", sisma_id: "PZJadYc1os9", provinceCode: "03", province: "Nampula", districtCode: "22", district: "Ribaue", sitename: "Lapala Monapo CS", site_nid: "1032106"))
-        clinicList.add(new LinkedHashMap(uuid: "BBE12474-AE13-4EEC-A5B8-28D15EC0ED8F", sisma_id: "RqoMfI0nyMg", provinceCode: "03", province: "Nampula", districtCode: "22", district: "Ribaue", sitename: "Namiconha CS", site_nid: "1032110"))
-        clinicList.add(new LinkedHashMap(uuid: "EC209488-BBC4-41F3-ADFC-6E95BFC149B9", sisma_id: "zVIAjMTsYT4", provinceCode: "03", province: "Nampula", districtCode: "22", district: "Ribaue", sitename: "Ribaue HR", site_nid: "1032101"))
+        clinicList.add(new LinkedHashMap(uuid: "FF278E15-DC0F-4373-BFAF-DA55F1F371F2", sisma_id: "PZJadYc1os9", provinceCode: "03", province: "Nampula", districtCode: "23", district: "Ribaué", sitename: "Iapala Monapo CS", site_nid: "1032106"))
+        clinicList.add(new LinkedHashMap(uuid: "BBE12474-AE13-4EEC-A5B8-28D15EC0ED8F", sisma_id: "RqoMfI0nyMg", provinceCode: "03", province: "Nampula", districtCode: "23", district: "Ribaué", sitename: "Namiconha CS", site_nid: "1032110"))
+        clinicList.add(new LinkedHashMap(uuid: "EC209488-BBC4-41F3-ADFC-6E95BFC149B9", sisma_id: "zVIAjMTsYT4", provinceCode: "03", province: "Nampula", districtCode: "23", district: "Ribaué", sitename: "Ribaue HR", site_nid: "1032101"))
         clinicList.add(new LinkedHashMap(uuid: "3F8FDDA6-CD5E-42F1-9D0C-84FBE01A54A7", sisma_id: "Djahp380CHM", provinceCode: "10", province: "Maputo", districtCode: "05", district: "Matola", sitename: "CS Matola Santos", site_nid: "1100128"))
         clinicList.add(new LinkedHashMap(uuid: "9E1B5B9A-192B-46EC-93E8-B463A3B6E91B", sisma_id: "sbH1sYBe2Ww", provinceCode: "03", province: "Nampula", districtCode: "21", district: "Nampula", sitename: "Cadeia Regional de Nampula", site_nid: "1030119"))
         clinicList.add(new LinkedHashMap(uuid: "DA6F8CB7-C8CD-4AA0-81B8-CF5E0BF1F1FB", sisma_id: "fFs8TOTuE5x", provinceCode: "09", province: "Gaza", districtCode: "14", district: "Xai-Xai", sitename: "Xai-Xai HP", site_nid: "1090100"))
@@ -2885,35 +2894,25 @@ class BootStrap {
 
     }
 
-    void insertClinicSectorsOnClinics() {
-        List<Object> clinicSectorList = new ArrayList<>()
-        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181901608880000', code: 'CPN', clinicName: "Consulta Pre-Natal", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
-        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee018190163i0c0001', code: 'TB', clinicName: "Tuberculose", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
-        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181901074b20002', code: 'PREP', clinicName: "Profilaxia Pré-Exposição", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
-        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181902674b20003', code: 'SAAJ', clinicName: "Serviços Amigos dos Adolescentes e Jovens", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
-        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181902674b20005', code: 'CCR', clinicName: "Consulta Criança em Risco", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
-        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181902674b20004', code: 'NORMAL', clinicName: "Atendimento Geral", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
+   void updateClinicName() {
 
-        for (clinicSectorObject in clinicSectorList) {
-            if (!Clinic.findById(clinicSectorObject.id)) {
-                ClinicSector clinicSector = new ClinicSector()
-                clinicSector.id = clinicSectorObject.uuid
-                clinicSector.syncStatus = 'S'
-                clinicSector.code = clinicSectorObject.code
-                clinicSector.clinicName = clinicSectorObject.clinicName
-                clinicSector.active = clinicSectorObject.active
-                clinicSector.uuid = clinicSectorObject.uuid
-                clinicSector.facilityType = FacilityType.findById(clinicSectorObject.facilityType_id)
-                clinicSector.parentClinic = Clinic.findByMainClinic(true)
-                clinicSector.province = clinicSector.parentClinic.province
-                clinicSector.district = clinicSector.parentClinic.district
-                clinicSector.active = true
-                clinicSector.withTransaction {
-                    clinicSector.save(flush: true, failOnError: true)
-                }
-            }
-        }
+       Clinic clinicToUpdate = Clinic.findByClinicName('Lapala Monapo CS');
+       if (clinicToUpdate) {
+           clinicToUpdate.setClinicName('Iapala Monapo CS')
+           clinicToUpdate.save(flush: true, failOnError: true)
+       }
     }
 
+    void updateClinicDistrict() {
+        List<String> clinicNames = Arrays.asList("Iapala Monapo CS", "Namiconha CS", "Ribaue HR");
+           District district =   District.findByDescription('Rapale')
+
+        List<Clinic> clinicsToUpdate = Clinic.findAllByClinicNameInListAndDistrict(clinicNames,district)
+        clinicsToUpdate.each{clinicToUpdate ->
+            clinicToUpdate.setDistrict(District.findByDescription('Ribaué'))
+            clinicToUpdate.save(flush: true, failOnError: true)
+        }
+
+    }
 
 }

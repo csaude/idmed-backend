@@ -97,6 +97,7 @@ class UrlMappings {
         get "/api/patient/clinicSector/$clinicSectorId(.$format)?"(controller:'patient', action:'getPatientsInClinicSector')
         get "/api/stock/checkStockStatus/$idPrescribedDrug/$prescriptionDate/$qtyPrescribed/$clinicId/$weeks(.$format)?"(controller:'stock', action:'checkStockStatus')
         get "/api/stock/getValidStocks/$idPackagedDrug/$packageDate(.$format)?"(controller:'stock', action:'getValidStockByDrugAndPickUpDate')
+        get "/api/stock/getStocksByStockDistributor/$clinicId/$offset/$max(.$format)?"(controller:'stock', action:'getStocksByStockDistributor')
         get "/api/stockLevel/getStockLevelByClinicAndDrug/$clinicId/$drugId(.$format)?"(controller:'stockLevel', action:'getStockLevelByClinicAndDrug')
 
 
@@ -104,6 +105,7 @@ class UrlMappings {
         get "/api/therapeuticRegimen/therapeuticRegimenFromProvicnial/$offset(.$format)?"(controller:'therapeuticRegimen', action:'getTherapeuticRegimensFromProvincialServer')
         get "/api/identifierType/identifierTypeFromProvicnial/$offset(.$format)?"(controller:'identifierType', action:'getidentifierTypesFromProvincialServer')
         get "/api/clinic/clinicFromProvicnial/$offset(.$format)?"(controller:'clinic', action:'geClinicsFromProvincialServer')
+        get "/api/clinicalService/clinicalServiceFromProvicnial/$offset(.$format)?"(controller:'clinicalService', action:'getClinicalServiceFromProvincialServer')
 
         get "/api/patientVisitDetails/getAllByPatient/$patientId(.$format)?"(controller:'patientVisitDetails', action:'getAllByPatientId')
         get "/api/groupMember/groupMemberInfo/$groupId(.$format)?"(controller:'groupMember', action:'getMembersInfoByGroupId')
