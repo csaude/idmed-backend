@@ -14,4 +14,6 @@ interface IStockEntranceService {
 
     List<StockEntrance> getAllByClinicId(String clinicId, int offset, int max)
 
+    StockEntrance getByClinicIdAndOrderNumber(String clinicId,String orderNumber)
+
 }
