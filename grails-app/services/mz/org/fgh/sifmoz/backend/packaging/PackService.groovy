@@ -1111,7 +1111,7 @@ abstract class PackService implements IPackService {
 
         String query = ""
 
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query =
                     """
                     select 
@@ -1866,7 +1866,7 @@ abstract class PackService implements IPackService {
         def sql = new Sql(dataSource as DataSource)
 
         String query = ""
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query = """
                     SELECT 
                      COUNT
@@ -2058,7 +2058,7 @@ abstract class PackService implements IPackService {
         def sql = new Sql(dataSource as DataSource)
         String query = ''
 
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query =
                     """
                     SELECT  
