@@ -23,6 +23,7 @@ class PackagedDrug extends BaseEntity {
     Pack pack
     int quantityRemain
     Clinic clinic
+    String origin
     static belongsTo = [Pack]
 
     static hasMany = [packagedDrugStocks: PackagedDrugStock]
@@ -39,6 +40,7 @@ class PackagedDrug extends BaseEntity {
         nextPickUpDate nullable: true
         creationDate nullable: true
         clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {

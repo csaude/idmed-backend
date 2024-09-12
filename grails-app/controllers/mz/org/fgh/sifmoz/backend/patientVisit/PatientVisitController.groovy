@@ -9,6 +9,7 @@ import groovy.json.JsonSlurper
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
@@ -28,8 +29,6 @@ import org.springframework.validation.BindingResult
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.NO_CONTENT
-
-//import grails.plugin.json.view.api.JsonView
 
 class PatientVisitController extends RestfulController {
 
@@ -83,25 +82,33 @@ class PatientVisitController extends RestfulController {
         visit.beforeInsert()
         visit.validate()
 
+        configPatientVisitOrigin(visit)
+
         if (objectJSON.id) {
             visit.id = UUID.fromString(objectJSON.id)
 
             visit.patientVisitDetails.eachWithIndex { item, index ->
                 item.beforeInsert()
                 item.id = UUID.fromString(objectJSON.patientVisitDetails[index].id)
+                item.origin = visit.origin
                 item.prescription.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.id)
+                item.prescription.origin = visit.origin
                 item.prescription.prescribedDrugs.eachWithIndex { item2, index2 ->
                     item2.beforeInsert()
                     item2.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.prescribedDrugs[index2].id)
+                    item2.origin = visit.origin
                 }
                 item.prescription.prescriptionDetails.eachWithIndex { item3, index3 ->
                     item3.beforeInsert()
                     item3.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.prescriptionDetails[index3].id)
+                    item3.origin = visit.origin
                 }
                 item.pack.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.id)
+                item.pack.origin = visit.origin
                 item.pack.packagedDrugs.eachWithIndex { item4, index4 ->
                     item4.beforeInsert()
                     item4.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.packagedDrugs[index4].id)
+                    item.origin = visit.origin
                     item4.packagedDrugStocks.eachWithIndex { item5, index5 ->
                         item5.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.packagedDrugs[index4].packagedDrugStocks[index5].id)
                     }
@@ -111,22 +118,27 @@ class PatientVisitController extends RestfulController {
             visit.adherenceScreenings.eachWithIndex { item, index ->
                 item.beforeInsert()
                 item.id = UUID.fromString(objectJSON.adherenceScreenings[index].id)
+                item.origin = visit.origin
             }
             visit.vitalSignsScreenings.eachWithIndex { item, index ->
                 item.beforeInsert()
                 item.id = UUID.fromString(objectJSON.vitalSignsScreenings[index].id)
+                item.origin = visit.origin
             }
             visit.pregnancyScreenings.eachWithIndex { item, index ->
                 item.beforeInsert()
                 item.id = UUID.fromString(objectJSON.pregnancyScreenings[index].id)
+                item.origin = visit.origin
             }
             visit.tbScreenings.eachWithIndex { item, index ->
                 item.beforeInsert()
                 item.id = UUID.fromString(objectJSON.tbScreenings[index].id)
+                item.origin = visit.origin
             }
             visit.ramScreenings.eachWithIndex { item, index ->
                 item.beforeInsert()
                 item.id = UUID.fromString(objectJSON.ramScreenings[index].id)
+                item.origin = visit.origin
             }
         }
 
@@ -141,36 +153,46 @@ class PatientVisitController extends RestfulController {
             if (existingPatientVisit != null) {
                 visit.vitalSignsScreenings.each { item ->
                     item.visit = existingPatientVisit
+                    item.origin = existingPatientVisit.origin
                     item.save()
                 }
                 if (visit.patient.gender.startsWith('F')) {
                     visit.pregnancyScreenings.each { item ->
                         item.visit = existingPatientVisit
+                        item.origin = existingPatientVisit.origin
                         item.save()
                     }
                     existingPatientVisit.pregnancyScreenings = visit.pregnancyScreenings
                 }
                 visit.ramScreenings.each { item ->
                     item.visit = existingPatientVisit
+                    item.origin = existingPatientVisit.origin
                     item.save()
                 }
                 visit.adherenceScreenings.each { item ->
                     item.visit = existingPatientVisit
+                    item.origin = existingPatientVisit.origin
                     item.save()
                 }
                 visit.tbScreenings.each { item ->
                     item.visit = existingPatientVisit
+                    item.origin = existingPatientVisit.origin
                     item.save()
                 }
                 visit.patientVisitDetails.each { item ->
                     item.patientVisit = existingPatientVisit
+                    item.origin = existingPatientVisit.origin
                     Prescription existingPrescription = Prescription.findById(item.prescription.id)
                     if (existingPrescription == null) {
+                        item.prescription.origin = existingPatientVisit.origin
+                        item.episode.origin = existingPatientVisit.origin
                         incrementPrescriptionSeq(item.prescription, item.episode)
                         prescriptionService.save(item.prescription)
                     }
-                    if(!syncStatus)
+                    if(!syncStatus){
                         item.pack.isreferalsynced = true
+                        item.pack.origin = existingPatientVisit.origin
+                    }
                     packService.save(item.pack)
                     reduceStock(item.pack, syncStatus)
                 }
@@ -184,13 +206,17 @@ class PatientVisitController extends RestfulController {
 
             } else {
                 visit.patientVisitDetails.each { item ->
+                    item.pack.origin = visit.origin
+                    item.episode.origin = visit.origin
                     Prescription existingPrescription = Prescription.findById(item.prescription.id)
                     if (existingPrescription != null) {
                         item.prescription = existingPrescription
+                        item.prescription.origin = existingPrescription.origin
                     }
                     item.pack.packagedDrugs.each { packagedDrugs ->
                         def clinicalService = item.episode.patientServiceIdentifier.service
                         if (!packagedDrugs.drug.clinical_service_id) {
+                            packagedDrugs.origin = item.pack.origin
                             packagedDrugs.drug.clinical_service_id = clinicalService.id
                         }
                     }
@@ -278,6 +304,7 @@ class PatientVisitController extends RestfulController {
         patientVisitDB.pregnancyScreenings = [].withDefault { new PregnancyScreening() }
         patientVisitDB.ramScreenings = [].withDefault { new RAMScreening() }
 
+        configPatientVisitOrigin(patientVisitDB)
         (objectJSON.adherenceScreenings as List).collect { item ->
             if (item) {
                 def adherenceScreeningObject = new AdherenceScreening(parseTo(item.toString()) as Map)
@@ -291,6 +318,7 @@ class PatientVisitController extends RestfulController {
                 adherenceScreening.lateDays = adherenceScreeningObject.lateDays
                 adherenceScreening.lateMotives = adherenceScreeningObject.lateMotives
                 adherenceScreening.visit = patientVisitDB
+                adherenceScreening.origin = patientVisitDB.origin
                 adherenceScreenings.add(adherenceScreening)
             }
         }
@@ -312,6 +340,7 @@ class PatientVisitController extends RestfulController {
                 tbScreening.fatigueOrTirednessLastTwoWeeks = tbScreeningObject.fatigueOrTirednessLastTwoWeeks
                 tbScreening.sweating = tbScreeningObject.sweating
                 tbScreening.visit = patientVisitDB
+                tbScreening.origin = patientVisitDB.origin
                 tbScreenings.add(tbScreening)
             }
         }
@@ -330,6 +359,7 @@ class PatientVisitController extends RestfulController {
                 vitalSignsScreening.systole = vitalSignsScreeningObject.systole
                 vitalSignsScreening.height = vitalSignsScreeningObject.height
                 vitalSignsScreening.visit = patientVisitDB
+                vitalSignsScreening.origin = patientVisitDB.origin
                 vitalSignsScreenings.add(vitalSignsScreening)
             }
         }
@@ -345,6 +375,7 @@ class PatientVisitController extends RestfulController {
                 pregnancyScreening.menstruationLastTwoMonths = pregnancyScreeningObject.menstruationLastTwoMonths
                 pregnancyScreening.lastMenstruation = pregnancyScreeningObject.lastMenstruation
                 pregnancyScreening.visit = patientVisitDB
+                pregnancyScreening.origin = patientVisitDB.origin
                 pregnancyScreenings.add(pregnancyScreening)
             }
         }
@@ -359,6 +390,7 @@ class PatientVisitController extends RestfulController {
                 ramScreening.adverseReaction = ramScreeningObject.adverseReaction
                 ramScreening.adverseReactionMedicine = ramScreeningObject.adverseReactionMedicine
                 ramScreening.visit = patientVisitDB
+                ramScreening.origin = patientVisitDB.origin
                 ramScreenings.add(ramScreening)
             }
         }
@@ -371,10 +403,12 @@ class PatientVisitController extends RestfulController {
 
         //Only updated pack and packagedDrugs (refazer dispensa)
         patientVisitDB.patientVisitDetails.eachWithIndex { item, index ->
+            item.origin = patientVisitDB.origin
             if (item.pack) {
+                item.pack.origin = patientVisitDB.origin
                 item.pack.packagedDrugs.eachWithIndex { item4, index4 ->
                     item4.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.packagedDrugs[index4].id)
-//                    item4.drug.stockList = null
+                    item4.origin = patientVisitDB.origin
                     item4.packagedDrugStocks.eachWithIndex { item5, index5 ->
                         item5.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.packagedDrugs[index4].packagedDrugStocks[index5].id)
                     }
@@ -540,6 +574,15 @@ class PatientVisitController extends RestfulController {
         def objectJSON = request.JSON
         List<String> patientIds = objectJSON
         render JSONSerializer.setObjectListJsonResponse(patientVisitService.getAllLastWithScreeningByPatientIds(patientIds)) as JSON
+    }
+
+    private static PatientVisit configPatientVisitOrigin(PatientVisit patientVisit){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+            patientVisit.origin = systemConfigs.description
+        }
+
+        return patientVisit
     }
 
 }

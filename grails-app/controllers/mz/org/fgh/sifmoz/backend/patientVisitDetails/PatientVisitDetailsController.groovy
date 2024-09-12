@@ -5,6 +5,7 @@ import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.openmrsErrorLog.OpenmrsErrorLog
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
@@ -75,6 +76,7 @@ class PatientVisitDetailsController extends RestfulController {
         }
 
         try {
+            configPatientVisitDetailsOrigin(patientVisitDetails)
             determinePrescriptionPatientType(patientVisitDetails)
             patientVisitDetailsService.save(patientVisitDetails)
         } catch (ValidationException e) {
@@ -98,6 +100,7 @@ class PatientVisitDetailsController extends RestfulController {
         }
 
         try {
+            configPatientVisitDetailsOrigin(patientVisitDetails)
             patientVisitDetailsService.save(patientVisitDetails)
         } catch (ValidationException e) {
             respond patientVisitDetails.errors
@@ -256,5 +259,14 @@ class PatientVisitDetailsController extends RestfulController {
         def result = patientVisitDetailsService.getLastAllByListPatientId(ids)
 
         render JSONSerializer.setObjectListJsonResponse(result) as JSON
+    }
+
+    private static PatientVisitDetails configPatientVisitDetailsOrigin(PatientVisitDetails patientVisitDetails){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+            patientVisitDetails.origin = systemConfigs.description
+        }
+
+        return patientVisitDetails
     }
 }

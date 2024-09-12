@@ -11,8 +11,10 @@ import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.Localidade
 import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.LocalidadeService
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.interoperabilityAttribute.InteroperabilityAttribute
 import mz.org.fgh.sifmoz.backend.interoperabilityType.InteroperabilityType
+import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifierService
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
@@ -88,7 +90,7 @@ class PatientController extends RestfulController {
                     localidadeService.save(patient.bairro)
                 }
             }
-
+            configPatientOrigin(patient)
             patientService.save(patient)
 
             (objectJSON.identifiers as List).collect { item ->
@@ -96,6 +98,7 @@ class PatientController extends RestfulController {
                     def identifier = new PatientServiceIdentifier(item as Map)
                     identifier.patient = null
                     identifier.patient = patient
+                    identifier.origin = patient.origin
                     identifier.id = item.id
                     patientServiceIdentifierService.save(identifier)
                     patient.addToIdentifiers(identifier)
@@ -117,8 +120,6 @@ class PatientController extends RestfulController {
         def objectJSON = request.JSON
         def patientFromJSON = (parseTo(objectJSON.toString()) as Map) as Patient
         Patient patient = Patient.get(objectJSON.id)
-//        bindData(patient, patientFromJSON, [exclude: ['id', 'clinicId', 'his', 'hisId', 'provinceId', 'districtId', 'bairroId', 'clinic', 'attributes', 'appointments', 'patientTransReference', 'validated', 'postoAdministrativoId','matchId', 'entity']])
-
 
         patient.firstNames = patientFromJSON.firstNames
         patient.middleNames = patientFromJSON.middleNames
@@ -136,19 +137,6 @@ class PatientController extends RestfulController {
         patient.hisUuid = patientFromJSON.hisUuid
 
         List<PatientServiceIdentifier> identifiersList = new ArrayList<>()
-
-        /*   if (patient.identifiers != null) {
-               patient.identifiers = [].withDefault { new PatientServiceIdentifier() }
-
-               (objectJSON.identifiers as List).collect { item ->
-                   if (item) {
-                       def identifier = PatientServiceIdentifier.get(item.id)
-                       identifier.patient = patient
-                       identifiersList.add(identifier)
-                   }
-               }
-               patient.identifiers = identifiersList
-           }*/
         if (patient == null) {
             render status: NOT_FOUND
             return
@@ -170,6 +158,7 @@ class PatientController extends RestfulController {
                     localidadeService.save(patient.bairro)
                 }
             }
+            configPatientOrigin(patient)
             patientService.save(patient)
         } catch (ValidationException e) {
             respond patient.errors
@@ -193,10 +182,7 @@ class PatientController extends RestfulController {
         List<String> toIncludeProps = new ArrayList<>()
         toIncludeProps.add("identifiers")
         toIncludeProps.add("clinic")
-        // patientService.getAllByClinicId(clinicId, offset, max)
-        //render JSONSerializer.setLightObjectListJsonResponse(patientService.getAllByClinicId(clinicId, offset, max), toIncludeProps) as JSON
         render JSONSerializer.setObjectListJsonResponse(patientService.getAllByClinicId(clinicId, offset, max)) as JSON
-        //respond patientService.getAllByClinicId(clinicId, offset, max)
     }
 
     def countPatientSearchResult() {
@@ -218,8 +204,6 @@ class PatientController extends RestfulController {
         def offset = objectJSON.offset != null ? objectJSON.offset as int : 0
 
         def patientList = patientService.search(patient, offset, limit)
-
-        //  def result = JSONSerializer.setLightObjectListJsonResponse(patientList)
 
         def result = JSONSerializer.setLightObjectListJsonResponse(patientList)
         (result as List).collect { rs ->
@@ -298,25 +282,6 @@ class PatientController extends RestfulController {
                     if (existsPatientUUID == null) {
                         Patient patientToUpdate = Patient.findById(objectJSON.id)
                         patientToUpdate.hisUuid = patientFromJSON.hisUuid
-//                        patientToUpdate.clinic = Clinic.findByMainClinic(true)
-//                        patientToUpdate.clinic.sectors = [].withDefault {new ClinicSector()}
-//                        if (patientToUpdate.identifiers != null) {
-//                            patientToUpdate.identifiers = [].withDefault { new PatientServiceIdentifier() }
-//                            patientToUpdate.save()
-//                            (objectJSON.identifiers as List).collect { item ->
-//                                if (item) {
-//                                    def identifier = PatientServiceIdentifier.get(item.id)
-//                                    identifier.patient = patientToUpdate
-//                                    identifier.save()
-//                                    identifiersList.add(identifier)
-//                                }
-//                            }
-////                            patientToUpdate.identifiers = identifiersList
-//                        }
-//
-//
-//                        patientToUpdate.save()
-//                        render JSONSerializer.setJsonObjectResponse(patientToUpdate) as JSON
                         render JSONSerializer.setJsonLightObjectResponse(patientToUpdate) as JSON
                     } else if (existsPatientUUID.id != patientFromJSON.id) {
                         response.status = 400
@@ -366,6 +331,7 @@ class PatientController extends RestfulController {
                         for (Episode episode : episodes) {
                             episode.setPatientServiceIdentifier(psis[index == 0 ? 1 : 0])
                             Episode.withTransaction {
+                                episode.origin = it2.patient.origin
                                 episode.save()
                             }
                         }
@@ -394,17 +360,12 @@ class PatientController extends RestfulController {
             for (PatientVisit patientVisit : patientVisits) {
                 patientVisit.setPatient(patientToHold)
                 PatientVisit.withTransaction {
+                    patientVisit.origin = patientToHold.origin
                     patientVisit.save()
                 }
             }
         }
         Patient.withTransaction {
-            /*
-            def patientToDelete1 = patientServiceToDelete.patient
-            patientServiceToDelete.episodes = []
-            patientServiceToDelete.delete()
-            patientToDelete.delete()
-*/
             patientServiceToDelete.each { it5 ->
                 it5.episodes = []
                 it5.delete()
@@ -412,32 +373,18 @@ class PatientController extends RestfulController {
             patientToDelete.delete()
         }
         render status: NO_CONTENT
-/*
-        def patientVisits = PatientVisit.findAllByPatient(patientToDelete)
-        for (PatientVisit patientVisit : patientVisits) {
-            patientVisit.setPatient(patientToHold)
-            PatientVisit.withTransaction {
-                patientVisit.save()
-                println(matchId++)
-            }
-        }
-
-        for (PatientServiceIdentifier patientService : patientServiceToDelete) {
-
-            def episodes = Episode.findAllByPatientServiceIdentifier(patientService)
-            for (Episode episode : episodes) {
-                episode.setPatientServiceIdentifier(patientService)
-                Episode.withTransaction {
-                    episode.save()
-                    println(matchIdd++)
-                }
-            }
-        }
-         */
-
     }
 
     def getAllPatientsIsAbandonment(int offset, int max) {
         render JSONSerializer.setObjectListJsonResponse(patientService.getAllPatientsIsAbandonment(offset,max)) as JSON
+    }
+
+    private static Patient configPatientOrigin(Patient patient){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+            patient.origin = systemConfigs.description
+        }
+
+        return patient
     }
 }
