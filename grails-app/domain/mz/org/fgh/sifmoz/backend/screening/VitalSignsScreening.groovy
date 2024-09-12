@@ -9,15 +9,16 @@ import mz.org.fgh.sifmoz.backend.protection.Menu
 
 class VitalSignsScreening extends BaseEntity {
     String id
-    int distort;
-    String imc;
-    double weight;
-    int systole;
-    double height;
+    int distort
+    String imc
+    double weight
+    int systole
+    double height
 
     @JsonBackReference
     PatientVisit visit
     Clinic clinic
+    String origin
 
     static belongsTo = [PatientVisit]
     static mapping = {
@@ -28,6 +29,7 @@ class VitalSignsScreening extends BaseEntity {
     static constraints = {
         distort (nullable: false)
         clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {
@@ -35,17 +37,6 @@ class VitalSignsScreening extends BaseEntity {
             id = UUID.randomUUID()
             clinic = Clinic.findWhere(mainClinic: true)
         }
-    }
-
-    @Override
-    public String toString() {
-        return "VitalSignsScreening{" +
-                "distort=" + distort +
-                ", imc='" + imc + '\'' +
-                ", weight=" + weight +
-                ", systole=" + systole +
-                ", height=" + height +
-                '}';
     }
 
     @Override

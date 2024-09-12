@@ -21,6 +21,7 @@ class PrescribedDrug extends BaseEntity {
     @JsonBackReference
     Prescription prescription
     Clinic clinic
+    String origin
     static belongsTo = [Prescription]
 
     static mapping = {
@@ -30,6 +31,7 @@ class PrescribedDrug extends BaseEntity {
     static constraints = {
         timesPerDay(min: 1)
         clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {

@@ -21,6 +21,7 @@ class PatientVisit extends BaseEntity {
     @JsonIgnore
     Clinic clinic
     Date creationDate = new Date()
+    String origin
 
     @JsonIgnore
     Patient patient
@@ -37,6 +38,7 @@ class PatientVisit extends BaseEntity {
 
     static constraints = {
         creationDate nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {

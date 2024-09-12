@@ -9,6 +9,7 @@ import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
 import mz.org.fgh.sifmoz.backend.episodeType.EpisodeType
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
@@ -49,6 +50,7 @@ class EpisodeController extends RestfulController {
     def save() {
 
         Episode episode = new Episode()
+
         def objectJSON = request.JSON
         episode = objectJSON as Episode
 
@@ -66,16 +68,17 @@ class EpisodeController extends RestfulController {
         }
 
         try {
+
+            configEpisodeOrigin(episode)
             episodeService.save(episode)
             if (episode.startStopReason.code.equalsIgnoreCase(StartStopReason.TRANSFERIDO_PARA) ||
                     episode.startStopReason.code.equalsIgnoreCase(StartStopReason.OBITO)) {
-                        closePatientServiceIdentifierOfPatientWithTrasnferenceOrObitEpisode(episode)
-                    }
+                closePatientServiceIdentifierOfPatientWithTrasnferenceOrObitEpisode(episode)
+            }
             if (episode.startStopReason.code.equalsIgnoreCase("TRANSFERIDO_PARA") ||
                     episode.startStopReason.code.equalsIgnoreCase("REFERIDO_DC") ||
                     episode.startStopReason.code.equalsIgnoreCase("REFERIDO_PARA") ||
-                    episode.startStopReason.code.equalsIgnoreCase("VOLTOU_REFERENCIA"))
-            {
+                    episode.startStopReason.code.equalsIgnoreCase("VOLTOU_REFERENCIA")) {
                 patientTransReferenceCloseMobileEpisode(episode).save()
                 createCloseEpisodeForOtherPatientIdentifiersWhenPatientReferred(episode)
             }
@@ -96,6 +99,8 @@ class EpisodeController extends RestfulController {
     @Transactional
     def update() {
         def objectJSON = request.JSON
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+
         def auxEpisode = (parseTo(objectJSON.toString()) as Map) as Episode
         Episode episode = Episode.get(objectJSON.id)
         bindData(episode, auxEpisode, [exclude: ['id']])
@@ -112,6 +117,7 @@ class EpisodeController extends RestfulController {
         }
 
         try {
+            configEpisodeOrigin(episode)
             episodeService.save(episode)
         } catch (ValidationException e) {
             respond episode.errors
@@ -123,7 +129,7 @@ class EpisodeController extends RestfulController {
 
     @Transactional
     def delete(String id) {
-        List<String> startStopReasonList = ['REFERIDO_PARA','REFERIDO_SECTOR_CLINICO' , 'REFERIDO_DC'].asList()
+        List<String> startStopReasonList = ['REFERIDO_PARA', 'REFERIDO_SECTOR_CLINICO', 'REFERIDO_DC'].asList()
 
         if (id == null || episodeService.delete(id) == null) {
             render status: NOT_FOUND
@@ -132,9 +138,8 @@ class EpisodeController extends RestfulController {
 
         Episode episode = Episode.findById(id)
 
-
-       Episode episodeReferred = Episode.findByEpisodeDateBetweenAndIdNotEqualAndPatientServiceIdentifier(
-               ConvertDateUtils.getDateAtStartOfDay(episode.episodeDate),ConvertDateUtils.getDateAtEndOfDay(episode.episodeDate) , episode.id, episode.patientServiceIdentifier)
+        Episode episodeReferred = Episode.findByEpisodeDateBetweenAndIdNotEqualAndPatientServiceIdentifier(
+                ConvertDateUtils.getDateAtStartOfDay(episode.episodeDate), ConvertDateUtils.getDateAtEndOfDay(episode.episodeDate), episode.id, episode.patientServiceIdentifier)
 
         if (episodeReferred !== null && startStopReasonList.contains(episodeReferred.startStopReason.getCode())) {
             episodeService.delete(episodeReferred.id)
@@ -147,22 +152,15 @@ class EpisodeController extends RestfulController {
     }
 
     def getByIdentifierId(String identifierId, int offset, int max) {
-        // respond episodeService.getAllByIndentifier(identifierId, offset, max)
         render JSONSerializer.setObjectListJsonResponse(episodeService.getAllByIndentifier(identifierId, offset, max)) as JSON
     }
 
 
     def getLastWithVisitByIndentifier(String identifierId, String cliniId) {
-        // respond episodeService.getAllByIndentifier(identifierId, offset, max)
-        //JSON.registerObjectMarshaller(DomainClassMarshaller)
-        //render episodeService.getLastWithVisitByIndentifier(PatientServiceIdentifier.findById(identifierId), Clinic.findById(cliniId))
         render JSONSerializer.setJsonObjectResponse(episodeService.getLastWithVisitByIndentifier(PatientServiceIdentifier.findById(identifierId), Clinic.findById(cliniId))) as JSON
     }
 
     def getLastWithVisitByClinicSectors(String clinicSectorId) {
-        // respond episodeService.getAllByIndentifier(identifierId, offset, max)
-        //JSON.registerObjectMarshaller(DomainClassMarshaller)
-        //render episodeService.getLastWithVisitByIndentifier(PatientServiceIdentifier.findById(identifierId), Clinic.findById(cliniId))
         render JSONSerializer.setObjectListJsonResponse(episodeService.getLastWithVisitByClinicAndClinicSector(ClinicSector.findById(clinicSectorId))) as JSON
     }
 
@@ -200,11 +198,10 @@ class EpisodeController extends RestfulController {
         return transReference
     }
 
-    public closePatientServiceIdentifierOfPatientWithTrasnferenceOrObitEpisode (Episode episode) {
-       def patientServiceIdentifiers =  PatientServiceIdentifier.findAllByPatient(episode.patientServiceIdentifier.patient)
+    public closePatientServiceIdentifierOfPatientWithTrasnferenceOrObitEpisode(Episode episode) {
+        def patientServiceIdentifiers = PatientServiceIdentifier.findAllByPatient(episode.patientServiceIdentifier.patient)
 
-        patientServiceIdentifiers.each {item ->
-           // def lastIntialEpisode = episodeService.getLastInitialEpisodeByIdentifier(item.id)
+        patientServiceIdentifiers.each { item ->
             if (item.id == episode.patientServiceIdentifier.id) {
                 item.endDate = episode.episodeDate
                 item.state = 'Inactivo'
@@ -223,6 +220,7 @@ class EpisodeController extends RestfulController {
                 episodeService.save(closureEpisode)
                 item.endDate = episode.episodeDate
                 item.state = 'Inactivo'
+                item.origin = episode.origin
                 item.save(flush: true)
             }
 
@@ -235,27 +233,29 @@ class EpisodeController extends RestfulController {
         render JSONSerializer.setObjectListJsonResponse(Episode.findAllByIdInList(ids)) as JSON
     }
 
-    public createCloseEpisodeForOtherPatientIdentifiersWhenPatientReferred (Episode episode) {
+    public createCloseEpisodeForOtherPatientIdentifiersWhenPatientReferred(Episode episode) {
 
-         def patientServiceIdentifiers =  PatientServiceIdentifier.findAllByPatient(episode.patientServiceIdentifier.patient)
-         patientServiceIdentifiers.each { item ->
-             if (episode.patientServiceIdentifier.id != item.id) {
-                 Episode closureEpisode = new Episode()
-                 closureEpisode.episodeDate = episode.episodeDate
-                 closureEpisode.episodeType = EpisodeType.findByCode('FIM')
-                 closureEpisode.patientServiceIdentifier = item
-                 closureEpisode.clinic = item.clinic
-                 closureEpisode.clinicSector = episode.clinicSector
-                 closureEpisode.creationDate = new Date()
-                 closureEpisode.notes = 'Fechado Devido ao' + episode.startStopReason.code
-                 closureEpisode.startStopReason = episode.startStopReason
-                 closureEpisode.beforeInsert()
-                 episodeService.save(closureEpisode)
-             }
-         }
+        def patientServiceIdentifiers = PatientServiceIdentifier.findAllByPatient(episode.patientServiceIdentifier.patient)
+        patientServiceIdentifiers.each { item ->
+            if (episode.patientServiceIdentifier.id != item.id) {
+                Episode closureEpisode = new Episode()
+                closureEpisode.episodeDate = episode.episodeDate
+                closureEpisode.episodeType = EpisodeType.findByCode('FIM')
+                closureEpisode.patientServiceIdentifier = item
+                closureEpisode.clinic = item.clinic
+                closureEpisode.clinicSector = episode.clinicSector
+                closureEpisode.creationDate = new Date()
+                closureEpisode.notes = 'Fechado Devido ao' + episode.startStopReason.code
+                closureEpisode.startStopReason = episode.startStopReason
+                closureEpisode.origin = episode.origin
+                closureEpisode.beforeInsert()
+                episodeService.save(closureEpisode)
+            }
+        }
     }
-    private createStartEpisodeOnSectorAfterReferingToSector (Episode episode) {
-        def patientServiceIdentifiers =  PatientServiceIdentifier.findAllByPatient(episode.patientServiceIdentifier.patient)
+
+    private createStartEpisodeOnSectorAfterReferingToSector(Episode episode) {
+        def patientServiceIdentifiers = PatientServiceIdentifier.findAllByPatient(episode.patientServiceIdentifier.patient)
         patientServiceIdentifiers.each { item ->
             Episode openingEpisode = new Episode()
             openingEpisode.episodeDate = DateUtils.addMinutes(episode.episodeDate, 1)
@@ -266,8 +266,18 @@ class EpisodeController extends RestfulController {
             openingEpisode.creationDate = new Date()
             openingEpisode.notes = 'Aberto Devido ao' + episode.startStopReason.code
             openingEpisode.startStopReason = StartStopReason.findByCode('MANUNTENCAO')
+            openingEpisode.origin = episode.origin
             openingEpisode.beforeInsert()
             episodeService.save(openingEpisode)
         }
+    }
+
+    private static Episode configEpisodeOrigin(Episode episode) {
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if (systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")) {
+            episode.origin = systemConfigs.description
+        }
+
+        return episode
     }
 }

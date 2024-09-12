@@ -3,6 +3,8 @@ package mz.org.fgh.sifmoz.backend.prescriptionDrug
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
+import mz.org.fgh.sifmoz.backend.prescriptionDetail.PrescriptionDetail
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
 import static org.springframework.http.HttpStatus.CREATED
@@ -53,6 +55,7 @@ class PrescribedDrugController extends RestfulController{
         }
 
         try {
+            configPrescribedDrugOrigin(prescribedDrug)
             prescribedDrugService.save(prescribedDrug)
         } catch (ValidationException e) {
             respond prescribedDrug.errors
@@ -75,6 +78,7 @@ class PrescribedDrugController extends RestfulController{
         }
 
         try {
+            configPrescribedDrugOrigin(prescribedDrug)
             prescribedDrugService.save(prescribedDrug)
         } catch (ValidationException e) {
             respond prescribedDrug.errors
@@ -96,5 +100,14 @@ class PrescribedDrugController extends RestfulController{
 
     def getAllByPrescriptionId(String prescriptionId) {
         respond prescribedDrugService.getAllByPrescriptionId(prescriptionId)
+    }
+
+    private static PrescribedDrug configPrescribedDrugOrigin(PrescribedDrug prescribedDrug){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+            prescribedDrug.origin = systemConfigs.description
+        }
+
+        return prescribedDrug
     }
 }

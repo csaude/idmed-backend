@@ -41,9 +41,10 @@ class Patient extends BaseEntity implements Auditable{
     char hisSyncStatus
     String hisProvider
     Long matchId
-
     Clinic clinic
     Date creationDate = new Date()
+    String origin
+
     static belongsTo = [Clinic]
 
     static auditable = true
@@ -81,6 +82,7 @@ class Patient extends BaseEntity implements Auditable{
         creationDate nullable: true
         hisSyncStatus nullable: true
         hisProvider nullable: true
+        origin nullable: true
         matchId nullable: false, unique: true
     }
 

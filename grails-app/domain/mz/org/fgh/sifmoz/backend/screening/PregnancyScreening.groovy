@@ -15,7 +15,7 @@ class PregnancyScreening extends BaseEntity {
     @JsonBackReference
     PatientVisit visit
     Clinic clinic
-
+    String origin
     static belongsTo = [PatientVisit]
 
     static mapping = {
@@ -26,6 +26,7 @@ class PregnancyScreening extends BaseEntity {
     static constraints = {
         lastMenstruation(nullable: true, blank: true)
         clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {

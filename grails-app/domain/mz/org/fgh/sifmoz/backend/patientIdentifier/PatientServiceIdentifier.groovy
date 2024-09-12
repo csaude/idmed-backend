@@ -20,6 +20,7 @@ class PatientServiceIdentifier extends BaseEntity {
     IdentifierType identifierType
     ClinicalService service
     Clinic clinic
+    String origin
 
     static belongsTo = [patient: Patient]
 
@@ -37,29 +38,12 @@ class PatientServiceIdentifier extends BaseEntity {
         })
         endDate nullable: true
         reopenDate nullable: true
+        origin nullable: true
     }
 
     boolean hasEpisodes () {
         return Utilities.listHasElements(this.episodes as ArrayList<?>)
     }
-
-//    @Override
-//    public String toString() {
-//        return "PatientServiceIdentifier{" +
-//                "patient=" + patient +
-//                ", episodes=" + episodes +
-//                ", id='" + id + '\'' +
-//                ", startDate=" + startDate +
-//                ", endDate=" + endDate +
-//                ", reopenDate=" + reopenDate +
-//                ", value='" + value + '\'' +
-//                ", state='" + state + '\'' +
-//                ", prefered=" + prefered +
-//                ", identifierType=" + identifierType +
-//                ", service=" + service +
-//                ", clinic=" + clinic +
-//                '}';
-//    }
 
     def beforeInsert() {
         if (!id) {
