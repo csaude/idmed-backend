@@ -1116,18 +1116,18 @@ abstract class PackService implements IPackService {
                     """
                     select 
                         tr.code,
-                         tr.regimen_scheme,
-                         count(CASE WHEN ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentes,
-                         count(CASE WHEN ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentesReferidos,
-                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhs1,
-                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linha2,
-                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linha3,
-                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhaAlt,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhsdc1,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linhadc2,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linhadc3,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhadcAlt,                    
-                         count(CASE WHEN ((ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND package.isreferral = true) THEN 1 END) AS totalReferidos
+                        tr.regimen_scheme,
+                        count(CASE WHEN ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentes,
+                        count(CASE WHEN ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentesReferidos,
+                        count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhs1,
+                        count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linha2,
+                        count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linha3,
+                        count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhaAlt,
+                        count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhsdc1,
+                        count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linhadc2,
+                        count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linhadc3,
+                        count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhadcAlt,                    
+                        count(CASE WHEN ((ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND package.isreferral = true) THEN 1 END) AS totalReferidos
                      FROM
                      (
                      select distinct pat.id,
@@ -1328,7 +1328,7 @@ abstract class PackService implements IPackService {
 
         String query = ""
 
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query =
                     """
                     WITH unique_prescriptions AS (
@@ -1392,7 +1392,7 @@ abstract class PackService implements IPackService {
 
         String query = ""
 
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query =
                     """
                      WITH unique_prescriptions AS (
@@ -1458,7 +1458,7 @@ abstract class PackService implements IPackService {
 
         String query = ""
 
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query =
                     """
                      WITH 
@@ -2524,7 +2524,7 @@ abstract class PackService implements IPackService {
     List<Pack> getPacksByServiceOnPeriod(ClinicalService service, Clinic clinic, Date startDate, Date endDate) {
         List<Pack> packList = new ArrayList<>()
         def sqlPacks = ""
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             sqlPacks =
                     """
                         select pk 
@@ -3260,7 +3260,7 @@ abstract class PackService implements IPackService {
     List<Pack> getPacksByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService, Clinic clinic, Date startDate, Date endDate) {
 
         def queryString = ""
-            if(clinicalService.isTarv()){
+            if(clinicalService.isTARV()){
                 queryString = """
                 select psi.value,
                 p.first_names,
