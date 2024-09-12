@@ -23,6 +23,7 @@ class MmiaRegimenSubReport {
     int totaldcline4
     int totalPatients
     int cumunitaryClinic
+    int totalReferidos
 
         static belongsTo = [mmiaReport: MmiaReport]
 
@@ -57,6 +58,10 @@ class MmiaRegimenSubReport {
 
     def addpatient() {
         this.totalPatients ++
+    }
+
+    def addTotalReferidos() {
+        this.totalReferidos ++
     }
 
     def addpatientDC() {
