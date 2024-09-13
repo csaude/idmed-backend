@@ -17,4 +17,9 @@ abstract class StockEntranceService implements IStockEntranceService {
         return StockEntrance.findAllByClinic(Clinic.findById(clinicId), [offset: offset, max: max])
     }
 
+    @Override
+    StockEntrance getByClinicIdAndOrderNumber(String clinicId,String orderNumber) {
+        return StockEntrance.findByClinicAndOrderNumber(Clinic.findById(clinicId),orderNumber)
+    }
+
 }
