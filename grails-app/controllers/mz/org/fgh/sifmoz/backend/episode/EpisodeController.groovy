@@ -80,7 +80,8 @@ class EpisodeController extends RestfulController {
                 createCloseEpisodeForOtherPatientIdentifiersWhenPatientReferred(episode)
             }
             if (episode.startStopReason.code.equalsIgnoreCase(StartStopReason.REFERIDO_SECTOR_CLINICO) ||
-                    episode.startStopReason.code.equalsIgnoreCase("REFERIDO_PARA")) {
+                    episode.startStopReason.code.equalsIgnoreCase("REFERIDO_PARA") ||
+                episode.startStopReason.code.equalsIgnoreCase(StartStopReason.REFERIDO_SECTOR_CLINICO)) {
                 createCloseEpisodeForOtherPatientIdentifiersWhenPatientReferred(episode)
                 createStartEpisodeOnSectorAfterReferingToSector(episode)
             }
@@ -219,6 +220,7 @@ class EpisodeController extends RestfulController {
                 closureEpisode.creationDate = new Date()
                 closureEpisode.notes = 'Fechado Devido ao' + episode.startStopReason.code
                 closureEpisode.startStopReason = episode.startStopReason
+                closureEpisode.origin = episode.clinic.uuid
                 closureEpisode.beforeInsert()
                 episodeService.save(closureEpisode)
                 item.endDate = episode.episodeDate
@@ -249,6 +251,7 @@ class EpisodeController extends RestfulController {
                  closureEpisode.creationDate = new Date()
                  closureEpisode.notes = 'Fechado Devido ao' + episode.startStopReason.code
                  closureEpisode.startStopReason = episode.startStopReason
+                 closureEpisode.origin = episode.clinic.uuid
                  closureEpisode.beforeInsert()
                  episodeService.save(closureEpisode)
              }
@@ -266,6 +269,7 @@ class EpisodeController extends RestfulController {
             openingEpisode.creationDate = new Date()
             openingEpisode.notes = 'Aberto Devido ao' + episode.startStopReason.code
             openingEpisode.startStopReason = StartStopReason.findByCode('MANUNTENCAO')
+            openingEpisode.origin = episode.clinic.uuid
             openingEpisode.beforeInsert()
             episodeService.save(openingEpisode)
         }

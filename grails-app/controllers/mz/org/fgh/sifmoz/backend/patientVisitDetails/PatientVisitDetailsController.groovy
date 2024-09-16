@@ -257,4 +257,14 @@ class PatientVisitDetailsController extends RestfulController {
 
         render JSONSerializer.setObjectListJsonResponse(result) as JSON
     }
+
+    def getAllByListPrescriptionIds() {
+
+        def objectJSON = request.JSON
+        List<String> ids = objectJSON
+
+        def result = patientVisitDetailsService.getAllVisitDetailsByPrescritpionIds(ids)
+
+        render JSONSerializer.setObjectListJsonResponse(result) as JSON
+    }
 }
