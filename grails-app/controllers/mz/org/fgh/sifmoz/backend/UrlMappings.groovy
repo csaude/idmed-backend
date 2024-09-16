@@ -105,6 +105,7 @@ class UrlMappings {
         get "/api/therapeuticRegimen/therapeuticRegimenFromProvicnial/$offset(.$format)?"(controller:'therapeuticRegimen', action:'getTherapeuticRegimensFromProvincialServer')
         get "/api/identifierType/identifierTypeFromProvicnial/$offset(.$format)?"(controller:'identifierType', action:'getidentifierTypesFromProvincialServer')
         get "/api/clinic/clinicFromProvicnial/$offset(.$format)?"(controller:'clinic', action:'geClinicsFromProvincialServer')
+        get "/api/clinicalService/clinicalServiceFromProvicnial/$offset(.$format)?"(controller:'clinicalService', action:'getClinicalServiceFromProvincialServer')
 
         get "/api/patientVisitDetails/getAllByPatient/$patientId(.$format)?"(controller:'patientVisitDetails', action:'getAllByPatientId')
         get "/api/groupMember/groupMemberInfo/$groupId(.$format)?"(controller:'groupMember', action:'getMembersInfoByGroupId')

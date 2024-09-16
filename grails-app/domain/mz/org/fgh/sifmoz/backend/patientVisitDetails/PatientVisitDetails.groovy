@@ -20,6 +20,7 @@ class PatientVisitDetails extends BaseEntity {
     Pack pack
     PatientVisit patientVisit
     Date creationDate = new Date()
+    String origin
 
     static belongsTo = [PatientVisit]
 
@@ -30,6 +31,7 @@ class PatientVisitDetails extends BaseEntity {
     static constraints = {
         pack nullable: false
         creationDate nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {

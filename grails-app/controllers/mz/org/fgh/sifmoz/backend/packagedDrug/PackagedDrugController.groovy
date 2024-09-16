@@ -3,6 +3,8 @@ package mz.org.fgh.sifmoz.backend.packagedDrug
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
 import static org.springframework.http.HttpStatus.CREATED
@@ -52,6 +54,7 @@ class PackagedDrugController extends RestfulController{
         }
 
         try {
+            configPackagedDrugOrigin(packagedDrug)
             packagedDrugService.save(packagedDrug)
         } catch (ValidationException e) {
             respond packagedDrug.errors
@@ -74,6 +77,7 @@ class PackagedDrugController extends RestfulController{
         }
 
         try {
+            configPackagedDrugOrigin(packagedDrug)
             packagedDrugService.save(packagedDrug)
         } catch (ValidationException e) {
             respond packagedDrug.errors
@@ -95,5 +99,14 @@ class PackagedDrugController extends RestfulController{
 
     def getAllByPackId(String packId) {
         respond packagedDrugService.getAllByPackId(packId)
+    }
+
+    private static PackagedDrug configPackagedDrugOrigin(PackagedDrug packagedDrug){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+            packagedDrug.origin = systemConfigs.description
+        }
+
+        return packagedDrug
     }
 }

@@ -3,6 +3,7 @@ package mz.org.fgh.sifmoz.backend.screening
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
 import static org.springframework.http.HttpStatus.CREATED
@@ -53,6 +54,7 @@ class VitalSignsScreeningController extends RestfulController{
         }
 
         try {
+            configVitalSignsScreeningOrigin(vitalSignsScreening)
             vitalSignsScreeningService.save(vitalSignsScreening)
         } catch (ValidationException e) {
             respond vitalSignsScreening.errors
@@ -75,6 +77,7 @@ class VitalSignsScreeningController extends RestfulController{
         }
 
         try {
+            configVitalSignsScreeningOrigin(vitalSignsScreening)
             vitalSignsScreeningService.save(vitalSignsScreening)
         } catch (ValidationException e) {
             respond vitalSignsScreening.errors
@@ -93,4 +96,14 @@ class VitalSignsScreeningController extends RestfulController{
 
         render status: NO_CONTENT
     }
+
+    private static VitalSignsScreening configVitalSignsScreeningOrigin(VitalSignsScreening vitalSignsScreening){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+            vitalSignsScreening.origin = systemConfigs.description
+        }
+
+        return vitalSignsScreening
+    }
+
 }

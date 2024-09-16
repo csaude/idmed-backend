@@ -7,6 +7,7 @@ import groovy.json.JsonSlurper
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.identifierType.IdentifierType
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
@@ -52,10 +53,6 @@ class PatientServiceIdentifierController extends RestfulController{
 
         if(objectJSON.id){
             patientServiceIdentifier.id = UUID.fromString(objectJSON.id)
-//            patientServiceIdentifier.identifierType = IdentifierType.get(objectJSON.identifierType.id).lock()
-//            patientServiceIdentifier.service = ClinicalService.get(objectJSON.service.id).lock()
-//            patientServiceIdentifier.clinic = Clinic.get(objectJSON.clinic.id).lock()
-//            patientServiceIdentifier.patient = Patient.get(objectJSON.patient.id).lock()
         }
 
         if (patientServiceIdentifier.hasErrors()) {
@@ -65,6 +62,7 @@ class PatientServiceIdentifierController extends RestfulController{
         }
 
         try {
+            configPatientServiceIdentifierOrigin(patientServiceIdentifier)
             patientServiceIdentifierService.save(patientServiceIdentifier)
         } catch (ValidationException e) {
             respond patientServiceIdentifier.errors
@@ -87,9 +85,11 @@ class PatientServiceIdentifierController extends RestfulController{
             render status: NOT_FOUND
             return
         }
+        configPatientServiceIdentifierOrigin(patientServiceIdentifier)
         patientServiceIdentifier.episodes.eachWithIndex { Episode episode, int i ->
             episode.id = UUID.fromString(objectJSON.episodes[i].id)
             episode.patientServiceIdentifier = patientServiceIdentifier
+            episode.origin = patientServiceIdentifier.origin
         }
 
         if (patientServiceIdentifier == null) {
@@ -156,20 +156,17 @@ class PatientServiceIdentifierController extends RestfulController{
         render status: NO_CONTENT
     }
 
-//    def getByServiceId(String serviceId) {
-////        for (i in patientServiceIdentifierService.getAllByServiceId(serviceId)) {
-////            System.out.println(i as JSON)
-////        }
-//
-//        def result = patientServiceIdentifierService.getAllByPatientId(serviceId)
-//
-//        System.out.println(result.size())
-//
-//        render JSONSerializer.setObjectListJsonResponse(result) as JSON
-//    }
-
     private static def parseTo(String jsonString) {
         return new JsonSlurper().parseText(jsonString)
+    }
+
+    private static PatientServiceIdentifier configPatientServiceIdentifierOrigin(PatientServiceIdentifier patientServiceIdentifier){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+            patientServiceIdentifier.origin = systemConfigs.description
+        }
+
+        return patientServiceIdentifier
     }
 
 }

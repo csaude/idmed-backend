@@ -18,6 +18,7 @@ class AdherenceScreening extends BaseEntity {
     @JsonBackReference
     PatientVisit visit
     Clinic clinic
+    String origin
 
     static belongsTo = [PatientVisit]
     static mapping = {
@@ -30,6 +31,7 @@ class AdherenceScreening extends BaseEntity {
         daysWithoutMedicine(nullable: true,blank: true)
         lateDays(nullable: true, blank: true)
         clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {

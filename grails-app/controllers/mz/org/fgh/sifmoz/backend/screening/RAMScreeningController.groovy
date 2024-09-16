@@ -3,6 +3,7 @@ package mz.org.fgh.sifmoz.backend.screening
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
 import static org.springframework.http.HttpStatus.CREATED
@@ -53,6 +54,7 @@ class RAMScreeningController extends RestfulController{
         }
 
         try {
+            configRAMScreeningOrigin(rAMScreening)
             RAMScreeningService.save(rAMScreening)
         } catch (ValidationException e) {
             respond rAMScreening.errors
@@ -75,6 +77,7 @@ class RAMScreeningController extends RestfulController{
         }
 
         try {
+            configRAMScreeningOrigin(rAMScreening)
             RAMScreeningService.save(rAMScreening)
         } catch (ValidationException e) {
             respond rAMScreening.errors
@@ -92,5 +95,14 @@ class RAMScreeningController extends RestfulController{
         }
 
         render status: NO_CONTENT
+    }
+
+    private static RAMScreening configRAMScreeningOrigin(RAMScreening ramScreening){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+            ramScreening.origin = systemConfigs.description
+        }
+
+        return ramScreening
     }
 }

@@ -21,7 +21,8 @@ class Drug extends BaseEntity {
     String defaultPeriodTreatment
     String fnmCode
     String uuidOpenmrs
-    ClinicalService clinicalService
+    String clinical_service_id
+//    ClinicalService clinicalService
     Form form
     static belongsTo = [TherapeuticRegimen]
     boolean active
@@ -41,7 +42,7 @@ class Drug extends BaseEntity {
         fnmCode nullable: false, unique: true
         packSize(min: 0)
         uuidOpenmrs nullable: true
-        clinicalService nullable: false
+        clinical_service_id nullable: true
         defaultTimes(min:1)
     }
 

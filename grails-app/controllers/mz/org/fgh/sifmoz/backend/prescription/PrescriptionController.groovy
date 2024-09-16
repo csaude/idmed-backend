@@ -6,6 +6,7 @@ import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.doctor.DoctorService
 import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
@@ -74,6 +75,7 @@ class PrescriptionController extends RestfulController{
             if (!Utilities.stringHasValue(prescription.id)) {
                 prescription.generateNextSeq()
             }
+            configPrescriptionOrigin(prescription)
             prescriptionService.save(prescription)
         } catch (ValidationException e) {
             respond prescription.errors
@@ -96,6 +98,7 @@ class PrescriptionController extends RestfulController{
         }
 
         try {
+            configPrescriptionOrigin(prescription)
             prescriptionService.save(prescription)
         } catch (ValidationException e) {
             respond prescription.errors
@@ -179,5 +182,14 @@ class PrescriptionController extends RestfulController{
         def objectJSON = request.JSON
         List<String> ids = objectJSON
         render JSONSerializer.setObjectListJsonResponse(Prescription.findAllByIdInList(ids)) as JSON
+    }
+
+    private static Prescription configPrescriptionOrigin(Prescription prescription){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+            prescription.origin = systemConfigs.description
+        }
+
+        return prescription
     }
 }
