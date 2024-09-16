@@ -634,4 +634,25 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
 
         return patientVisitDetailsLists
     }
+
+    List<PatientVisitDetails> getAllVisitDetailsByPrescritpionIds(List<String> prescriptionIds){
+      //  List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
+
+      //  patientVisitDetailsLists = PatientVisitDetails.findAllByPrescriptionInList(prescriptionsList)
+      def patientVisitDetailsLists = PatientVisitDetails.createCriteria().list {
+            createAlias('patientVisit', 'pv' )
+            createAlias('prescription', 'p')
+            'in'('p.id', prescriptionIds)
+        }
+        /*
+        prescriptionIds.each {
+            List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it), [sort: 'visitDate', order: 'desc'])
+            PatientVisit pvLast = patientVisitList.get(0)
+            patientVisitDetailsLists.addAll(pvLast.patientVisitDetails)
+        }
+
+         */
+
+        return patientVisitDetailsLists
+    }
 }

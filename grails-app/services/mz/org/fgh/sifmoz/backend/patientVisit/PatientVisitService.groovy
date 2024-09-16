@@ -59,7 +59,7 @@ abstract class PatientVisitService implements IPatientVisitService{
 
         def query = session.createSQLQuery(queryString).addEntity(PatientVisit.class)
         query.setParameter("patientIds", patientIds)
-        List<PatientVisitDetails> result = query.list()
+        List<PatientVisit> result = query.list()
         return result
     }
 }
