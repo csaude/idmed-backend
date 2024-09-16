@@ -76,8 +76,6 @@ class EpisodeController extends RestfulController {
                 closePatientServiceIdentifierOfPatientWithTrasnferenceOrObitEpisode(episode)
             }
             if (episode.startStopReason.code.equalsIgnoreCase("TRANSFERIDO_PARA") ||
-                    episode.startStopReason.code.equalsIgnoreCase("REFERIDO_DC") ||
-                    episode.startStopReason.code.equalsIgnoreCase("REFERIDO_PARA") ||
                     episode.startStopReason.code.equalsIgnoreCase("VOLTOU_REFERENCIA")) {
                 patientTransReferenceCloseMobileEpisode(episode).save()
                 createCloseEpisodeForOtherPatientIdentifiersWhenPatientReferred(episode)
@@ -85,6 +83,7 @@ class EpisodeController extends RestfulController {
             if (episode.startStopReason.code.equalsIgnoreCase(StartStopReason.REFERIDO_SECTOR_CLINICO) ||
                     episode.startStopReason.code.equalsIgnoreCase("REFERIDO_PARA") ||
                 episode.startStopReason.code.equalsIgnoreCase(StartStopReason.REFERIDO_DC)) {
+                patientTransReferenceCloseMobileEpisode(episode).save()
                 createCloseEpisodeForOtherPatientIdentifiersWhenPatientReferred(episode)
                 createStartEpisodeOnSectorAfterReferingToSector(episode)
             }
