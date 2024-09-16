@@ -5,6 +5,7 @@ import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugService
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStockService
@@ -80,6 +81,7 @@ class PackController extends RestfulController {
         }
 
         try {
+            configPackOrigin(pack)
             packService.save(pack)
         } catch (ValidationException e) {
             respond pack.errors
@@ -102,6 +104,7 @@ class PackController extends RestfulController {
         }
 
         try {
+
             for (PackagedDrug packagedDrug : pack.packagedDrugs) {
                 List<PackagedDrugStock> packagedDrugStocks = PackagedDrugStock.findAllByPackagedDrug(packagedDrug)
                 for (PackagedDrugStock packagedDrugStock : packagedDrugStocks) {
@@ -112,6 +115,7 @@ class PackController extends RestfulController {
                 }
                 packagedDrug.delete()
             }
+            configPackOrigin(pack)
             packService.save(pack)
         } catch (ValidationException e) {
             respond pack.errors
@@ -203,6 +207,15 @@ class PackController extends RestfulController {
         def objectJSON = request.JSON
         List<String> ids = objectJSON
         render JSONSerializer.setObjectListJsonResponse(Pack.findAllByIdInList(ids)) as JSON
+    }
+
+    private static Pack configPackOrigin(Pack pack){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+            pack.origin = systemConfigs.description
+        }
+
+        return pack
     }
 
 }

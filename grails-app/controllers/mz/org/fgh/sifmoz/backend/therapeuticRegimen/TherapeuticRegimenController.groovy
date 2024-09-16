@@ -106,6 +106,6 @@ class TherapeuticRegimenController extends RestfulController{
     }
 
     def getTherapeuticRegimensFromProvincialServer(int offset) {
-        render JSONSerializer.setObjectListJsonResponse(therapeuticRegimenRestService.loadTherapeuticRegimenFromProvincial(offset)) as JSON
+        render JSONSerializer.setLightObjectListJsonResponse(therapeuticRegimenRestService.loadTherapeuticRegimenFromProvincial(offset)) as JSON
     }
 }

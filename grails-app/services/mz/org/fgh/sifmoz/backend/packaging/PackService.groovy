@@ -1111,22 +1111,26 @@ abstract class PackService implements IPackService {
 
         String query = ""
 
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query =
                     """
                     select 
                         tr.code,
-                         tr.regimen_scheme,
-                         count(CASE WHEN ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentes,
-                         count(CASE WHEN ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentesReferidos,
-                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhs1,
-                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linha2,
-                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linha3,
-                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhaAlt,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhsdc1,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linhadc2,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linhadc3,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhadcAlt
+                        tr.regimen_scheme,
+                        count(CASE WHEN ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentes,
+                        count(CASE WHEN ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentesReferidos,
+                        count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhs1,
+                        count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linha2,
+                        count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linha3,
+                        count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhaAlt,
+                        count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhsdc1,
+                        count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linhadc2,
+                        count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linhadc3,
+                        count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhadcAlt,                    
+                        count(CASE WHEN ((ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND package.isreferral = true) THEN 1 END) AS totalReferidos,
+                        count(CASE WHEN ((ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND package.isreferral = true) AND tl.code = '1' THEN 1 END) AS totalrefline1,
+                        count(CASE WHEN ((ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND package.isreferral = true) AND tl.code = '2' THEN 1 END) AS totalrefline2,
+                        count(CASE WHEN ((ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND package.isreferral = true) AND tl.code = '3' THEN 1 END) AS totalrefline3
                      FROM
                      (
                      select distinct pat.id,
@@ -1185,7 +1189,7 @@ abstract class PackService implements IPackService {
         } else {
             query =
                     """
-                    select
+                     select
                      tr.code,
                      tr.regimen_scheme,
                      count(CASE WHEN ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentes,
@@ -1228,7 +1232,7 @@ abstract class PackService implements IPackService {
                                      'REFERIDO_PARA',
                                      'VOLTOU_A_SER_REFERIDO_PARA')
                      AND cs.code = :clinicalService
-                     group by 1,4,5,6
+                     group by 1,4,5
                      order by 1
                     ) patientstatistics
                      inner join pack package on package.id = patientstatistics.packid
@@ -1327,7 +1331,7 @@ abstract class PackService implements IPackService {
 
         String query = ""
 
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query =
                     """
                     WITH unique_prescriptions AS (
@@ -1391,7 +1395,7 @@ abstract class PackService implements IPackService {
 
         String query = ""
 
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query =
                     """
                      WITH unique_prescriptions AS (
@@ -1457,7 +1461,7 @@ abstract class PackService implements IPackService {
 
         String query = ""
 
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query =
                     """
                      WITH 
@@ -1853,6 +1857,10 @@ abstract class PackService implements IPackService {
         mmiaRegimenSubReport.totaldcline4 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[11]))
         mmiaRegimenSubReport.line = ""
         mmiaRegimenSubReport.lineCode = ""
+        mmiaRegimenSubReport.totalReferidos = Integer.valueOf(String.valueOf(item[12]))
+        mmiaRegimenSubReport.totalrefline1 = Integer.valueOf(String.valueOf(item[13]))
+        mmiaRegimenSubReport.totalrefline2 = Integer.valueOf(String.valueOf(item[13]))
+        mmiaRegimenSubReport.totalrefline3 = Integer.valueOf(String.valueOf(item[13]))
         mmiaRegimenSubReports.add(mmiaRegimenSubReport)
     }
 
@@ -1864,38 +1872,34 @@ abstract class PackService implements IPackService {
         def sql = new Sql(dataSource as DataSource)
 
         String query = ""
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query = """
                     SELECT 
                      COUNT
                      (
                      CASE 
-                     WHEN patientstatistics.service_code = :clinicalService 
-                     AND dt.code = 'DM'
+                     WHEN dt.code = 'DM'
                      THEN 1 
                      END
                      ) AS DM,
                      COUNT 
                      (
                      CASE 
-                     WHEN patientstatistics.service_code = :clinicalService 
-                     AND dt.code = 'DT'
+                     WHEN dt.code = 'DT'
                      THEN 1 
                      END
                      ) AS DT,
                      COUNT
                      (
                      CASE 
-                     WHEN patientstatistics.service_code = :clinicalService 
-                     AND dt.code = 'DS'
+                     WHEN dt.code = 'DS'
                      THEN 1  
                      END
                      ) AS DS,
                      COUNT
                      (
                      CASE 
-                     WHEN patientstatistics.service_code = :clinicalService 
-                     AND dt.code = 'DB'
+\t\t\t\t\t\tWHEN dt.code = 'DB'
                      THEN 1  
                      END
                      ) AS DB
@@ -1923,7 +1927,7 @@ abstract class PackService implements IPackService {
                                      'OUTRO',
                                      'VOLTOU_REFERENCIA', 
                                      'REFERIDO_DC')
-                     AND cs.code = :clinicalService
+                     AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE')
                      group by 1,4,5
                      order by 1
                      ) patientstatistics
@@ -2056,46 +2060,37 @@ abstract class PackService implements IPackService {
         def sql = new Sql(dataSource as DataSource)
         String query = ''
 
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query =
                     """
                     SELECT  
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV' 
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'
-                            AND CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) BETWEEN 0 AND 4    
+                            WHEN CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) BETWEEN 0 AND 4    
                             THEN 1  
                         END
                     ) AS zeroquatro,        
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'  
-                            AND CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) BETWEEN 5 AND 9  
+                            WHEN CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) BETWEEN 5 AND 9  
                             THEN 1  
                         END
                     ) AS cinconove,        
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'  
-                            AND CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) BETWEEN 10 AND 14  
+                            WHEN CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) BETWEEN 10 AND 14  
                             THEN 1  
                         END
                     ) AS dezcatorze,        
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV' 
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE' 
-                            AND CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) >= 15 
+                            WHEN CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) >= 15 
                             THEN 1  
                         END
                     ) AS quinzemais, 
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'
+                            WHEN ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'
                             AND (p.patient_type = 'N/A' OR p.patient_type IS null OR p.patient_type = 'Inicio') 
                             AND dt.code = 'DM'
                             AND ssr.code = 'NOVO_PACIENTE'
@@ -2105,8 +2100,7 @@ abstract class PackService implements IPackService {
                     ) AS novos,        
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV' 
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'
+                            WHEN ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'
                             AND (
                                 (ssr.code = 'NOVO_PACIENTE' AND DATE(ep.episode_date + INTERVAL '3 days') < DATE(pack.pickup_date)) 
                                 OR (ssr.code = 'ALTERACAO' AND DATE(ep.episode_date + INTERVAL '3 days') < DATE(pack.pickup_date)) 
@@ -2125,8 +2119,7 @@ abstract class PackService implements IPackService {
                     ) AS manutencao,        
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV' 
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE' 
+                            WHEN ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE' 
                             AND ssr.code = 'ALTERACAO' 
                             AND extract(days from pack.pickup_date - ep.episode_date) <= 3  
                             THEN 1  
@@ -2134,16 +2127,14 @@ abstract class PackService implements IPackService {
                     ) AS alteracao,        
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'  
-                            AND (ssr.code = 'TRANSITO' OR ssr.code = 'INICIO_MATERNIDADE')
+                            WHEN (ssr.code = 'TRANSITO' OR ssr.code = 'INICIO_MATERNIDADE')
                             AND extract(days from pack.pickup_date - ep.episode_date) <= 3  
                             THEN 1  
                         END
                     ) AS transito, 
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'  
-                            AND ssr.code = 'TRANSFERIDO_DE'  
+                            WHEN ssr.code = 'TRANSFERIDO_DE'  
                             AND extract(days from pack.pickup_date - ep.episode_date) <= 3  
                             THEN 1  
                         END
@@ -2172,34 +2163,26 @@ abstract class PackService implements IPackService {
                     
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'  
-                            AND dt.code = 'DM'  
+                            WHEN  dt.code = 'DM'  
                             THEN 1  
                         END
                     ) AS DM,
                     
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'  
-                            AND dt.code = 'DT'  
+                            WHEN dt.code = 'DT'  
                             THEN 1  
                         END
                     ) AS DT,
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'  
-                            AND dt.code = 'DS'  
+                            WHEN dt.code = 'DS'  
                             THEN 1  
                         END
                     ) AS DS,
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'  
-                            AND dt.code = 'DB'  
+                            WHEN dt.code = 'DB'  
                             THEN 1  
                         END
                     ) AS DB
@@ -2522,7 +2505,7 @@ abstract class PackService implements IPackService {
     List<Pack> getPacksByServiceOnPeriod(ClinicalService service, Clinic clinic, Date startDate, Date endDate) {
         List<Pack> packList = new ArrayList<>()
         def sqlPacks = ""
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             sqlPacks =
                     """
                         select pk 
@@ -3258,7 +3241,7 @@ abstract class PackService implements IPackService {
     List<Pack> getPacksByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService, Clinic clinic, Date startDate, Date endDate) {
 
         def queryString = ""
-            if(clinicalService.isTarv()){
+            if(clinicalService.isTARV()){
                 queryString = """
                 select psi.value,
                 p.first_names,
