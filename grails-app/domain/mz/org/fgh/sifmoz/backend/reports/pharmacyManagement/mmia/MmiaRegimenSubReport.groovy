@@ -24,6 +24,9 @@ class MmiaRegimenSubReport {
     int totalPatients
     int cumunitaryClinic
     int totalReferidos
+    int totalrefline1
+    int totalrefline2
+    int totalrefline3
 
         static belongsTo = [mmiaReport: MmiaReport]
 
@@ -54,6 +57,9 @@ class MmiaRegimenSubReport {
          line4 nullable: true
          totalline4 nullable: true
          totaldcline4 nullable: true
+         totalrefline1 nullable: true
+         totalrefline2 nullable: true
+         totalrefline3 nullable: true
     }
 
     def addpatient() {
