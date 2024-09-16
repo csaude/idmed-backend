@@ -81,7 +81,7 @@ class EpisodeController extends RestfulController {
             }
             if (episode.startStopReason.code.equalsIgnoreCase(StartStopReason.REFERIDO_SECTOR_CLINICO) ||
                     episode.startStopReason.code.equalsIgnoreCase("REFERIDO_PARA") ||
-                episode.startStopReason.code.equalsIgnoreCase(StartStopReason.REFERIDO_SECTOR_CLINICO)) {
+                episode.startStopReason.code.equalsIgnoreCase(StartStopReason.REFERIDO_DC)) {
                 createCloseEpisodeForOtherPatientIdentifiersWhenPatientReferred(episode)
                 createStartEpisodeOnSectorAfterReferingToSector(episode)
             }
