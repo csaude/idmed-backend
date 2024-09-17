@@ -5,7 +5,7 @@ info:
     grailsVersion: '@info.app.grailsVersion@'
 server:
   port:
-    8884
+    18884
   compression:
     enabled: on
     min-response-size: 200
@@ -103,7 +103,7 @@ environments:
   development:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://localhost:9876/idmed
+      url: jdbc:postgresql://localhost:9876/pescadores
   test:
     dataSource:
       dbCreate: update
