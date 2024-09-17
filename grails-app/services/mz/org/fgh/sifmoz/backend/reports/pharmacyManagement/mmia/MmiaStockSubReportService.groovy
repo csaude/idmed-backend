@@ -87,9 +87,7 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              select 
              COALESCE(sum(ceil(pd.quantity_supplied)),0)::integer as s 
              from packaged_drug pd 
-             inner JOIN packaged_drug_stock pds ON pd.id::text = pds.packaged_drug_id::text
              inner join pack pk on pk.id = pd.pack_id 
-             inner JOIN stock s ON s.id::text = pds.stock_id::text
              where pk.pickup_date < :startDate 
              and pd.drug_id = dr.id 
              and pk.clinic_id = :clinic
@@ -144,9 +142,7 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              select 
              COALESCE(sum(ceil(pd.quantity_supplied)),0) as s 
              from packaged_drug pd 
-             inner JOIN packaged_drug_stock pds ON pd.id::text = pds.packaged_drug_id::text
              inner join pack pk on pk.id = pd.pack_id 
-             inner JOIN stock s ON s.id::text = pds.stock_id::text
              where pk.pickup_Date >= :startDate 
              and pk.pickup_Date <= :endDate
              and pd.drug_id = dr.id 
@@ -354,9 +350,9 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              select 
              COALESCE(sum(ceil(pd.quantity_supplied)),0)::integer as s 
              from packaged_drug pd 
-             inner JOIN packaged_drug_stock pds ON pd.id::text = pds.packaged_drug_id::text
+          --   inner JOIN packaged_drug_stock pds ON pd.id::text = pds.packaged_drug_id::text
              inner join pack pk on pk.id = pd.pack_id 
-             inner JOIN stock s ON s.id::text = pds.stock_id::text
+          --   inner JOIN stock s ON s.id::text = pds.stock_id::text
              where pk.pickup_date < :startDate 
              and pd.drug_id = dr.id 
              and pk.clinic_id = :clinic
@@ -411,9 +407,9 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              select 
              COALESCE(sum(ceil(pd.quantity_supplied)),0) as s 
              from packaged_drug pd 
-             inner JOIN packaged_drug_stock pds ON pd.id::text = pds.packaged_drug_id::text
+            -- inner JOIN packaged_drug_stock pds ON pd.id::text = pds.packaged_drug_id::text
              inner join pack pk on pk.id = pd.pack_id 
-             inner JOIN stock s ON s.id::text = pds.stock_id::text
+           --  inner JOIN stock s ON s.id::text = pds.stock_id::text
              where pk.pickup_Date >= :startDate 
              and pk.pickup_Date <= :endDate
              and pd.drug_id = dr.id 

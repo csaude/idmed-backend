@@ -1118,11 +1118,11 @@ abstract class PackService implements IPackService {
                         tr.code,
                         tr.regimen_scheme,
                         count(CASE WHEN ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentes,
-                        count(CASE WHEN ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentesReferidos,
                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhs1,
                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linha2,
                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linha3,
                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhaAlt,
+                        count(CASE WHEN ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentesReferidos,
                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhsdc1,
                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linhadc2,
                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linhadc3,
@@ -1218,9 +1218,7 @@ abstract class PackService implements IPackService {
                      inner join start_stop_reason ssr on ssr.id = ep.start_stop_reason_id
                      inner join clinical_service cs ON cs.id = psi.service_id
                      where ((Date(pk.pickup_date) BETWEEN :startDate AND :endDate) OR
-                     pg_catalog.date(pk.pickup_date) < :startDate and pg_catalog.date(pk.next_pick_up_date) > :endDate AND
-                     DATE(pk.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) >= :startDate
-                     AND DATE(pk.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) <= :endDate)
+                     pg_catalog.date(pk.pickup_date) < :startDate and pg_catalog.date(pk.next_pick_up_date) > :endDate 
                      AND ssr.code in ('NOVO_PACIENTE',
                                      'INICIO_CCR',
                                      'TRANSFERIDO_DE',
@@ -1836,31 +1834,34 @@ abstract class PackService implements IPackService {
     }
 
 
-
     def addMmiaRegimenStatisticInList(Object item, List<MmiaRegimenSubReport> mmiaRegimenSubReports) {
         MmiaRegimenSubReport mmiaRegimenSubReport = new MmiaRegimenSubReport()
         mmiaRegimenSubReport.code = String.valueOf(item[0])
         mmiaRegimenSubReport.regimen = String.valueOf(item[1])
+
         mmiaRegimenSubReport.totalPatients = Integer.valueOf(String.valueOf(item[2]))
-        mmiaRegimenSubReport.cumunitaryClinic = Integer.valueOf(String.valueOf(item[3]))
+        mmiaRegimenSubReport.totalline1 = Integer.valueOf(String.valueOf(item[3]))
+        mmiaRegimenSubReport.totalline2 = Integer.valueOf(String.valueOf(item[4]))
+        mmiaRegimenSubReport.totalline3 = Integer.valueOf(String.valueOf(item[5]))
+        mmiaRegimenSubReport.totalline4 = Integer.valueOf(String.valueOf(item[6]))
+
+        mmiaRegimenSubReport.cumunitaryClinic = Integer.valueOf(String.valueOf(item[7]))
+        mmiaRegimenSubReport.totaldcline1 = Integer.valueOf(String.valueOf(item[8]))
+        mmiaRegimenSubReport.totaldcline2 = Integer.valueOf(String.valueOf(item[9]))
+        mmiaRegimenSubReport.totaldcline3 = Integer.valueOf(String.valueOf(item[10]))
+        mmiaRegimenSubReport.totaldcline4 = Integer.valueOf(String.valueOf(item[11]))
+
         mmiaRegimenSubReport.line1 = TherapeuticLine.findByCode("1").code
-        mmiaRegimenSubReport.totalline1 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[4]))
-        mmiaRegimenSubReport.totaldcline1 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[8]))
         mmiaRegimenSubReport.line2 = TherapeuticLine.findByCode("2").code
-        mmiaRegimenSubReport.totalline2 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[5]))
-        mmiaRegimenSubReport.totaldcline2 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[9]))
         mmiaRegimenSubReport.line3 = TherapeuticLine.findByCode("3").code
-        mmiaRegimenSubReport.totalline3 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[6]))
-        mmiaRegimenSubReport.totaldcline3 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[10]))
         mmiaRegimenSubReport.line4 = TherapeuticLine.findByCode("1_ALT").code
-        mmiaRegimenSubReport.totalline4 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[7]))
-        mmiaRegimenSubReport.totaldcline4 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[11]))
+
         mmiaRegimenSubReport.line = ""
         mmiaRegimenSubReport.lineCode = ""
         mmiaRegimenSubReport.totalReferidos = Integer.valueOf(String.valueOf(item[12]))
         mmiaRegimenSubReport.totalrefline1 = Integer.valueOf(String.valueOf(item[13]))
-        mmiaRegimenSubReport.totalrefline2 = Integer.valueOf(String.valueOf(item[13]))
-        mmiaRegimenSubReport.totalrefline3 = Integer.valueOf(String.valueOf(item[13]))
+        mmiaRegimenSubReport.totalrefline2 = Integer.valueOf(String.valueOf(item[14]))
+        mmiaRegimenSubReport.totalrefline3 = Integer.valueOf(String.valueOf(item[15]))
         mmiaRegimenSubReports.add(mmiaRegimenSubReport)
     }
 
@@ -1899,7 +1900,7 @@ abstract class PackService implements IPackService {
                      COUNT
                      (
                      CASE 
-\t\t\t\t\t\tWHEN dt.code = 'DB'
+                     WHEN dt.code = 'DB'
                      THEN 1  
                      END
                      ) AS DB
@@ -1942,15 +1943,7 @@ abstract class PackService implements IPackService {
                      inner join dispense_type dt on dt.id = pd.dispense_type_id
                      inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id
                      inner join clinical_service cs ON cs.id = tr.clinical_service_id
-                     WHERE (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE')
-                    AND ssr.code in ('NOVO_PACIENTE',
-                                     'INICIO_CCR',
-                                     'TRANSFERIDO_DE',
-                                     'REINICIO_TRATAMETO',
-                                     'MANUNTENCAO',
-                                     'OUTRO',
-                                     'VOLTOU_REFERENCIA', 
-                                     'REFERIDO_DC')
+        
                 """
 
         } else {
@@ -2027,19 +2020,9 @@ abstract class PackService implements IPackService {
                      inner join dispense_type dt on dt.id = pd.dispense_type_id
                      inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id
                      inner join clinical_service cs ON cs.id = tr.clinical_service_id
-                     WHERE cs.code = :clinicalService
-                    AND ssr.code in ('NOVO_PACIENTE',
-                                     'INICIO_CCR',
-                                     'TRANSFERIDO_DE',
-                                     'REINICIO_TRATAMETO',
-                                     'MANUNTENCAO',
-                                     'OUTRO',
-                                     'VOLTOU_REFERENCIA', 
-                                     'REFERIDO_DC')
                 """
 
         }
-
 
         def list = sql.rows(query, params)
 
@@ -2099,9 +2082,8 @@ abstract class PackService implements IPackService {
                         END
                     ) AS novos,        
                     COUNT (
-                        CASE  
-                            WHEN ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'
-                            AND (
+                        CASE  WHEN (ssr.code  <>'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE') AND
+                            (
                                 (ssr.code = 'NOVO_PACIENTE' AND DATE(ep.episode_date + INTERVAL '3 days') < DATE(pack.pickup_date)) 
                                 OR (ssr.code = 'ALTERACAO' AND DATE(ep.episode_date + INTERVAL '3 days') < DATE(pack.pickup_date)) 
                                 OR (ssr.code = 'TRANSFERIDO_DE' AND DATE(ep.episode_date + INTERVAL '3 days') < Date(pack.pickup_date)) 
@@ -2138,8 +2120,7 @@ abstract class PackService implements IPackService {
                             AND extract(days from pack.pickup_date - ep.episode_date) <= 3  
                             THEN 1  
                         END
-                    ) AS transferencia,
-                    
+                    ) AS transferencia,     
                     COUNT (
                         CASE  
                             WHEN patientstatistics.service_code = 'PREP'  
@@ -2252,18 +2233,7 @@ abstract class PackService implements IPackService {
                     therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
                 INNER JOIN 
                     clinical_service cs ON cs.id = tr.clinical_service_id
-                WHERE 
-                    (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE')
-                    AND ssr.code in ('NOVO_PACIENTE',
-                                     'INICIO_CCR',
-                                     'TRANSFERIDO_DE',
-                                     'REINICIO_TRATAMETO',
-                                     'MANUNTENCAO',
-                                     'OUTRO',
-                                     'VOLTOU_REFERENCIA', 
-                                     'REFERIDO_DC',
-                                     'TRANSITO',
-                                     'INICIO_MATERNIDADE')
+
                     """
         } else {
             query =
