@@ -130,6 +130,7 @@ class UrlMappings {
         get "/api/patient/ape/getAllPatientsIsAbandonment(.$format)?"(controller:'patient', action:'getAllPatientsIsAbandonment')
         post "/api/patientVisitDetails/getLastAllByPatientIds(.$format)?"(controller:'patientVisitDetails', action:'getLastAllByListPatientId')
       //  post "/api/patientVisitDetails/getAllByListPrescriptionIds(.$format)?"(controller:'patientVisitDetails', action:'getAllByListPrescriptionIds')
+        post "/api/patientVisit/getAllLast3VisitsWithScreeningByPatientIds(.$format)?"(controller:'patientVisit', action:'getAllLast3VisitsWithScreeningByPatientIds')
         "/"(view:"/login/auth")
         "500"(view: '/error')
         "404"(view: '/notFound')
