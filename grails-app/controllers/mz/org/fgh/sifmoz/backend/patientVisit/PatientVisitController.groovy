@@ -576,6 +576,12 @@ class PatientVisitController extends RestfulController {
         render JSONSerializer.setObjectListJsonResponse(patientVisitService.getAllLastWithScreeningByPatientIds(patientIds)) as JSON
     }
 
+    def getAllLast3VisitsWithScreeningByPatientIds() {
+        def objectJSON = request.JSON
+        List<String> patientIds = objectJSON
+        render JSONSerializer.setObjectListJsonResponse(patientVisitService.getAllLast3VisitsWithScreeningByPatientIds(patientIds)) as JSON
+    }
+
     private static PatientVisit configPatientVisitOrigin(PatientVisit patientVisit){
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
         if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
