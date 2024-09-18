@@ -239,17 +239,7 @@ class PatientVisitDetailsController extends RestfulController {
         render JSONSerializer.setObjectListJsonResponse(patientVisitDetailsService.getAllByPatientId(patientId)) as JSON
     }
 
-    def getAllByListPatientId() {
 
-        def objectJSON = request.JSON
-        List<String> ids = objectJSON.ids
-        def clinicSector = objectJSON.clinicSector
-
-        ClinicSector clinicSector2 = ClinicSector.get(clinicSector.id)
-        def result = patientVisitDetailsService.getAllByListPatientId(ids, clinicSector2)
-
-        render JSONSerializer.setObjectListJsonResponse(result) as JSON
-    }
 
     def getLastAllByListPatientId() {
 
@@ -258,19 +248,10 @@ class PatientVisitDetailsController extends RestfulController {
 
         def result = patientVisitDetailsService.getLastAllByListPatientId(ids)
 
-        render JSONSerializer.setObjectListJsonResponse(result) as JSON
+        render JSONSerializer.setObjectListJsonResponseLevel3(result) as JSON
     }
 
 
-    def getAllByListPrescriptionIds() {
-
-        def objectJSON = request.JSON
-        List<String> ids = objectJSON
-
-        def result = patientVisitDetailsService.getAllVisitDetailsByPrescritpionIds(ids)
-
-        render JSONSerializer.setObjectListJsonResponse(result) as JSON
-    }
 
     private static PatientVisitDetails configPatientVisitDetailsOrigin(PatientVisitDetails patientVisitDetails) {
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")

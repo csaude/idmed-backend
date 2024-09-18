@@ -7,6 +7,7 @@ import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.reports.monitoringAndEvaluation.DrugQuantityTemp
 import mz.org.fgh.sifmoz.backend.stock.Stock
@@ -541,118 +542,36 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
     }
 
 
-    List<PatientVisitDetails>  getAllByListPatientId(List<String> patientIds, ClinicSector clinicSector1) {
-        /*
-        List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
-        patientIds.each {it ->
-            List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it))
-            List<PatientVisitDetails> patientVisitDetailsList = new ArrayList<>();
-            patientVisitList.each {it2 ->
-                it2.patientVisitDetails.each {pvd ->
-                    patientVisitDetailsLists.add(pvd)
-                }
-            }
-            print(patientVisitDetailsList.size())
-        }
-        *
-      */
-        List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
-       // patientIds.each {
-            def visitDetails = Patient.executeQuery("select pvd from PatientVisitDetails pvd " +
-                    "inner join fetch pvd.episode ep " +
-                    "inner join fetch ep.patientServiceIdentifier psi " +
-                    "inner join fetch psi.patient p " +
-                    "inner join fetch ep.clinic c " +
-                    "inner join fetch pvd.patientVisit pv " +
-                    "where ep.clinicSector = :clinicSector " +
-                    "and p.id in :patientIds " +
-                    "and ep.episodeDate = ( " +
-                    "  SELECT MAX(e.episodeDate)" +
-                    "  FROM Episode e" +
-                    " inner join e.patientServiceIdentifier psi2" +
-                    "  WHERE psi2 = ep.patientServiceIdentifier and e.clinicSector = :clinicSector" +
-                    ")" +
-                    "order by ep.episodeDate desc", [clinicSector: clinicSector1, patientIds: patientIds])
+    List<PatientVisitDetails> getLastAllByListPatientId(List<String> patientIds) {
 
+                  def patientServiceIdentifiers = PatientServiceIdentifier.createCriteria().list {
+                      'in'('patient.id', patientIds) // Get all service identifiers for the provided patient IDs
+                  }
+                  def patientServiceIdentifierIds = patientServiceIdentifiers*.id
+                  def lastPrescriptions = PatientVisitDetails.createCriteria().list {
+                      createAlias('patientVisit', 'pv')
+                      createAlias('prescription', 'p')
+                      createAlias('episode', 'e')
+                      'in'('pv.patient.id', patientIds) // Filter by patient IDs
+                      'in'('e.patientServiceIdentifier.id', patientServiceIdentifierIds) // Filter by patientServiceIdentifiers
+                      projections {
+                          groupProperty('e.patientServiceIdentifier.id') // Group by service identifier
+                          max('p.prescriptionDate')                      // Get the latest prescription date
+                      }
+                  }
 
-        // Grouping the details by patient ID
-        def groupedByPatient = visitDetails.groupBy { it.episode.patientServiceIdentifier.patient.id }
+                  def prescriptionDatesByServiceId = lastPrescriptions.collectEntries { [it[0], it[1]] }
+                  def patientVisitDetailsList = PatientVisitDetails.createCriteria().list {
+                      createAlias('patientVisit', 'pv')
+                      createAlias('prescription', 'p')
+                      createAlias('episode', 'e')
+                      'in'('pv.patient.id', patientIds) // Filter by patient IDs
+                      'in'('e.patientServiceIdentifier.id', prescriptionDatesByServiceId.keySet()) // Match service identifier
+                      'in'('p.prescriptionDate', prescriptionDatesByServiceId.values()) // Match latest prescription date
+                  }
 
-   // Extracting the last 3 visit details for each patient
-        def lastThreeVisitDetails = groupedByPatient.collect { patientId, detailsList ->
-          //  detailsList.sort { -it.patientVisit.visitDate.time }[0..2]
-            def sortedDetailsList = detailsList.sort { -it.patientVisit.visitDate.time }
-            sortedDetailsList.take(3)
-        }.flatten()
+                  return patientVisitDetailsList
 
-        patientVisitDetailsLists.addAll(lastThreeVisitDetails);
-
-        Set<String> patientsWithVisitDetails = visitDetails.stream()
-                .map(pvd -> pvd.episode.patientServiceIdentifier.patient.id)
-                .collect(Collectors.toSet());
-
-        Set<String> remainingPatientIds = new HashSet<>(patientIds);
-        remainingPatientIds.removeAll(patientsWithVisitDetails);
-        if (!remainingPatientIds.isEmpty()) {
-            List<PatientVisit> fallbackVisitDetails = PatientVisit.executeQuery("""
-        select pv
-        from PatientVisit pv
-        inner join fetch pv.patientVisitDetails pvd
-        inner join fetch pv.patient p
-        where p.id in :patientIds
-        and pv.visitDate = (
-            select max(pvInner.visitDate)
-            from PatientVisit pvInner
-            where pvInner.patient.id = p.id and not exists (
-        select 1 
-        from VitalSignsScreening vsInner 
-        where vsInner.visit.id = pvInner.id
-    ))
-        order by pv.visitDate desc
-    """, [patientIds: remainingPatientIds]);
-
-            List<PatientVisitDetails> patientsWithVisitDetails1 = fallbackVisitDetails.stream()
-                    .map(pv -> pv.patientVisitDetails)
-                    .collect(Collectors.toList());
-            // Add the fallback visit details to the final list
-            patientsWithVisitDetails1.each {it ->
-                patientVisitDetailsLists.addAll(it);
-            }
-
-        }
-
-        return patientVisitDetailsLists
     }
 
-    List<PatientVisitDetails> getLastAllByListPatientId(List<String> patientIds){
-        List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
-        patientIds.each {
-                List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it), [sort: 'visitDate', order: 'desc'])
-                PatientVisit pvLast = patientVisitList.get(0)
-                patientVisitDetailsLists.addAll(pvLast.patientVisitDetails)
-        }
-
-        return patientVisitDetailsLists
-    }
-
-    List<PatientVisitDetails> getAllVisitDetailsByPrescritpionIds(List<String> prescriptionIds){
-      //  List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
-
-      //  patientVisitDetailsLists = PatientVisitDetails.findAllByPrescriptionInList(prescriptionsList)
-      def patientVisitDetailsLists = PatientVisitDetails.createCriteria().list {
-            createAlias('patientVisit', 'pv' )
-            createAlias('prescription', 'p')
-            'in'('p.id', prescriptionIds)
-        }
-        /*
-        prescriptionIds.each {
-            List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it), [sort: 'visitDate', order: 'desc'])
-            PatientVisit pvLast = patientVisitList.get(0)
-            patientVisitDetailsLists.addAll(pvLast.patientVisitDetails)
-        }
-
-         */
-
-        return patientVisitDetailsLists
-    }
 }
