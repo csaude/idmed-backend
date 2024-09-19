@@ -27,4 +27,7 @@ interface IPatientVisitService {
 
     List<PatientVisit> getAllLastWithScreeningByPatientIds(List<String> patientIds)
 
+    List<PatientVisit> getAllLast3VisitsWithScreeningByPatientIds(List<String> patientIds)
+
+
 }

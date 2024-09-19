@@ -185,7 +185,6 @@ class PatientVisitController extends RestfulController {
                     Prescription existingPrescription = Prescription.findById(item.prescription.id)
                     if (existingPrescription == null) {
                         item.prescription.origin = existingPatientVisit.origin
-                        item.episode.origin = existingPatientVisit.origin
                         incrementPrescriptionSeq(item.prescription, item.episode)
                         prescriptionService.save(item.prescription)
                     }
@@ -207,7 +206,7 @@ class PatientVisitController extends RestfulController {
             } else {
                 visit.patientVisitDetails.each { item ->
                     item.pack.origin = visit.origin
-                    item.episode.origin = visit.origin
+                  //  item.episode.origin = visit.origin
                     Prescription existingPrescription = Prescription.findById(item.prescription.id)
                     if (existingPrescription != null) {
                         item.prescription = existingPrescription
