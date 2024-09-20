@@ -92,16 +92,16 @@ class PatientVisitController extends RestfulController {
                 item.id = UUID.fromString(objectJSON.patientVisitDetails[index].id)
                 item.origin = visit.origin
                 item.prescription.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.id)
-                item.prescription.origin = visit.origin
+                //item.prescription.origin = visit.origin
                 item.prescription.prescribedDrugs.eachWithIndex { item2, index2 ->
                     item2.beforeInsert()
                     item2.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.prescribedDrugs[index2].id)
-                    item2.origin = visit.origin
+                 //   item2.origin = visit.origin
                 }
                 item.prescription.prescriptionDetails.eachWithIndex { item3, index3 ->
                     item3.beforeInsert()
                     item3.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.prescriptionDetails[index3].id)
-                    item3.origin = visit.origin
+                  //  item3.origin = visit.origin
                 }
                 item.pack.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.id)
                 item.pack.origin = visit.origin
@@ -184,7 +184,7 @@ class PatientVisitController extends RestfulController {
                     item.origin = existingPatientVisit.origin
                     Prescription existingPrescription = Prescription.findById(item.prescription.id)
                     if (existingPrescription == null) {
-                        item.prescription.origin = existingPatientVisit.origin
+                      //  item.prescription.origin = existingPatientVisit.origin
                         incrementPrescriptionSeq(item.prescription, item.episode)
                         prescriptionService.save(item.prescription)
                     }
@@ -210,7 +210,7 @@ class PatientVisitController extends RestfulController {
                     Prescription existingPrescription = Prescription.findById(item.prescription.id)
                     if (existingPrescription != null) {
                         item.prescription = existingPrescription
-                        item.prescription.origin = existingPrescription.origin
+                       // item.prescription.origin = existingPrescription.origin
                     }
                     item.pack.packagedDrugs.each { packagedDrugs ->
                         def clinicalService = item.episode.patientServiceIdentifier.service
