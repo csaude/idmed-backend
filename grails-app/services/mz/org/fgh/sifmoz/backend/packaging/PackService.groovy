@@ -1156,9 +1156,11 @@ abstract class PackService implements IPackService {
                                      'OUTRO',
                                      'VOLTOU_REFERENCIA', 
                                      'REFERIDO_DC',
+                                     'TRANSITO',
+                                     'INICIO_MATERNIDADE'
                                      'REFERIDO_PARA',
                                      'VOLTOU_A_SER_REFERIDO_PARA')
-                     AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE')
+                     AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                      group by 1,4,5
                      order by 1
                      ) patientstatistics
@@ -1173,17 +1175,7 @@ abstract class PackService implements IPackService {
                      inner join dispense_type dt on dt.id = pd.dispense_type_id
                      inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id
                      inner join clinical_service cs ON cs.id = tr.clinical_service_id
-                     WHERE (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE')
-                     AND ssr.code in ('NOVO_PACIENTE',
-                                     'INICIO_CCR',
-                                     'TRANSFERIDO_DE',
-                                     'REINICIO_TRATAMETO',
-                                     'MANUNTENCAO',
-                                     'OUTRO',
-                                     'VOLTOU_REFERENCIA', 
-                                     'REFERIDO_DC',
-                                     'REFERIDO_PARA',
-                                     'VOLTOU_A_SER_REFERIDO_PARA')
+                     where (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                      GROUP BY 1,2
                     """
         } else {
@@ -1928,7 +1920,7 @@ abstract class PackService implements IPackService {
                                      'OUTRO',
                                      'VOLTOU_REFERENCIA', 
                                      'REFERIDO_DC')
-                     AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE')
+                     AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                      group by 1,4,5
                      order by 1
                      ) patientstatistics
@@ -1943,6 +1935,7 @@ abstract class PackService implements IPackService {
                      inner join dispense_type dt on dt.id = pd.dispense_type_id
                      inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id
                      inner join clinical_service cs ON cs.id = tr.clinical_service_id
+                     where (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
         
                 """
 
@@ -2110,7 +2103,6 @@ abstract class PackService implements IPackService {
                     COUNT (
                         CASE  
                             WHEN (ssr.code = 'TRANSITO' OR ssr.code = 'INICIO_MATERNIDADE')
-                            AND extract(days from pack.pickup_date - ep.episode_date) <= 3  
                             THEN 1  
                         END
                     ) AS transito, 
@@ -2137,7 +2129,7 @@ abstract class PackService implements IPackService {
                     
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'CE'  
+                            WHEN patientstatistics.service_code = 'CE' OR patientstatistics.service_code = 'CCR'    
                             THEN 1  
                         END
                     ) AS CE,
@@ -2205,7 +2197,7 @@ abstract class PackService implements IPackService {
                                      'REFERIDO_DC',
                                      'TRANSITO',
                                      'INICIO_MATERNIDADE')
-                        AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE') 
+                        AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR') 
                     GROUP BY 
                         1,4,5
                     ORDER BY 
@@ -2233,7 +2225,7 @@ abstract class PackService implements IPackService {
                     therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
                 INNER JOIN 
                     clinical_service cs ON cs.id = tr.clinical_service_id
-
+                WHERE (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                     """
         } else {
             query =
@@ -2315,7 +2307,6 @@ abstract class PackService implements IPackService {
                         CASE  
                             WHEN patientstatistics.service_code = :clinicalService 
                             AND (ssr.code = 'TRANSITO'  OR ssr.code = 'INICIO_MATERNIDADE')
-                            AND extract(days from pack.pickup_date - ep.episode_date) <= 3  
                             THEN 1  
                         END
                     ) AS transito, 
@@ -2961,7 +2952,6 @@ abstract class PackService implements IPackService {
                                     ELSE
                                         CASE 
                                             WHEN (r2.code = 'TRANSITO' OR r2.code = 'INICIO_MATERNIDADE')
-                                                AND (Date(r2.episode_date) <= Date(r3.pickUpDate) AND r3.pickUpDate <= (r2.episode_date + INTERVAL '90 days')) 
                                             THEN 'Trânsito'
                                             ELSE
                                                 CASE 
@@ -3240,7 +3230,6 @@ abstract class PackService implements IPackService {
                                     ELSE
                                         CASE 
                                             WHEN (ssr.code = 'TRANSITO' OR ssr.code = 'INICIO_MATERNIDADE')
-                                                AND (Date(ep.episode_date) <= Date(pack2.pickup_date) AND pack2.pickup_date <= (ep.episode_date + INTERVAL '90 days')) 
                                             THEN 'Trânsito'
                                             ELSE
                                                 CASE 
@@ -3361,7 +3350,6 @@ abstract class PackService implements IPackService {
                                     ELSE
                                         CASE 
                                             WHEN (ssr.code = 'TRANSITO' OR ssr.code = 'INICIO_MATERNIDADE')
-                                                AND (Date(ep.episode_date) <= Date(pack2.pickup_date) AND pack2.pickup_date <= (ep.episode_date + INTERVAL '90 days')) 
                                             THEN 'Trânsito'
                                             ELSE
                                                 CASE 
@@ -3718,7 +3706,7 @@ abstract class PackService implements IPackService {
                 pg_catalog.date(pk.pickup_date) < :startDate and pg_catalog.date(pk.next_pick_up_date) > :endDate AND
                 DATE(pk.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) >= :startDate
                 AND DATE(pk.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) <= :endDate)
-                AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE')
+                AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                 AND c.id = :clinicId
                 AND ssr.code in ('NOVO_PACIENTE','INICIO_CCR','TRANSFERIDO_DE','REINICIO_TRATAMETO','MANUNTENCAO','OUTRO','VOLTOU_REFERENCIA', 'REFERIDO_DC')
                 AND dt.code = 'DT' 
