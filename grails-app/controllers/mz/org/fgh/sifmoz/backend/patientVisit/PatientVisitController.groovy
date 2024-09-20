@@ -225,8 +225,8 @@ class PatientVisitController extends RestfulController {
                     incrementPrescriptionSeq(item.prescription, item.episode)
                     prescriptionService.save(item.prescription)
                     packService.save(item.pack)
-                    if(!syncStatus)
-                        reduceStock(item.pack, syncStatus)
+                   // if(!syncStatus)
+                    reduceStock(item.pack, syncStatus)
                 }
             }
 
@@ -499,7 +499,9 @@ class PatientVisitController extends RestfulController {
     }
 
     void reduceStock(Pack pack, def syncStatus) {
-        if ((pack.syncStatus == 'N' && syncStatus == '') || (pack.syncStatus == 'R' && syncStatus == 'R')) {
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+        if ((pack.syncStatus == 'N' && syncStatus == '') || (pack.syncStatus == 'R')) {
             pack.packagedDrugs.each { pcDrugs ->
 
                 def quantityControl = pcDrugs.quantitySupplied
@@ -536,6 +538,7 @@ class PatientVisitController extends RestfulController {
                 }
             }
         }
+            }
     }
 
     void incrementPrescriptionSeq(Prescription newPrescription, Episode episode) {
