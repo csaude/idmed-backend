@@ -96,12 +96,12 @@ class PatientVisitController extends RestfulController {
                 item.prescription.prescribedDrugs.eachWithIndex { item2, index2 ->
                     item2.beforeInsert()
                     item2.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.prescribedDrugs[index2].id)
-                    item2.origin = visit.origin
+                 //   item2.origin = visit.origin
                 }
                 item.prescription.prescriptionDetails.eachWithIndex { item3, index3 ->
                     item3.beforeInsert()
                     item3.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.prescriptionDetails[index3].id)
-                    item3.origin = visit.origin
+                  //  item3.origin = visit.origin
                 }
                 item.pack.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.id)
                 item.pack.origin = visit.origin
