@@ -139,6 +139,8 @@ class RestOpenMRSClient {
                 }
                 input.close()
                 return new JSONObject(response.toString())
+            } else if (code==HttpURLConnection.HTTP_NO_CONTENT) {
+                return null
             } else {
                 println("GET request not worked")
                 return null

@@ -99,10 +99,11 @@ class SecUserController extends RestfulController {
         secUser.accountExpired = SecUserFromJSON.accountExpired
         secUser.accountLocked = SecUserFromJSON.accountLocked
         secUser.passwordExpired = SecUserFromJSON.passwordExpired
-//        secUser.roles = SecUserFromJSON.roles
+        secUser.roles = SecUserFromJSON.roles
         secUser.loginRetries = SecUserFromJSON.loginRetries
         secUser.lastLogin = SecUserFromJSON.lastLogin
 
+        secUser.clinics = SecUserFromJSON.clinics
         if (secUser == null) {
             render status: NOT_FOUND
             return
