@@ -3040,7 +3040,7 @@ abstract class PackService implements IPackService {
                     inner join patient_service_identifier psi on psi.patient_id = pv.patient_id
                  inner join clinical_service cs on cs.id = psi.service_id
                     inner join clinic c on pack.clinic_id = c.id and pack.clinic_id = :clinic_id
-                    inner join clinic_sector csec on csec.clinic_id = c.id
+                    inner join clinic csec on csec.parent_clinic_id = c.id
                  where cs.code = 'TARV' or (cs.code = 'TARV' and csec.code = 'TB')
                  group by 2
                 ) packAux on packAux.patientid = p.id
@@ -3049,7 +3049,7 @@ abstract class PackService implements IPackService {
                  inner join pack pk on pk.id = pvd.pack_id AND pk.pickup_date = packAux.pickupDate
                  inner join clinic c on pk.clinic_id = c.id
                  inner join episode ep on ep.id = pvd.episode_id 
-                 inner join clinic_sector csec ON csec.clinic_id = c.id AND csec.id = ep.clinic_sector_id 
+                 inner join clinic csec ON csec.parent_clinic_id = c.id AND csec.id = ep.clinic_sector_id 
                  inner join prescription pre on pvd.prescription_id = pre.id
                  inner join prescription_detail pre_det on pre_det.prescription_id = pre.id
                  inner join therapeutic_regimen tr on pre_det.therapeutic_regimen_id = tr.id
@@ -3101,7 +3101,7 @@ abstract class PackService implements IPackService {
                     inner join pack pk on pk.id = pvd.pack_id AND pk.pickup_date = packAux.pickupDate 
                     inner join clinic c on pk.clinic_id = c.id 
                     INNER JOIN episode ep on ep.id = pvd.episode_id
-                    INNER JOIN clinic_sector csec ON csec.clinic_id = c.id AND csec.id = ep.clinic_sector_id
+                    INNER JOIN clinic csec ON csec.parent_clinic_id = c.id AND csec.id = ep.clinic_sector_id
                     inner join prescription pre on pvd.prescription_id = pre.id 
                     inner join prescription_detail pre_det on pre_det.prescription_id = pre.id 
                     inner join therapeutic_regimen tr on pre_det.therapeutic_regimen_id = tr.id 
@@ -3129,7 +3129,8 @@ abstract class PackService implements IPackService {
                    inner join clinical_service cs on psi.service_id = cs.id and cs.code = 'TARV' 
                    inner join patient pat on pat.id = last_packs.patient_id
                 """
-        def queryStringSMI =
+
+        def queryStringSectors =
                 """
                 with ResultTable AS  (
                      select distinct ON (p.id)
@@ -3154,14 +3155,14 @@ abstract class PackService implements IPackService {
                    inner join pack pk on pk.id = pvd.pack_id AND pk.pickup_date = packAux.pickupDate
                    inner join clinic c on pk.clinic_id = c.id and pk.clinic_id = :clinic_id
                    inner join episode ep on ep.id = pvd.episode_id 
-                   inner join clinic_sector csec ON csec.clinic_id = c.id AND csec.id = ep.clinic_sector_id 
+                   inner join clinic csec ON csec.parent_clinic_id = c.id AND csec.id = ep.clinic_sector_id 
                    inner join prescription pre on pvd.prescription_id = pre.id
                    inner join prescription_detail pre_det on pre_det.prescription_id = pre.id
                    inner join therapeutic_regimen tr on pre_det.therapeutic_regimen_id = tr.id
                    inner join therapeutic_line tl on pre_det.therapeutic_line_id = tl.id
                      where EXTRACT(DAY FROM (CURRENT_DATE - (pk.next_pick_up_date + INTERVAL '3 DAY'))) < 60
                  AND EXTRACT(DAY FROM (CURRENT_DATE - (pk.next_pick_up_date + INTERVAL '3 DAY'))) > 0
-                 AND pk.next_pick_up_date >= :startDate AND pk.next_pick_up_date <= :endDate and csec.code IN ('CCR', 'CPN')
+                 AND pk.next_pick_up_date >= :startDate AND pk.next_pick_up_date <= :endDate and csec.code =:sectorCode
                      group by p.id, pk.next_pick_up_date, clinicId
                      )
                      select distinct ON (psi.patient_id)
@@ -3172,7 +3173,7 @@ abstract class PackService implements IPackService {
                      pat.cellphone as contact,
                      pat.address,
                      EXTRACT(year FROM age(:endDate, pat.date_of_birth)) as idade,
-                     'SMI' as served_service
+                     :sectorCode as served_service
                      from patient_service_identifier psi
                    inner join ResultTable last_packs on last_packs.patient_id = psi.patient_id
                    inner join episode e on psi.id = e.patient_service_identifier_id
@@ -3184,17 +3185,22 @@ abstract class PackService implements IPackService {
         def params = [startDate: new java.sql.Date(startDate.time), endDate: new java.sql.Date(endDate.time)]
         List<Object[]> result = sql.rows(queryStringTARV, params)
 
+       def sectorCodes = ['CPN','SAAJ','CCR']
         def params1 = [startDate: new java.sql.Date(startDate.time), endDate: new java.sql.Date(endDate.time), clinic_id: clinic.id]
         for (Object it : sql.rows(queryStringTB, params1)) {
             result.push(it)
         }
 
-        for (Object it : sql.rows(queryStringSMI, params1)) {
-            result.push(it)
+
+        sectorCodes.each {
+            params1.put('sectorCode',it)
+            for (Object item : sql.rows(queryStringSectors, params1)) {
+                result.push(item)
+            }
         }
 
-        return result
-    }
+   return result
+}
 
     //Historico de Levantamentos
     @Override
