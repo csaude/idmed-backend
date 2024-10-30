@@ -4,6 +4,7 @@ import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
+import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
 import static org.springframework.http.HttpStatus.CREATED
@@ -99,10 +100,14 @@ class RAMScreeningController extends RestfulController{
 
     private static RAMScreening configRAMScreeningOrigin(RAMScreening ramScreening){
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
-        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(ramScreening)){
             ramScreening.origin = systemConfigs.description
         }
 
         return ramScreening
+    }
+
+    private static boolean checkHasNotOrigin(RAMScreening ramScreening){
+        return ramScreening.origin == null || ramScreening?.origin?.isEmpty()
     }
 }

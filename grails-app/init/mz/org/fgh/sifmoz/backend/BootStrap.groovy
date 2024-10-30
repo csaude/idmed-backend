@@ -583,7 +583,7 @@ class BootStrap {
                     therapeuticRegimen.active = therapeuticRegimenObject.active
                     therapeuticRegimen.description = therapeuticRegimenObject.description
                     therapeuticRegimen.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
-                //    therapeuticRegimen.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
+//                    therapeuticRegimen.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                     therapeuticRegimen.save(flush: true, failOnError: true)
                     clinicalService.addToTherapeuticRegimens(therapeuticRegimen)
                 } else {
@@ -593,7 +593,7 @@ class BootStrap {
                     }
 //                    therapeuticRegimen2.active = therapeuticRegimenObject.active
                     therapeuticRegimen2.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
-                    therapeuticRegimen2.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
+//                    therapeuticRegimen2.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                     therapeuticRegimen2.save(flush: true, failOnError: true)
                     clinicalService.addToTherapeuticRegimens(therapeuticRegimen2)
                 }
@@ -1599,7 +1599,7 @@ class BootStrap {
         listDrug.add(new LinkedHashMap(id: '4d2c441c-4393-489e-bd4c-bab5c7456a78', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 60, name: '[3TC/AZT/ABC] Lamivudina 150mg/Zidovudina 300mg/Abacavir 300mg', uuid_openmrs: '08S41-ec0-c1cf-42e1-9a37-9f23b4f07bba', fnm_code: '08S41', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: 'b8620a31-e203-4b1d-9f22-7e13d5c44746', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 30, name: '[TDF/FTC] Tenofovir 300mg/Emtricitabina 200mg', uuid_openmrs: '08S31-9e9-49f9-4cd6-8268-8df7315e3d09', fnm_code: '08S31', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: 'cfe9ea7f-7833-47e9-9049-f3309446e984', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 60, name: '[ABC/3TC] Abacavir 120mg/Lamivudina 60mg 60 Comp', uuid_openmrs: '08S01ZW-ec-ec31-45aa-a74e-7238872483e8', fnm_code: '08S01ZW', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
-//        listDrug.add(new LinkedHashMap(id: '3fc60321-4488-4b7a-bbf6-05c89ac04101', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 30, name: '[ABC/3TC] Abacavir 120mg/Lamivudina 60mg 30 Comp', uuid_openmrs: '08S01ZWii-527b-4c8c-9282-21826775e25b', fnm_code: '08S01ZWii', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
+        listDrug.add(new LinkedHashMap(id: '3fc60321-4488-4b7a-bbf6-05c89ac04101', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 30, name: '[ABC/3TC] Abacavir 120mg/Lamivudina 60mg 30 Comp', uuid_openmrs: '08S01ZWii-527b-4c8c-9282-21826775e25b', fnm_code: '08S01ZWii', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: '135b1a6f-0791-47d4-8e8e-6f8b75bab054', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 2, pack_size: 60, name: '[3TC/AZT] Lamivudina 30mg/ Zidovudina 60mg', uuid_openmrs: '08S40Z-fc-6563-49e4-bf81-a456bf79ec88', fnm_code: '08S40Z', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: 'f8a6a5be-9737-474b-ade2-b2789610d7ee', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 2, pack_size: 120, name: '[LPV/RTV] Lopinavir/Ritonavir -Aluvia 200mg/50mg', uuid_openmrs: '08S38Z-99-3fe6-48b7-9b25-3052660f3d8b', fnm_code: '08S38Z', default_treatment: 2, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: '909a8ee5-30cd-45ef-8540-0a44f26a1a09', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 60, name: '[ABC/3TC] Abacavir 60 and Lamivudina 30mg', uuid_openmrs: '08S01ZZ-2e-29dd-40aa-94b4-0d4fe65e081c', fnm_code: '08S01ZZ', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))

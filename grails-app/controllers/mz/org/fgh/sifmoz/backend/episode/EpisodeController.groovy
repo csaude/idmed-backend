@@ -275,10 +275,14 @@ class EpisodeController extends RestfulController {
 
     private static Episode configEpisodeOrigin(Episode episode) {
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
-        if (systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")) {
+        if (systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(episode)) {
             episode.origin = systemConfigs.description
         }
 
         return episode
+    }
+
+    private static boolean checkHasNotOrigin(Episode episode){
+        return episode.origin == null || episode?.origin?.isEmpty()
     }
 }

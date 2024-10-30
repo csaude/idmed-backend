@@ -4,6 +4,7 @@ import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
+import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.prescriptionDrug.PrescribedDrug
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
@@ -100,10 +101,14 @@ class AdherenceScreeningController extends RestfulController{
 
     private static AdherenceScreening configAdherenceScreeningOrigin(AdherenceScreening adherenceScreening){
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
-        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(adherenceScreening)){
             adherenceScreening.origin = systemConfigs.description
         }
 
         return adherenceScreening
+    }
+
+    private static boolean checkHasNotOrigin(AdherenceScreening adherenceScreening){
+        return adherenceScreening.origin == null || adherenceScreening?.origin?.isEmpty()
     }
 }

@@ -103,10 +103,14 @@ class PackagedDrugController extends RestfulController{
 
     private static PackagedDrug configPackagedDrugOrigin(PackagedDrug packagedDrug){
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
-        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(packagedDrug)){
             packagedDrug.origin = systemConfigs.description
         }
 
         return packagedDrug
+    }
+
+    private static boolean checkHasNotOrigin(PackagedDrug packagedDrug){
+        return packagedDrug.origin == null || packagedDrug?.origin?.isEmpty()
     }
 }

@@ -255,11 +255,15 @@ class PatientVisitDetailsController extends RestfulController {
 
     private static PatientVisitDetails configPatientVisitDetailsOrigin(PatientVisitDetails patientVisitDetails) {
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
-        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(patientVisitDetails)){
             patientVisitDetails.origin = systemConfigs.description
         }
 
         return patientVisitDetails
 
+    }
+
+    private static boolean checkHasNotOrigin(PatientVisitDetails patientVisitDetails){
+        return patientVisitDetails.origin == null || patientVisitDetails?.origin?.isEmpty()
     }
 }

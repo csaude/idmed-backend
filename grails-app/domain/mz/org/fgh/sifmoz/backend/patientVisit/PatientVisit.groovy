@@ -15,6 +15,8 @@ import mz.org.fgh.sifmoz.backend.screening.TBScreening
 import mz.org.fgh.sifmoz.backend.screening.VitalSignsScreening
 import org.springframework.cglib.proxy.Mixin
 
+import javax.persistence.Table
+
 class PatientVisit extends BaseEntity {
     String id
     Date visitDate

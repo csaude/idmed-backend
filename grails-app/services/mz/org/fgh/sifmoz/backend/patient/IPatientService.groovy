@@ -28,7 +28,7 @@ interface IPatientService {
 
     List getPatientWithoutDispense(ReportSearchParams reportSearchParams)
 
-    List<Patient> getAllPatientsInClinicSector(Clinic clinicSector, int offset, int limit)
+    List getAllPatientsInClinicSector(String clinicSector, int offset, int limit)
 
     List getAllExpectedPatients(ReportSearchParams reportSearchParams)
   
