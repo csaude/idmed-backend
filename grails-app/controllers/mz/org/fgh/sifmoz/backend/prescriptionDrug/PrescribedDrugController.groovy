@@ -4,6 +4,7 @@ import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
+import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.prescriptionDetail.PrescriptionDetail
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
@@ -104,10 +105,14 @@ class PrescribedDrugController extends RestfulController{
 
     private static PrescribedDrug configPrescribedDrugOrigin(PrescribedDrug prescribedDrug){
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
-        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(prescribedDrug)){
             prescribedDrug.origin = systemConfigs.description
         }
 
         return prescribedDrug
+    }
+
+    private static boolean checkHasNotOrigin(PrescribedDrug prescribedDrug){
+        return prescribedDrug.origin == null || prescribedDrug?.origin?.isEmpty()
     }
 }

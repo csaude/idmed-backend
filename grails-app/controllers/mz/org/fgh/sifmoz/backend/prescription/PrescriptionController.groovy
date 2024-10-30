@@ -186,10 +186,14 @@ class PrescriptionController extends RestfulController{
 
     private static Prescription configPrescriptionOrigin(Prescription prescription){
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
-        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(prescription)){
             prescription.origin = systemConfigs.description
         }
 
         return prescription
+    }
+
+    private static boolean checkHasNotOrigin(Prescription prescription){
+        return prescription.origin == null || prescription?.origin?.isEmpty()
     }
 }

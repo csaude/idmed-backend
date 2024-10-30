@@ -63,7 +63,7 @@ class PatientController extends RestfulController {
         patient.beforeInsert()
 
         if (patient.getMatchId() == null) {
-            def  patientAux =  Patient.findAll( [max: 2, sort: ['matchId': 'desc']])
+            def patientAux = Patient.findAll([max: 2, sort: ['matchId': 'desc']])
             if (patientAux.size() == 0) {
                 patient.setMatchId(1)
             } else {
@@ -302,8 +302,9 @@ class PatientController extends RestfulController {
         }
     }
 
-    def getPatientsInClinicSector(String clinicSectorId,int offset , int max) {
-        render JSONSerializer.setObjectListJsonResponse(patientService.getAllPatientsInClinicSector(Clinic.findById(clinicSectorId),offset,max)) as JSON
+    def getPatientsInClinicSector(String clinicSectorId, int offset, int max) {
+        def allPatientResult = patientService.getAllPatientsInClinicSector(clinicSectorId, offset, max)
+        render JSONSerializer.setLightObjectListJsonResponse(Patient.findAllByIdInList(allPatientResult.id)) as JSON
     }
 
     private static def parseTo(String jsonString) {
@@ -376,15 +377,19 @@ class PatientController extends RestfulController {
     }
 
     def getAllPatientsIsAbandonment(int offset, int max) {
-        render JSONSerializer.setObjectListJsonResponse(patientService.getAllPatientsIsAbandonment(offset,max)) as JSON
+        render JSONSerializer.setObjectListJsonResponse(patientService.getAllPatientsIsAbandonment(offset, max)) as JSON
     }
 
-    private static Patient configPatientOrigin(Patient patient){
+    private static Patient configPatientOrigin(Patient patient) {
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
-        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+        if (systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(patient)) {
             patient.origin = systemConfigs.description
         }
 
         return patient
+    }
+
+    private static boolean checkHasNotOrigin(Patient patient) {
+        return patient.origin == null || patient?.origin?.isEmpty()
     }
 }

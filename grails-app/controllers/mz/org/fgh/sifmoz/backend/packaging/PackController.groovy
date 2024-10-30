@@ -211,11 +211,15 @@ class PackController extends RestfulController {
 
     private static Pack configPackOrigin(Pack pack){
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
-        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(pack)){
             pack.origin = systemConfigs.description
         }
 
         return pack
+    }
+
+    private static boolean checkHasNotOrigin(Pack pack){
+        return pack.origin == null || pack?.origin?.isEmpty()
     }
 
 }

@@ -4,6 +4,7 @@ import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
+import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
@@ -105,10 +106,14 @@ class PregnancyScreeningController extends RestfulController{
 
     private static PregnancyScreening configPregnancyScreeningOrigin(PregnancyScreening pregnancyScreening){
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
-        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(pregnancyScreening)){
             pregnancyScreening.origin = systemConfigs.description
         }
 
         return pregnancyScreening
+    }
+
+    private static boolean checkHasNotOrigin(PregnancyScreening pregnancyScreening){
+        return pregnancyScreening.origin == null || pregnancyScreening?.origin?.isEmpty()
     }
 }

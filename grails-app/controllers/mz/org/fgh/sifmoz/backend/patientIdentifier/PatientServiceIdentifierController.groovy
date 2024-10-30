@@ -9,6 +9,7 @@ import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.identifierType.IdentifierType
+import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
@@ -162,11 +163,15 @@ class PatientServiceIdentifierController extends RestfulController{
 
     private static PatientServiceIdentifier configPatientServiceIdentifierOrigin(PatientServiceIdentifier patientServiceIdentifier){
         SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
-        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL")){
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(patientServiceIdentifier)){
             patientServiceIdentifier.origin = systemConfigs.description
         }
 
         return patientServiceIdentifier
+    }
+
+    private static boolean checkHasNotOrigin(PatientServiceIdentifier patientServiceIdentifier){
+        return patientServiceIdentifier.origin == null || patientServiceIdentifier?.origin?.isEmpty()
     }
 
 }
