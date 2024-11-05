@@ -30,9 +30,6 @@ class StockDestructionAdjustment extends StockAdjustment{
         if (!id) {
             id = UUID.randomUUID()
         }
-        if (!clinic) {
-            clinic = Clinic.findByMainClinic(true)
-        }
     }
 
 

@@ -35,7 +35,6 @@ class VitalSignsScreening extends BaseEntity {
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-            clinic = Clinic.findWhere(mainClinic: true)
         }
     }
 

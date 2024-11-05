@@ -1,6 +1,7 @@
 package mz.org.fgh.sifmoz.backend.form
 
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
+import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.protection.Menu
 
 class Form extends BaseEntity {
@@ -10,6 +11,7 @@ class Form extends BaseEntity {
     String unit
     String howToUse
 
+    static hasMany = [drugs: Drug]
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_Form_Idx'

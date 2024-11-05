@@ -43,7 +43,7 @@ class RestGetEpisodeToCorrectCentralMobileService extends SynchronizerTask {
 
     static lazyInit = false
 
-    @Scheduled(fixedDelay = 90000L)
+//    @Scheduled(fixedDelay = 90000L)
     void execute() {
         if (this.instalationConfig != null && !this.isProvincial()) {
 

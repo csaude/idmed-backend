@@ -45,7 +45,7 @@ class RestPostEpisodeCentralMobileService extends SynchronizerTask {
             "Nome",
             "NID");
 
-    @Scheduled(fixedDelay = 90000L)
+//    @Scheduled(fixedDelay = 90000L)
     void execute() {
         if (this.instalationConfig != null && !this.isProvincial()) {
         Clinic clinicLoged = Clinic.findById(this.getUsOrProvince())

@@ -32,9 +32,6 @@ class StockReferenceAdjustment extends StockAdjustment{
         if (!id) {
             id = UUID.randomUUID()
         }
-        if (!clinic) {
-            clinic = Clinic.findByMainClinic(true)
-        }
     }
 
 

@@ -26,7 +26,6 @@ class StockDistributorBatch extends BaseEntity {
         if (!id) {
             id = UUID.randomUUID()
         }
-
     }
 
 
