@@ -48,9 +48,6 @@ class Episode extends BaseEntity {
         if (!id) {
             id = UUID.randomUUID()
         }
-        if (!clinic) {
-            clinic = Clinic.findByMainClinic(true)
-        }
     }
 
     @Override

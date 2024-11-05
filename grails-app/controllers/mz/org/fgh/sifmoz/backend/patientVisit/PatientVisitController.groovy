@@ -169,7 +169,6 @@ class PatientVisitController extends RestfulController {
             respond visit.errors
             return
         }
-
         try {
             PatientVisit existingPatientVisit = PatientVisit.findByVisitDateAndPatient(visit.visitDate, visit.patient)
 

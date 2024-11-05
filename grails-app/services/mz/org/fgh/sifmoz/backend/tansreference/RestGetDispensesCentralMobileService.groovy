@@ -79,7 +79,7 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
     static lazyInit = false
 
 
-    @Scheduled(fixedDelay = 60000L)
+//    @Scheduled(fixedDelay = 60000L)
     void execute() {
         GetDispenseFromProvincialServer()
         SyncDispenseToProvincialServer()

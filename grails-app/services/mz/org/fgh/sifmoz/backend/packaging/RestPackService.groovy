@@ -36,7 +36,7 @@ class RestPackService {
     final String PATIENT_OPENMRS_LOCATION_MISSING_ERROR_MESSAGE = "- Paciente sem UUID LOCATION do OpenMRS \n"
     static lazyInit = false
 
-    @Scheduled(fixedDelay = 30000L)
+//    @Scheduled(fixedDelay = 30000L)
     void schedulerRequestRunning() {
         Pack.withTransaction {
             List<Pack> packList = Pack.findAllWhere(syncStatus: 'R' as char)
