@@ -544,34 +544,62 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
 
     List<PatientVisitDetails> getLastAllByListPatientId(List<String> patientIds) {
 
-                  def patientServiceIdentifiers = PatientServiceIdentifier.createCriteria().list {
-                      'in'('patient.id', patientIds) // Get all service identifiers for the provided patient IDs
-                  }
-                  def patientServiceIdentifierIds = patientServiceIdentifiers*.id
-                  def lastPrescriptions = PatientVisitDetails.createCriteria().list {
-                      createAlias('patientVisit', 'pv')
-                      createAlias('prescription', 'p')
-                      createAlias('episode', 'e')
-                      'in'('pv.patient.id', patientIds) // Filter by patient IDs
-                      'in'('e.patientServiceIdentifier.id', patientServiceIdentifierIds) // Filter by patientServiceIdentifiers
-                      projections {
-                          groupProperty('e.patientServiceIdentifier.id') // Group by service identifier
-                          max('p.prescriptionDate')                      // Get the latest prescription date
-                      }
-                  }
+        def patientVisitDetailsList = new ArrayList<PatientVisitDetails>()
 
-                  def prescriptionDatesByServiceId = lastPrescriptions.collectEntries { [it[0], it[1]] }
-                  def patientVisitDetailsList = PatientVisitDetails.createCriteria().list {
-                      createAlias('patientVisit', 'pv')
-                      createAlias('prescription', 'p')
-                      createAlias('episode', 'e')
-                      'in'('pv.patient.id', patientIds) // Filter by patient IDs
-                      'in'('e.patientServiceIdentifier.id', prescriptionDatesByServiceId.keySet()) // Match service identifier
-                      'in'('p.prescriptionDate', prescriptionDatesByServiceId.values()) // Match latest prescription date
-                  }
+        patientIds.each { patientId ->
+
+            def patientServiceIdentifierList = PatientServiceIdentifier.createCriteria().list {
+                eq('patient.id', patientId)
+            }
+
+            patientServiceIdentifierList.each { patientServiceIdentifier ->
+
+                def last3PatientVisitDetailsFromlast3Prescription = PatientVisitDetails.createCriteria().list {
+                    createAlias('patientVisit', 'pv' )
+                    createAlias('prescription', 'p')
+                    createAlias('episode', 'e')
+                    eq('pv.patient.id', patientId)
+                    eq('e.patientServiceIdentifier.id',patientServiceIdentifier.id)
+                    order('p.prescriptionDate', 'desc')
+                    maxResults(3)
+                }
+
+                last3PatientVisitDetailsFromlast3Prescription.each { patientVisitDetails ->
+                    def patientvisitDetailsByPrescription = PatientVisitDetails.findAllByPrescription(patientVisitDetails.prescription)
+                    patientVisitDetailsList.addAll(patientvisitDetailsByPrescription as List<PatientVisitDetails>)
+
+                }
+            }
+        }
+
+
+//                  def patientServiceIdentifiers = PatientServiceIdentifier.createCriteria().list {
+//                      'in'('patient.id', patientIds) // Get all service identifiers for the provided patient IDs
+//                  }
+//                  def patientServiceIdentifierIds = patientServiceIdentifiers*.id
+//                  def lastPrescriptions = PatientVisitDetails.createCriteria().list {
+//                      createAlias('patientVisit', 'pv')
+//                      createAlias('prescription', 'p')
+//                      createAlias('episode', 'e')
+//                      'in'('pv.patient.id', patientIds) // Filter by patient IDs
+//                      'in'('e.patientServiceIdentifier.id', patientServiceIdentifierIds) // Filter by patientServiceIdentifiers
+//                      projections {
+//                          groupProperty('e.patientServiceIdentifier.id') // Group by service identifier
+//                          max('p.prescriptionDate')                      // Get the latest prescription date
+//                      }
+//                  }
+//
+//                  def prescriptionDatesByServiceId = lastPrescriptions.collectEntries { [it[0], it[1]] }
+//                  def patientVisitDetailsList = PatientVisitDetails.createCriteria().list {
+//                      createAlias('patientVisit', 'pv')
+//                      createAlias('prescription', 'p')
+//                      createAlias('episode', 'e')
+//                      'in'('pv.patient.id', patientIds) // Filter by patient IDs
+//                      'in'('e.patientServiceIdentifier.id', prescriptionDatesByServiceId.keySet()) // Match service identifier
+//                      'in'('p.prescriptionDate', prescriptionDatesByServiceId.values()) // Match latest prescription date
+//                  }
 
                   return patientVisitDetailsList
-
     }
 
 }

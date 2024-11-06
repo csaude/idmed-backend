@@ -239,8 +239,6 @@ class PatientVisitDetailsController extends RestfulController {
         render JSONSerializer.setObjectListJsonResponse(patientVisitDetailsService.getAllByPatientId(patientId)) as JSON
     }
 
-
-
     def getLastAllByListPatientId() {
 
         def objectJSON = request.JSON
@@ -248,7 +246,9 @@ class PatientVisitDetailsController extends RestfulController {
 
         def result = patientVisitDetailsService.getLastAllByListPatientId(ids)
 
-        render JSONSerializer.setObjectListJsonResponseLevel3(result) as JSON
+        def jsonSerialize =  JSONSerializer.setObjectListJsonResponse(result) as JSON
+
+        render jsonSerialize
     }
 
 
