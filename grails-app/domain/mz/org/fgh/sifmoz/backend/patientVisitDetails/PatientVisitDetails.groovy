@@ -27,6 +27,7 @@ class PatientVisitDetails extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_patientVisitDetails_Idx'
+        pack lazy: false
     }
     static constraints = {
         pack nullable: false
