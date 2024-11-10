@@ -115,11 +115,10 @@ class SecUserController extends RestfulController {
         }
 
         try {
-//           if(secUser.enabled) {
-//               secUser.accountLocked = false
-//               secUser.accountExpired = false
-//               secUser.passwordExpired = false
-//           }
+           if(secUser.enabled && !secUser.accountLocked ) {
+               secUser.accountExpired = false
+               secUser.passwordExpired = false
+           }
             secUser.save()
             if (secUser.username == 'iDMED') {
                 def userText = secUser.username + ':' + secUser.password

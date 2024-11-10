@@ -43,7 +43,7 @@ class CustomSecurityEventListener implements ApplicationListener<ApplicationEven
                 secUser.loginRetries = Integer.parseInt(systemConfigs.value)
             else
                 secUser.loginRetries = 3
-            secUser.save()
+            secUser.save(flush: true)
 
         }
     }
@@ -58,9 +58,9 @@ class CustomSecurityEventListener implements ApplicationListener<ApplicationEven
     void handleFailureEventForUser(String username) {
         SecUser.withTransaction {
             SecUser secUser = SecUser.findWhere(username: username)
-            if (secUser) {
+            if (secUser && !secUser?.username?.equalsIgnoreCase("admin") && !secUser?.username?.equalsIgnoreCase("iDMED")) {
                 updateLoginRetriesForUser(secUser)
-                secUser.save()
+                secUser.save(flush: true)
             }
         }
     }

@@ -557,6 +557,7 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
                 def last3PatientVisitDetailsFromlast3Prescription = PatientVisitDetails.createCriteria().list {
                     createAlias('patientVisit', 'pv' )
                     createAlias('prescription', 'p')
+                    createAlias('pack', 'pack')
                     createAlias('episode', 'e')
                     eq('pv.patient.id', patientId)
                     eq('e.patientServiceIdentifier.id',patientServiceIdentifier.id)

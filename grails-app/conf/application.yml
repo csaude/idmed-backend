@@ -103,7 +103,7 @@ environments:
   development:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://localhost:9876/idmed
+      url: jdbc:postgresql://localhost:9876/chebeco
   test:
     dataSource:
       dbCreate: update
