@@ -102,6 +102,7 @@ class SecUserController extends RestfulController {
         secUser.roles = SecUserFromJSON.roles
         secUser.loginRetries = SecUserFromJSON.loginRetries
         secUser.lastLogin = SecUserFromJSON.lastLogin
+        secUser.password = SecUserFromJSON.password
 
         secUser.clinics = SecUserFromJSON.clinics
         if (secUser == null) {
