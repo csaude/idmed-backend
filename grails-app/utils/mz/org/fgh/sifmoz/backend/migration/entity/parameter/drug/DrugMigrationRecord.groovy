@@ -71,7 +71,7 @@ class DrugMigrationRecord extends AbstractMigrationRecord {
             getMigratedRecord().setFnmCode(UUID.randomUUID().toString())
         }
         getMigratedRecord().setUuidOpenmrs(this.uuidopenmrs)
-        getMigratedRecord().setClinicalService(ClinicalService.findByCodeLike("%"+this.tipodoenca+"%"))
+       // getMigratedRecord().setClinicalService(ClinicalService.findByCodeLike("%"+this.tipodoenca+"%"))
         getMigratedRecord().setForm(Form.findByDescription(this.form))
         getMigratedRecord().setActive(false)
 

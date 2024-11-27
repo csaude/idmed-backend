@@ -1,5 +1,6 @@
 package mz.org.fgh.sifmoz.backend.migration.entity.prescription
 
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug;
 import mz.org.fgh.sifmoz.backend.migrationLog.MigrationLog;
 import mz.org.fgh.sifmoz.backend.migration.base.record.AbstractMigrationRecord;
@@ -46,7 +47,7 @@ public class PackagedDrugsMigrationRecord extends AbstractMigrationRecord {
             Pack pack = Pack.findById(packMigrationLog.getiDMEDId())
 
             if (pack == null) throw new RuntimeException("Não foi encontrado o respectivo registo PACK.")
-
+            Clinic clinic = Clinic.findByMainClinic(true)
             PackagedDrug packagedDrug = getMigratedRecord() as PackagedDrug
             packagedDrug.setQuantitySupplied(this.amount / stock.getDrug().getPackSize())
             packagedDrug.setNextPickUpDate(pack.getNextPickUpDate())
@@ -54,6 +55,7 @@ public class PackagedDrugsMigrationRecord extends AbstractMigrationRecord {
             packagedDrug.setCreationDate(new Date())
             packagedDrug.setPack(pack)
             packagedDrug.setToContinue(true)
+            packagedDrug.setClinic(clinic)
             packagedDrug.setPackagedDrugStocks(new HashSet<PackagedDrugStock>())
 
             //PackageDrugStock

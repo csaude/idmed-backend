@@ -1,5 +1,6 @@
 package mz.org.fgh.sifmoz.backend.migration.entity.prescription
 
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.migration.base.record.AbstractMigrationRecord
 import mz.org.fgh.sifmoz.backend.migration.base.record.MigratedRecord
@@ -45,7 +46,7 @@ public class PrescribedDrugsMigrationRecord extends AbstractMigrationRecord {
             Prescription savedPrescription = Prescription.findById(prescriptionMigrationLog.getiDMEDId())
 
             MigrationLog drugkMigrationLog = MigrationLog.findBySourceIdAndSourceEntityAndIDMEDIdIsNotNull(this.drug, "drug")
-
+            Clinic clinic = Clinic.findByMainClinic(true)
             PrescribedDrug prescribedDrug = getMigratedRecord() as PrescribedDrug
             prescribedDrug.setDrug(Drug.findById(drugkMigrationLog.getiDMEDId()))
             prescribedDrug.setModified(this.modified == "T")
@@ -54,6 +55,7 @@ public class PrescribedDrugsMigrationRecord extends AbstractMigrationRecord {
             prescribedDrug.setPrescribedQty(this.amtpertime * this.timesperday as int)
             prescribedDrug.setTimesPerDay(this.timesperday)
             prescribedDrug.setForm(prescribedDrug.getDrug().getDefaultPeriodTreatment())
+            prescribedDrug.setClinic(clinic)
             if (!prescribedDrug.hasErrors()) {
                 prescribedDrug.setId(UUID.randomUUID().toString())
                 prescribedDrug.save(flush: true)
