@@ -47,7 +47,7 @@ class RegimeTerapeuticoMigrationRecord extends AbstractMigrationRecord {
         getMigratedRecord().setCode(this.codigoregime)
         getMigratedRecord().setDescription(this.regimeesquema)
         getMigratedRecord().setOpenmrsUuid(this.regimenomeespecificado)
-        getMigratedRecord().setClinicalService(ClinicalService.findByCode(this.tipodoenca))
+       //  getMigratedRecord().setClinicalService(ClinicalService.findByCode(this.tipodoenca))
         getMigratedRecord().setActive(false)
 
         if (Utilities.listHasElements(logs)) return logs
