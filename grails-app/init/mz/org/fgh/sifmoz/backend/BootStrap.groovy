@@ -586,9 +586,8 @@ class BootStrap {
                     therapeuticRegimen.description = therapeuticRegimenObject.description
                     therapeuticRegimen.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
 //                    therapeuticRegimen.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
-//                    therapeuticRegimen.addToClinicalServices(clinicalService)
                     therapeuticRegimen.save(flush: true, failOnError: true)
-//                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen)
+                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen)
                 } else {
                     if (therapeuticRegimen2.code.equalsIgnoreCase("X6APed")) {
                         therapeuticRegimen2.regimenScheme = "ABC+3TC+DTG (2DFC+DTG50)"
@@ -596,10 +595,9 @@ class BootStrap {
                     }
 //                    therapeuticRegimen2.active = therapeuticRegimenObject.active
                     therapeuticRegimen2.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
-//                    therapeuticRegimen2.addToClinicalServices(clinicalService)
 //                    therapeuticRegimen2.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                     therapeuticRegimen2.save(flush: true, failOnError: true)
-//                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen2)
+                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen2)
                 }
             } else {
                 if (therapeuticRegimen1.code.equalsIgnoreCase("X6APed")) {
@@ -608,10 +606,9 @@ class BootStrap {
                 }
 //                therapeuticRegimen1.active = therapeuticRegimenObject.active
                 therapeuticRegimen1.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
-//                therapeuticRegimen1.addToClinicalServices(clinicalService)
 //                therapeuticRegimen1.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                 therapeuticRegimen1.save(flush: true, failOnError: true)
-//                clinicalService.addToTherapeuticRegimens(therapeuticRegimen1)
+                clinicalService.addToTherapeuticRegimens(therapeuticRegimen1)
             }
             clinicalService.save()
         }
