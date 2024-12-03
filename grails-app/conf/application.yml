@@ -90,8 +90,8 @@ grails:
 dataSource:
   driverClassName: org.postgresql.Driver
   dialect: hibernate.MyPostgreSQLDialect
-  username: postgres
-  password: postgres
+  username: '${DB_USER:idmedgz}'
+  password: '${DB_PASS:IdmedGz-2024}'
   pooled: true
   jmxExport: true
 hibernate:
@@ -103,7 +103,7 @@ environments:
   development:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://localhost:9876/idmed_maputo
+      url: jdbc:postgresql://172.16.60.20:50403/idmedgz
   test:
     dataSource:
       dbCreate: update

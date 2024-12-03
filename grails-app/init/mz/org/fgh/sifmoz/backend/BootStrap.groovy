@@ -410,6 +410,8 @@ class BootStrap {
                 form.id = formObject.id
                 form.code = formObject.code
                 form.description = formObject.description
+                form.unit = formObject.unit
+                form.howToUse = formObject.how_to_use
                 form.save(flush: true, failOnError: true)
             }
         }
@@ -584,8 +586,9 @@ class BootStrap {
                     therapeuticRegimen.description = therapeuticRegimenObject.description
                     therapeuticRegimen.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
 //                    therapeuticRegimen.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
+//                    therapeuticRegimen.addToClinicalServices(clinicalService)
                     therapeuticRegimen.save(flush: true, failOnError: true)
-                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen)
+//                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen)
                 } else {
                     if (therapeuticRegimen2.code.equalsIgnoreCase("X6APed")) {
                         therapeuticRegimen2.regimenScheme = "ABC+3TC+DTG (2DFC+DTG50)"
@@ -593,9 +596,10 @@ class BootStrap {
                     }
 //                    therapeuticRegimen2.active = therapeuticRegimenObject.active
                     therapeuticRegimen2.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
+//                    therapeuticRegimen2.addToClinicalServices(clinicalService)
 //                    therapeuticRegimen2.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                     therapeuticRegimen2.save(flush: true, failOnError: true)
-                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen2)
+//                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen2)
                 }
             } else {
                 if (therapeuticRegimen1.code.equalsIgnoreCase("X6APed")) {
@@ -604,9 +608,10 @@ class BootStrap {
                 }
 //                therapeuticRegimen1.active = therapeuticRegimenObject.active
                 therapeuticRegimen1.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
+//                therapeuticRegimen1.addToClinicalServices(clinicalService)
 //                therapeuticRegimen1.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                 therapeuticRegimen1.save(flush: true, failOnError: true)
-                clinicalService.addToTherapeuticRegimens(therapeuticRegimen1)
+//                clinicalService.addToTherapeuticRegimens(therapeuticRegimen1)
             }
             clinicalService.save()
         }
@@ -1015,24 +1020,23 @@ class BootStrap {
 
     List<Object> listForm() {
         List<Object> formList = new ArrayList<>()
-        formList.add(new LinkedHashMap(id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', code: 'Comp', description: 'Comprimido'))
-        formList.add(new LinkedHashMap(id: 'B61168FC-0178-4DC3-A89E-46A169A7457D', code: 'Xarope', description: 'Xarope'))
-        formList.add(new LinkedHashMap(id: '74C8F060-1EA4-45E9-94DB-2DE6775E6481', code: 'Capsula', description: 'Capsula'))
-        formList.add(new LinkedHashMap(id: '4EA7EF2B-7F86-4DA7-9B74-AF9B614A8DA6', code: 'Sabonete', description: 'Sabonete'))
-        formList.add(new LinkedHashMap(id: '024D260C-F3A3-4149-ACDF-97A68855D85A', code: 'Supositório', description: 'Supositório'))
-        formList.add(new LinkedHashMap(id: '451906BE-792D-4506-98DB-408F69B97AB1', code: 'Descongestionante_nasal', description: 'Descongestionante Nasal'))
-        formList.add(new LinkedHashMap(id: 'D213A686-782C-4AF3-BC31-BA04EEF0EDB0', code: 'Solução_Oftámilca', description: 'Solução Oftámilca'))
-        formList.add(new LinkedHashMap(id: '70E72CB3-F66D-41D7-B2C9-8F545E880FC6', code: 'Gotas_Ouvidos', description: 'Gotas para os ouvidos'))
-        formList.add(new LinkedHashMap(id: '742F4BC0-E0CC-4602-829B-BEC4EAFB0D2C', code: 'Suspensão', description: 'Suspensão'))
-        formList.add(new LinkedHashMap(id: '17828974-026F-41CF-A906-E97ABFB2A0AC', code: 'Creme', description: 'Creme'))
-        formList.add(new LinkedHashMap(id: '700FBB4F-C67C-4085-B05C-33259C29F90E', code: 'Pomada', description: 'Pomada'))
-        formList.add(new LinkedHashMap(id: '935436AC-8CB2-4691-8FC6-99209CDB9906', code: 'Gel', description: 'Gel'))
-        formList.add(new LinkedHashMap(id: '3B627885-00C6-4F49-97D0-11CECD6CABB4', code: 'Gel_Oral', description: 'Gel Oral'))
-        formList.add(new LinkedHashMap(id: 'DB4162F8-A5B3-4656-ABEF-AC977E37A9EF', code: 'Loção', description: 'Loção'))
-        formList.add(new LinkedHashMap(id: 'BA8E6254-0F88-43D7-8C39-500756AA7B2F', code: 'Pomada_olhos', description: 'Pomada para os olhos'))
-        formList.add(new LinkedHashMap(id: 'A80409ED-89FC-40AF-BA34-5CD0BA886570', code: 'Creme_Vaginal', description: 'Creme Vaginal'))
+        formList.add(new LinkedHashMap(id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', code: 'Comp', description: 'Comprimido', 'unit': 'Comp(s)', 'how_to_use': 'Tomar'))
+        formList.add(new LinkedHashMap(id: 'B61168FC-0178-4DC3-A89E-46A169A7457D', code: 'Xarope', description: 'Xarope', 'unit':  'mL(s)', 'how_to_use': 'Tomar'))
+        formList.add(new LinkedHashMap(id: '74C8F060-1EA4-45E9-94DB-2DE6775E6481', code: 'Capsula', description: 'Capsula', 'unit': 'Capsula(s)', 'how_to_use': 'Tomar'))
+        formList.add(new LinkedHashMap(id: '4EA7EF2B-7F86-4DA7-9B74-AF9B614A8DA6', code: 'Sabonete', description: 'Sabonete', 'unit': 'Sabonete(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '024D260C-F3A3-4149-ACDF-97A68855D85A', code: 'Supositório', description: 'Supositório', 'unit': 'Comp(s)', 'how_to_use': 'Inserir'))
+        formList.add(new LinkedHashMap(id: '451906BE-792D-4506-98DB-408F69B97AB1', code: 'Descongestionante_nasal', description: 'Descongestionante Nasal', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: 'D213A686-782C-4AF3-BC31-BA04EEF0EDB0', code: 'Solução_Oftámilca', description: 'Solução Oftámilca', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '70E72CB3-F66D-41D7-B2C9-8F545E880FC6', code: 'Gotas_Ouvidos', description: 'Gotas para os ouvidos', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '742F4BC0-E0CC-4602-829B-BEC4EAFB0D2C', code: 'Suspensão', description: 'Suspensão', 'unit': 'mL(s)', 'how_to_use': 'Tomar'))
+        formList.add(new LinkedHashMap(id: '17828974-026F-41CF-A906-E97ABFB2A0AC', code: 'Creme', description: 'Creme', 'unit': 'Creme(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '700FBB4F-C67C-4085-B05C-33259C29F90E', code: 'Pomada', description: 'Pomada', 'unit': 'Pomada(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '935436AC-8CB2-4691-8FC6-99209CDB9906', code: 'Gel', description: 'Gel', 'unit': 'Gel', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '3B627885-00C6-4F49-97D0-11CECD6CABB4', code: 'Gel_Oral', description: 'Gel Oral', 'unit': 'Gel', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: 'DB4162F8-A5B3-4656-ABEF-AC977E37A9EF', code: 'Loção', description: 'Loção', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: 'BA8E6254-0F88-43D7-8C39-500756AA7B2F', code: 'Pomada_olhos', description: 'Pomada para os olhos', 'unit': 'Pomada(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: 'A80409ED-89FC-40AF-BA34-5CD0BA886570', code: 'Creme_Vaginal', description: 'Creme Vaginal', 'unit': 'Creme(s)', 'how_to_use': 'Aplicar'))
         //   formList.add(new LinkedHashMap(id: 'EA2A097D-0D71-43C4-B230-8A927181C3A2', code: 'Granulos', description: 'Granulados')
-
         return formList
 
     }
