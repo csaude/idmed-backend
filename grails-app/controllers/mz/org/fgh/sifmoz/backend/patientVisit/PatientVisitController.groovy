@@ -537,7 +537,7 @@ class PatientVisitController extends RestfulController {
                 pack.packagedDrugs.each { pcDrugs ->
 
                     def quantityControl = pcDrugs.quantitySupplied
-
+                    pcDrugs.packagedDrugStocks = new HashSet<>()
                     while (quantityControl > 0) {
                         PackagedDrugStock packagedDrugStock = new PackagedDrugStock()
                         packagedDrugStock.beforeInsert()

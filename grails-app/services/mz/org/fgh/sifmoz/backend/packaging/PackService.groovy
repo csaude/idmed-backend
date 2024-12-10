@@ -174,8 +174,10 @@ abstract class PackService implements IPackService {
                         patient_visit pv ON pv.id = pvd.patient_visit_id
                     INNER JOIN 
                         therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
+                     INNER JOIN 
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
                     INNER JOIN 
-                        clinical_service cs ON cs.id = tr.clinical_service_id
+                        clinical_service cs ON cs.id = psi.service_id
                     INNER JOIN dispense_type dt ON dt.id = pd.dispense_type_id
                     WHERE 
                         cs.code = 'TPT'
@@ -266,8 +268,10 @@ abstract class PackService implements IPackService {
                         patient_visit pv ON pv.id = pvd.patient_visit_id
                     INNER JOIN 
                         therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
+                     INNER JOIN 
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
                     INNER JOIN 
-                        clinical_service cs ON cs.id = tr.clinical_service_id
+                        clinical_service cs ON cs.id = psi.service_id
                     INNER JOIN dispense_type dt ON dt.id = pd.dispense_type_id
                     WHERE 
                         cs.code = 'TPT'
@@ -357,8 +361,10 @@ abstract class PackService implements IPackService {
             patient_visit pv ON pv.id = pvd.patient_visit_id
         INNER JOIN 
             therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
-        INNER JOIN 
-            clinical_service cs ON cs.id = tr.clinical_service_id
+      INNER JOIN 
+             patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+         INNER JOIN 
+          clinical_service cs ON cs.id = psi.service_id
         INNER JOIN dispense_type dt ON dt.id = pd.dispense_type_id
         WHERE 
             cs.code = 'TPT'
@@ -449,7 +455,9 @@ abstract class PackService implements IPackService {
                         INNER JOIN 
                             therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
                         INNER JOIN 
-                            clinical_service cs ON cs.id = tr.clinical_service_id
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                        INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
                         INNER JOIN dispense_type dt ON dt.id = pd.dispense_type_id
                         WHERE 
                             cs.code = 'TPT'
@@ -540,7 +548,9 @@ abstract class PackService implements IPackService {
                     INNER JOIN 
                         therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
                     INNER JOIN 
-                        clinical_service cs ON cs.id = tr.clinical_service_id
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                        INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
                     INNER JOIN dispense_type dt ON dt.id = pd.dispense_type_id
                     WHERE 
                         cs.code = 'TPT'
@@ -630,8 +640,10 @@ abstract class PackService implements IPackService {
             patient_visit pv ON pv.id = pvd.patient_visit_id
         INNER JOIN 
             therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
-        INNER JOIN 
-            clinical_service cs ON cs.id = tr.clinical_service_id
+         INNER JOIN 
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                        INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
         INNER JOIN dispense_type dt ON dt.id = pd.dispense_type_id
         WHERE 
             cs.code = 'TPT'
@@ -722,7 +734,9 @@ abstract class PackService implements IPackService {
                     INNER JOIN 
                         therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
                     INNER JOIN 
-                        clinical_service cs ON cs.id = tr.clinical_service_id
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                        INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
                     INNER JOIN dispense_type dt ON dt.id = pd.dispense_type_id
                     WHERE 
                         cs.code = 'TPT'
@@ -813,7 +827,9 @@ abstract class PackService implements IPackService {
                     INNER JOIN 
                         therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
                     INNER JOIN 
-                        clinical_service cs ON cs.id = tr.clinical_service_id
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                        INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
                     INNER JOIN dispense_type dt ON dt.id = pd.dispense_type_id
                     WHERE 
                         cs.code = 'TPT'
@@ -903,8 +919,10 @@ abstract class PackService implements IPackService {
             patient_visit pv ON pv.id = pvd.patient_visit_id
         INNER JOIN 
             therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
-        INNER JOIN 
-            clinical_service cs ON cs.id = tr.clinical_service_id
+         INNER JOIN 
+           patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+           INNER JOIN 
+              clinical_service cs ON cs.id = psi.service_id
         INNER JOIN dispense_type dt ON dt.id = pd.dispense_type_id
         WHERE 
             cs.code = 'TPT'
@@ -1174,7 +1192,10 @@ abstract class PackService implements IPackService {
                      inner join patient_visit pv on pv.id = pvd.patient_visit_id
                      inner join dispense_type dt on dt.id = pd.dispense_type_id
                      inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id
-                     inner join clinical_service cs ON cs.id = tr.clinical_service_id
+                     INNER JOIN 
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                        INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
                      where (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                      GROUP BY 1,2
                     """
@@ -1235,7 +1256,10 @@ abstract class PackService implements IPackService {
                      inner join patient_visit pv on pv.id = pvd.patient_visit_id
                      inner join dispense_type dt on dt.id = pd.dispense_type_id
                      inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id
-                     inner join clinical_service cs ON cs.id = tr.clinical_service_id
+                     INNER JOIN 
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                        INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
                      WHERE cs.code = :clinicalService
                      AND ssr.code in ('NOVO_PACIENTE',
                                      'INICIO_CCR',
@@ -1327,6 +1351,7 @@ abstract class PackService implements IPackService {
                     WITH unique_prescriptions AS (
                         SELECT DISTINCT
                             pd.id AS prescription_detail_id,
+                            pd.prescription_id as prescription_id,
                             pd.therapeutic_regimen_id,
                             pd.therapeutic_line_id,
                             p.prescription_date
@@ -1351,8 +1376,12 @@ abstract class PackService implements IPackService {
                         therapeutic_regimen tr ON up.therapeutic_regimen_id = tr.id
                     INNER JOIN
                         therapeutic_line tl ON up.therapeutic_line_id = tl.id
+                  INNER JOIN
+                        episode ep ON ep.id = pvd.episode_id
                     INNER JOIN 
-                        clinical_service cs ON cs.id = tr.clinical_service_id
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                    INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
                     WHERE
                         cs.code = 'TARV'
                     GROUP BY
@@ -1391,6 +1420,7 @@ abstract class PackService implements IPackService {
                      WITH unique_prescriptions AS (
                         SELECT DISTINCT
                             pd.id AS prescription_detail_id,
+                            pd.prescription_id as prescription_id,
                             pd.therapeutic_regimen_id,
                             pd.therapeutic_line_id,
                             p.prescription_date
@@ -1417,8 +1447,14 @@ abstract class PackService implements IPackService {
                         therapeutic_regimen tr ON up.therapeutic_regimen_id = tr.id
                     INNER JOIN
                         therapeutic_line tl ON up.therapeutic_line_id = tl.id
+                    INNER JOIN
+                        patient_visit_details pvd ON pvd.prescription_id = up.prescription_id
+                     INNER JOIN
+                        episode ep ON ep.id = pvd.episode_id
                     INNER JOIN 
-                        clinical_service cs ON cs.id = tr.clinical_service_id
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                    INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
                     WHERE
                         cs.code = 'TARV' and tl.code = '2'
                     GROUP BY
@@ -1934,7 +1970,10 @@ abstract class PackService implements IPackService {
                      inner join patient_visit pv on pv.id = pvd.patient_visit_id
                      inner join dispense_type dt on dt.id = pd.dispense_type_id
                      inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id
-                     inner join clinical_service cs ON cs.id = tr.clinical_service_id
+                    INNER JOIN 
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                    INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
                      where (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
         
                 """
@@ -2012,7 +2051,10 @@ abstract class PackService implements IPackService {
                      inner join patient_visit pv on pv.id = pvd.patient_visit_id
                      inner join dispense_type dt on dt.id = pd.dispense_type_id
                      inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id
-                     inner join clinical_service cs ON cs.id = tr.clinical_service_id
+                     INNER JOIN 
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                    INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
                 """
 
         }
@@ -2224,7 +2266,9 @@ abstract class PackService implements IPackService {
                 INNER JOIN 
                     therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
                 INNER JOIN 
-                    clinical_service cs ON cs.id = tr.clinical_service_id
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                    INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
                 WHERE (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                     """
         } else {
@@ -2421,7 +2465,9 @@ abstract class PackService implements IPackService {
                 INNER JOIN 
                     therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
                 INNER JOIN 
-                    clinical_service cs ON cs.id = tr.clinical_service_id
+                        patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                    INNER JOIN 
+                        clinical_service cs ON cs.id = psi.service_id
                 WHERE 
                     cs.code = :clinicalService
                     AND ssr.code in ('NOVO_PACIENTE',
@@ -3040,7 +3086,7 @@ abstract class PackService implements IPackService {
                     inner join patient_service_identifier psi on psi.patient_id = pv.patient_id
                  inner join clinical_service cs on cs.id = psi.service_id
                     inner join clinic c on pack.clinic_id = c.id and pack.clinic_id = :clinic_id
-                    inner join clinic_sector csec on csec.clinic_id = c.id
+                     inner join clinic csec on csec.parent_clinic_id = c.id
                  where cs.code = 'TARV' or (cs.code = 'TARV' and csec.code = 'TB')
                  group by 2
                 ) packAux on packAux.patientid = p.id
@@ -3049,7 +3095,7 @@ abstract class PackService implements IPackService {
                  inner join pack pk on pk.id = pvd.pack_id AND pk.pickup_date = packAux.pickupDate
                  inner join clinic c on pk.clinic_id = c.id
                  inner join episode ep on ep.id = pvd.episode_id 
-                 inner join clinic_sector csec ON csec.clinic_id = c.id AND csec.id = ep.clinic_sector_id 
+                 inner join clinic csec ON csec.parent_clinic_id = c.id AND csec.id = ep.clinic_sector_id  
                  inner join prescription pre on pvd.prescription_id = pre.id
                  inner join prescription_detail pre_det on pre_det.prescription_id = pre.id
                  inner join therapeutic_regimen tr on pre_det.therapeutic_regimen_id = tr.id
@@ -3101,7 +3147,7 @@ abstract class PackService implements IPackService {
                     inner join pack pk on pk.id = pvd.pack_id AND pk.pickup_date = packAux.pickupDate 
                     inner join clinic c on pk.clinic_id = c.id 
                     INNER JOIN episode ep on ep.id = pvd.episode_id
-                    INNER JOIN clinic_sector csec ON csec.clinic_id = c.id AND csec.id = ep.clinic_sector_id
+                    INNER JOIN clinic csec ON csec.clinic_id = c.id AND csec.id = ep.clinic_sector_id
                     inner join prescription pre on pvd.prescription_id = pre.id 
                     inner join prescription_detail pre_det on pre_det.prescription_id = pre.id 
                     inner join therapeutic_regimen tr on pre_det.therapeutic_regimen_id = tr.id 
@@ -3154,7 +3200,7 @@ abstract class PackService implements IPackService {
                    inner join pack pk on pk.id = pvd.pack_id AND pk.pickup_date = packAux.pickupDate
                    inner join clinic c on pk.clinic_id = c.id and pk.clinic_id = :clinic_id
                    inner join episode ep on ep.id = pvd.episode_id 
-                   inner join clinic_sector csec ON csec.clinic_id = c.id AND csec.id = ep.clinic_sector_id 
+                  INNER JOIN clinic csec ON csec.parent_clinic_id = c.id AND csec.id = ep.clinic_sector_id
                    inner join prescription pre on pvd.prescription_id = pre.id
                    inner join prescription_detail pre_det on pre_det.prescription_id = pre.id
                    inner join therapeutic_regimen tr on pre_det.therapeutic_regimen_id = tr.id
@@ -3317,7 +3363,7 @@ abstract class PackService implements IPackService {
                 inner join dispense_type dt ON dt.id = pred.dispense_type_id
                 inner join dispense_mode dm ON dm.id = pack2.dispense_mode_id
                 inner join clinic c on c.id = ep.clinic_id
-                left join  clinic_sector cr on cr.id = ep.clinic_sector_id
+                left join  clinic cr on cr.id = ep.clinic_sector_id
                 where (cs.code = :serviceCode)
                 """
             }else{
@@ -3437,7 +3483,7 @@ abstract class PackService implements IPackService {
                 inner join dispense_type dt ON dt.id = pred.dispense_type_id
                 inner join dispense_mode dm ON dm.id = pack2.dispense_mode_id
                 inner join clinic c on c.id = ep.clinic_id
-                left join  clinic_sector cr on cr.id = ep.clinic_sector_id
+                left join  clinic cr on cr.id = ep.clinic_sector_id
                 where cs.code = :serviceCode
                 """
             }
