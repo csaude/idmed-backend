@@ -23,6 +23,7 @@ class PackagedDrug extends BaseEntity {
     Pack pack
     int quantityRemain
     Clinic clinic
+    String origin
     static belongsTo = [Pack]
 
     static hasMany = [packagedDrugStocks: PackagedDrugStock]
@@ -30,7 +31,6 @@ class PackagedDrug extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_PackagedDrug_Idx'
-        datasource 'ALL'
     }
 
     static constraints = {
@@ -40,14 +40,12 @@ class PackagedDrug extends BaseEntity {
         nextPickUpDate nullable: true
         creationDate nullable: true
         clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-        }
-        if (clinic && clinic.parentClinic) {
-            clinic = clinic.parentClinic
         }
     }
 

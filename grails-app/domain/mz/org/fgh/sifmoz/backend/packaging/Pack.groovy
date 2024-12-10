@@ -29,11 +29,12 @@ class Pack extends BaseEntity {
     Date creationDate = new Date()
     boolean isreferral = false
     boolean isreferalsynced = false
+    String origin
+
     static hasMany = [packagedDrugs: PackagedDrug]
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_pack_Idx'
-        datasource 'ALL'
     }
 
     static constraints = {
@@ -51,14 +52,12 @@ class Pack extends BaseEntity {
         groupPack nullable: true
         reasonForPackageReturn(nullable: true,maxSize: 500)
         creationDate nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-        }
-        if (clinic && clinic.parentClinic) {
-            clinic = clinic.parentClinic
         }
     }
 

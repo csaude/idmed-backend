@@ -188,7 +188,8 @@ class DrugDistributorController extends RestfulController {
         drugDistributor.setStatus(status)
         if (status.equalsIgnoreCase("C")) {
             List<Stock> newStockList = new ArrayList<>()
-            StockEntrance entrance = getStockEntranceInstance(drugDistributor)
+         StockEntrance entrance = stockEntranceService.getByClinicIdAndOrderNumber(drugDistributor.clinicId,"Dist_" + drugDistributor.stockDistributor.orderNumber)
+            if (!entrance) entrance = getStockEntranceInstance(drugDistributor)
             for (StockDistributorBatch batch : batchs) {
                 //make new Stock entrance because the batch number doesnt exist
                 if (!stockService.existsBatchNumber(batch.getStock().getBatchNumber(), batch.getDrugDistributor().getClinicId())) {

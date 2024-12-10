@@ -7,12 +7,15 @@ import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.reports.monitoringAndEvaluation.DrugQuantityTemp
 import mz.org.fgh.sifmoz.backend.stock.Stock
 import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
+
+import java.util.stream.Collectors
 
 @Transactional
 @Service(PatientVisitDetails)
@@ -239,13 +242,12 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
                 "     inner join therapeutic_regimen tr on (prd.therapeutic_regimen_id = tr.id)  " +
                 "     inner join therapeutic_line tl on (prd.therapeutic_line_id = tl.id)  " +
                 "     inner join clinical_service cs on (psi.service_id = cs.id)  " +
-                "     where ((Date(pack2.pickup_date) BETWEEN :startDate AND :endDate) OR  " +
-                "     pg_catalog.date(pack2.pickup_date) < :startDate and pg_catalog.date(pack2.next_pick_up_date) > :endDate AND  " +
-                "     DATE(pack2.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pack2.pickup_date as timestamp))/30 as integer))) >= :startDate  " +
-                "     and DATE(pack2.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pack2.pickup_date as timestamp))/30 as integer))) <= :endDate)  " +
-                "      and pack2.clinic_id = :clinicId  " +
-                "      and psi.service_id = :clincalServiceId"
-        
+                "     where ((Date(pack2.pickup_date) BETWEEN :startDate AND :endDate) " +
+                "     AND DATE(pack2.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pack2.pickup_date as timestamp))/30 as integer))) >= :startDate  " +
+                "     AND DATE(pack2.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pack2.pickup_date as timestamp))/30 as integer))) <= :endDate)  " +
+                "     AND pack2.clinic_id = :clinicId  " +
+                "     AND psi.service_id = :clincalServiceId"
+
 
         Session session = sessionFactory.getCurrentSession()
         def query = session.createSQLQuery(queryString)
@@ -258,7 +260,6 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
         return list
 
     }
-
 
     List<DrugQuantityTemp> getProducts(String patientVisitDetailId, String clinicId) {
         List<DrugQuantityTemp> listDrugTemp = new ArrayList<>()
@@ -314,7 +315,7 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
 
     // NOVOS REPORTS
     @Override
-    List<PatientVisitDetails> getTPTDailyReport(String clinicId, Date startDate, Date endDate, String clincalServiceId) {
+    List<PatientVisitDetails> getTPTDailyReport(String clinicId, Date startDate, Date endDate, String clinicalServiceId) {
         def queryString =
                 """
 
@@ -410,26 +411,25 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
                      inner join therapeutic_regimen tr on (prd.therapeutic_regimen_id = tr.id) 
                      inner join therapeutic_line tl on (prd.therapeutic_line_id = tl.id) 
                      inner join clinical_service cs on (psi.service_id = cs.id) 
-                     where ((Date(pack2.pickup_date) BETWEEN :startDate AND :endDate) OR  
-                       pg_catalog.date(pack2.pickup_date) < :startDate and pg_catalog.date(pack2.next_pick_up_date) > :endDate AND  
-                     DATE(pack2.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pack2.pickup_date as timestamp))/30 as integer))) >= :startDate 
+                     where ((Date(pack2.pickup_date) BETWEEN :startDate AND :endDate) 
+                     AND DATE(pack2.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pack2.pickup_date as timestamp))/30 as integer))) >= :startDate 
                      and DATE(pack2.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pack2.pickup_date as timestamp))/30 as integer))) <= :endDate) 
                      and pack2.clinic_id = :clinicId
-                     and psi.service_id = :clincalServiceId 
+                     and psi.service_id = :clinicalServiceId 
                 """
         Session session = sessionFactory.getCurrentSession()
         def query = session.createSQLQuery(queryString)
         query.setParameter("clinicId", clinicId)
         query.setParameter("startDate", startDate)
         query.setParameter("endDate", endDate)
-        query.setParameter("clincalServiceId", clincalServiceId)
+        query.setParameter("clinicalServiceId", clinicalServiceId)
 
         List<Object[]> list = query.list()
         return list
     }
 
     @Override
-    List<PatientVisitDetails> getPREPDailyReport(String clinicId, Date startDate, Date endDate, String clincalServiceId) {
+    List<PatientVisitDetails> getPREPDailyReport(String clinicId, Date startDate, Date endDate, String clinicalServiceId) {
         def queryString =
                 """
                 WITH ResultTable AS ( 
@@ -439,9 +439,8 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
                     INNER JOIN packaged_drug pd ON pack.id = pd.pack_id  
                     INNER JOIN drug d ON pd.drug_id = d.id  
                     WHERE 
-                    ((Date(pack.pickup_date) BETWEEN :startDate AND :endDate) OR  
-                     pg_catalog.date(pack.pickup_date) < :startDate and pg_catalog.date(pack.next_pick_up_date) > :endDate AND  
-                     DATE(pack.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pack.pickup_date as timestamp))/30 as integer))) >= :startDate  
+                    ((Date(pack.pickup_date) BETWEEN :startDate AND :endDate)  
+                     AND DATE(pack.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pack.pickup_date as timestamp))/30 as integer))) >= :startDate  
                      and DATE(pack.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pack.pickup_date as timestamp))/30 as integer))) <= :endDate) 
                    AND pack.clinic_id = :clinicId 
                     GROUP BY pvd.id, d.name
@@ -524,12 +523,11 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
                      inner join therapeutic_regimen tr on (prd.therapeutic_regimen_id = tr.id) 
                      inner join therapeutic_line tl on (prd.therapeutic_line_id = tl.id) 
                      inner join clinical_service cs on (psi.service_id = cs.id) 
-                     where ((Date(pack2.pickup_date) BETWEEN :startDate AND :endDate) OR  
-                       pg_catalog.date(pack2.pickup_date) < :startDate and pg_catalog.date(pack2.next_pick_up_date) > :endDate AND  
-                     DATE(pack2.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pack2.pickup_date as timestamp))/30 as integer))) >= :startDate 
+                     where ((Date(pack2.pickup_date) BETWEEN :startDate AND :endDate)  
+                     AND DATE(pack2.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pack2.pickup_date as timestamp))/30 as integer))) >= :startDate 
                      and DATE(pack2.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pack2.pickup_date as timestamp))/30 as integer))) <= :endDate)  
                      and pack2.clinic_id = :clinicId  
-                     and psi.service_id = :clincalServiceId 
+                     and psi.service_id = :clinicalServiceId 
                 """
 
         Session session = sessionFactory.getCurrentSession()
@@ -537,67 +535,43 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
         query.setParameter("clinicId", clinicId)
         query.setParameter("startDate", startDate)
         query.setParameter("endDate", endDate)
-        query.setParameter("clincalServiceId", clincalServiceId)
+        query.setParameter("clinicalServiceId", clinicalServiceId)
 
         List<Object[]> list = query.list()
         return list
     }
 
 
-    List<PatientVisitDetails>  getAllByListPatientId(List<String> patientIds, ClinicSector clinicSector1) {
-        /*
-        List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
-        patientIds.each {it ->
-            List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it))
-            List<PatientVisitDetails> patientVisitDetailsList = new ArrayList<>();
-            patientVisitList.each {it2 ->
-                it2.patientVisitDetails.each {pvd ->
-                    patientVisitDetailsLists.add(pvd)
-                }
-            }
-            print(patientVisitDetailsList.size())
-        }
-        *
-         */
-        List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
-        patientIds.each {
-            def visitDetails = Patient.executeQuery("select pvd from PatientVisitDetails pvd " +
-                    "inner join fetch pvd.episode ep " +
-                    "inner join fetch ep.patientServiceIdentifier psi " +
-                    "inner join fetch psi.patient p " +
-                    "inner join fetch ep.clinic c " +
-                    "inner join fetch pvd.patientVisit pv " +
-                    "where ep.clinicSector = :clinicSector " +
-                    "and p.id = :patientId " +
-                    "and ep.episodeDate = ( " +
-                    "  SELECT MAX(e.episodeDate)" +
-                    "  FROM Episode e" +
-                    " inner join e.patientServiceIdentifier psi2" +
-                    "  WHERE psi2 = ep.patientServiceIdentifier and e.clinicSector = :clinicSector" +
-                    ")" +
-                    "order by ep.episodeDate desc", [clinicSector: clinicSector1, patientId: it])
-            if (visitDetails.size() == 0) {
-                List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it), [sort: 'visitDate', order: 'desc'])
-                if (patientVisitList.size() > 0) {
-                    PatientVisit pvLast = patientVisitList.get(0)
-                    patientVisitDetailsLists.addAll(pvLast.patientVisitDetails)
-                }
-            } else {
-                patientVisitDetailsLists.addAll(visitDetails)
-            }
-        }
+    List<PatientVisitDetails> getLastAllByListPatientId(List<String> patientIds) {
 
-        return patientVisitDetailsLists
+                  def patientServiceIdentifiers = PatientServiceIdentifier.createCriteria().list {
+                      'in'('patient.id', patientIds) // Get all service identifiers for the provided patient IDs
+                  }
+                  def patientServiceIdentifierIds = patientServiceIdentifiers*.id
+                  def lastPrescriptions = PatientVisitDetails.createCriteria().list {
+                      createAlias('patientVisit', 'pv')
+                      createAlias('prescription', 'p')
+                      createAlias('episode', 'e')
+                      'in'('pv.patient.id', patientIds) // Filter by patient IDs
+                      'in'('e.patientServiceIdentifier.id', patientServiceIdentifierIds) // Filter by patientServiceIdentifiers
+                      projections {
+                          groupProperty('e.patientServiceIdentifier.id') // Group by service identifier
+                          max('p.prescriptionDate')                      // Get the latest prescription date
+                      }
+                  }
+
+                  def prescriptionDatesByServiceId = lastPrescriptions.collectEntries { [it[0], it[1]] }
+                  def patientVisitDetailsList = PatientVisitDetails.createCriteria().list {
+                      createAlias('patientVisit', 'pv')
+                      createAlias('prescription', 'p')
+                      createAlias('episode', 'e')
+                      'in'('pv.patient.id', patientIds) // Filter by patient IDs
+                      'in'('e.patientServiceIdentifier.id', prescriptionDatesByServiceId.keySet()) // Match service identifier
+                      'in'('p.prescriptionDate', prescriptionDatesByServiceId.values()) // Match latest prescription date
+                  }
+
+                  return patientVisitDetailsList
+
     }
 
-    List<PatientVisitDetails> getLastAllByListPatientId(List<String> patientIds){
-        List<PatientVisitDetails> patientVisitDetailsLists = new ArrayList<>();
-        patientIds.each {
-                List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(it), [sort: 'visitDate', order: 'desc'])
-                PatientVisit pvLast = patientVisitList.get(0)
-                patientVisitDetailsLists.addAll(pvLast.patientVisitDetails)
-        }
-
-        return patientVisitDetailsLists
-    }
 }

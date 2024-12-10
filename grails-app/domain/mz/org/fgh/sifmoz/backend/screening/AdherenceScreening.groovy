@@ -18,12 +18,12 @@ class AdherenceScreening extends BaseEntity {
     @JsonBackReference
     PatientVisit visit
     Clinic clinic
+    String origin
 
     static belongsTo = [PatientVisit]
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_AdherenceScreening_Idx'
-        datasource 'ALL'
     }
 
     static constraints = {
@@ -31,14 +31,12 @@ class AdherenceScreening extends BaseEntity {
         daysWithoutMedicine(nullable: true,blank: true)
         lateDays(nullable: true, blank: true)
         clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-        }
-        if (clinic && clinic.parentClinic) {
-            clinic = clinic.parentClinic
         }
     }
 

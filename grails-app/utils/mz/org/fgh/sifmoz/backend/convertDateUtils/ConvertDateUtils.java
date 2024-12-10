@@ -779,4 +779,9 @@ public class ConvertDateUtils {
         }
         return null;
     }
+
+    public static Date getCurrentSqlDate() {
+        LocalDate localDate = LocalDate.now();
+        return  java.sql.Date.valueOf(localDate);
+    }
 }

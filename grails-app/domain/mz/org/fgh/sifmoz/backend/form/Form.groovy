@@ -1,13 +1,17 @@
 package mz.org.fgh.sifmoz.backend.form
 
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
+import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.protection.Menu
 
 class Form extends BaseEntity {
     String id
     String code
     String description
+    String unit
+    String howToUse
 
+    static hasMany = [drugs: Drug]
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_Form_Idx'
@@ -23,6 +27,8 @@ class Form extends BaseEntity {
     static constraints = {
         code nullable: false, unique: true
         description nullable: false, blank: false
+        unit nullable: true, blank: true
+        howToUse nullable: true, blank: true
     }
 
     @Override

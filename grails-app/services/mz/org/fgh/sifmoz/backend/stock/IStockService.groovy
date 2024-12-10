@@ -20,7 +20,7 @@ interface IStockService {
     @Query("select ${s} from ${Stock s} where s.units_received > 0 and s.drug_id =  ${drug.getId()}")
     List<Stock> findAllOnceReceivedByDrug(Drug drug)
 
-    boolean validateStock(String drugId, Date dateToCompare, int qtyPrescribed, String clinicId)
+    boolean validateStock(String drugId, Date dateToCompare, int qtyPrescribed, String clinicId, int weeks)
 
     List<Stock> getValidStockByDrugAndPickUpDate(String drugId, Date dateToCompare)
 
@@ -31,6 +31,9 @@ interface IStockService {
     Stock getStockByBatchNumberAndClinic(String batchNumber, String clinicId)
 
     List<Stock> getAllByClinicId(String clinicId, int offset, int max)
+
+    List<Stock> getStocksByStockDistributor(String clinicId,int offset, int max)
+
 
 
 }

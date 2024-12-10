@@ -15,12 +15,15 @@ import mz.org.fgh.sifmoz.backend.screening.TBScreening
 import mz.org.fgh.sifmoz.backend.screening.VitalSignsScreening
 import org.springframework.cglib.proxy.Mixin
 
+import javax.persistence.Table
+
 class PatientVisit extends BaseEntity {
     String id
     Date visitDate
     @JsonIgnore
     Clinic clinic
     Date creationDate = new Date()
+    String origin
 
     @JsonIgnore
     Patient patient
@@ -33,19 +36,16 @@ class PatientVisit extends BaseEntity {
     static mapping = {
        id generator: "assigned"
        id column: 'id', index: 'Pk_patientVisit_Idx'
-        datasource 'ALL'
     }
 
     static constraints = {
         creationDate nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-        }
-        if (clinic && clinic.parentClinic) {
-            clinic = clinic.parentClinic
         }
     }
 

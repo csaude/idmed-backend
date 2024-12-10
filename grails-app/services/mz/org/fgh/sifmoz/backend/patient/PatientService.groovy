@@ -3,10 +3,13 @@ package mz.org.fgh.sifmoz.backend.patient
 import grails.converters.JSON
 import grails.gorm.services.Service
 import grails.gorm.transactions.Transactional
+import groovy.sql.Sql
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
+import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
+import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
@@ -15,6 +18,8 @@ import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
+import javax.sql.DataSource
+
 
 @Transactional
 @Service(Patient)
@@ -22,6 +27,9 @@ abstract class PatientService implements IPatientService {
 
     @Autowired
     SessionFactory sessionFactory
+
+    @Autowired
+    DataSource dataSource
 
 
     @Override
@@ -104,21 +112,22 @@ abstract class PatientService implements IPatientService {
     }
 
     @Override
-    List<Patient> getAllPatientsInClinicSector(Clinic clinicSector, int offset , int max) {
+    List getAllPatientsInClinicSector(String clinicSector, int offset , int max) {
+        def sql = new Sql(dataSource as DataSource)
 
-        def patients = Patient.executeQuery("select distinct(p) from Episode ep " +
-                "inner join ep.startStopReason stp " +
-                "inner join ep.patientServiceIdentifier psi " +
-                "inner join psi.patient p " +
-                "inner join ep.clinic c " +
-                "where ep.clinicSector = :clinicSector " +
-                "and ep.episodeDate = ( " +
-                "  SELECT MAX(e.episodeDate)" +
-                "  FROM Episode e" +
-                " inner join e.patientServiceIdentifier psi2" +
-                "  WHERE psi2 = ep.patientServiceIdentifier and e.clinicSector = :clinicSector" +
-                ")", [clinicSector: clinicSector],[max: max, offset: offset])
-        return patients
+        def getPatientsSql = '''
+            SELECT p.id FROM patient p
+            INNER JOIN (SELECT max(e.episode_date), psi.patient_id FROM episode e
+                        INNER JOIN  patient_service_identifier psi on psi.id = e.patient_service_identifier_id
+                        WHERE e.clinic_sector_id = :clinicSector
+                        GROUP BY 2
+                        ) lastEpisode on lastEpisode.patient_id = p.id
+                        LIMIT :max OFFSET :offset
+        '''
+
+        List patientsId = sql.rows(getPatientsSql, [clinicSector: clinicSector, max: max, offset: offset])
+
+        return patientsId
     }
 
     @Override
@@ -201,7 +210,7 @@ abstract class PatientService implements IPatientService {
         List<Object[]> list = query.list()
         return list
     }
-  
+
     Long countPatientSearchResult(Patient patient) {
         def queryString = "select count(p.id) from Patient p where 1 = 1"
         Map<String, Object> parameters = [:]
@@ -285,4 +294,26 @@ abstract class PatientService implements IPatientService {
                 ")",[max: max, offset: offset])
         return patients
     }
+
+//    List findPossibleDuplicatePatients() {
+//        String sqlQuery = "SELECT records.value, p.first_names, p.last_names, " +
+//                "p.date_of_birth, p.gender, records.amount " +
+//                "FROM PatientServiceView p, " +
+//                "(SELECT a.value, a.first_names, a.last_names, " +
+//                "COUNT(a.value) AS amount " +
+//                "FROM PatientServiceView a, PatientServiceView b " +
+//                "WHERE a.first_names = b.first_names " +
+//                "AND a.last_names = b.last_names " +
+//                "GROUP BY a.value, a.first_names, a.last_names) AS records " +
+//                "WHERE p.value = records.value " +
+//                "AND records.amount > 1 " +
+//                "GROUP BY records.value, p.first_names, p.last_names, " +
+//                "records.amount, p.date_of_birth, p.gender " +
+//                "ORDER BY p.first_names, p.last_names";
+//
+//        Session session = sessionFactory.getCurrentSession()
+//        def query = session.createSQLQuery(sqlQuery)
+//        List<Object[]> list = query.list()
+//        return list
+//    }
 }

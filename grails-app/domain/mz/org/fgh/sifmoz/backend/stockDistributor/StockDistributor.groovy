@@ -28,7 +28,6 @@ class StockDistributor extends BaseEntity {
         if (!id) {
             id = UUID.randomUUID()
         }
-
     }
 
 

@@ -23,27 +23,25 @@ class TBScreening extends BaseEntity {
     @JsonBackReference
     PatientVisit visit
     Clinic clinic
+    String origin
 
     static belongsTo = [PatientVisit]
 
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_TBScreening_Idx'
-        datasource 'ALL'
     }
 
     static constraints = {
         startTreatmentDate(nullable: true, blank: true)
         visit(nullable: true, blank: true)
         clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-        }
-        if (clinic && clinic.parentClinic) {
-            clinic = clinic.parentClinic
         }
     }
 

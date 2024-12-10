@@ -1,5 +1,6 @@
 package mz.org.fgh.sifmoz.backend.protection
 
+import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import org.springframework.context.ApplicationEvent
 import org.springframework.context.ApplicationListener
@@ -37,6 +38,7 @@ class CustomSecurityEventListener implements ApplicationListener<ApplicationEven
         SecUser.withTransaction {
             SecUser secUser = SecUser.findWhere(username: username)
             SystemConfigs systemConfigs = SystemConfigs.findWhere(key: "MAX_LOGIN_TRIES")
+            secUser.lastLogin = ConvertDateUtils.getCurrentSqlDate()
             if (secUser && systemConfigs)
                 secUser.loginRetries = Integer.parseInt(systemConfigs.value)
             else

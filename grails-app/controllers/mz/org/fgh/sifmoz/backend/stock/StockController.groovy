@@ -109,8 +109,8 @@ class StockController extends RestfulController{
         render status: NO_CONTENT
     }
 //    @Transactional
-    def checkStockStatus(String idPrescribedDrug, Date prescriptionDate, int qtyPrescribed, String clinicId) {
-        def isValid = stockService.validateStock(idPrescribedDrug, prescriptionDate, qtyPrescribed, clinicId)
+    def checkStockStatus(String idPrescribedDrug, Date prescriptionDate, int qtyPrescribed, String clinicId, int weeks) {
+        def isValid = stockService.validateStock(idPrescribedDrug, prescriptionDate, qtyPrescribed, clinicId, weeks)
         render isValid
     }
 
@@ -122,5 +122,10 @@ class StockController extends RestfulController{
 
     def getByClinicId(String clinicId, int offset, int max) {
         respond stockService.getAllByClinicId(clinicId, offset, max)
+    }
+
+    def  getStocksByStockDistributor( String clinicId, int offset,  int max) {
+        def stocks = stockService.getStocksByStockDistributor(clinicId,offset, max)
+        render JSONSerializer.setObjectListJsonResponse(stocks) as JSON
     }
 }

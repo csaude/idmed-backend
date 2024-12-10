@@ -35,4 +35,6 @@ interface IEpisodeService {
     Episode getLastEpisodeByIdentifier(Patient patient, String serviceCode)
 
     List<Episode> getLastWithVisitByClinicAndClinicSector(ClinicSector clinicSector)
+
+    closePatientServiceIdentifierOfPatientWhenOpenMrsObit(Patient patient)
 }

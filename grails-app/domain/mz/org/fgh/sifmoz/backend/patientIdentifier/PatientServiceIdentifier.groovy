@@ -20,6 +20,7 @@ class PatientServiceIdentifier extends BaseEntity {
     IdentifierType identifierType
     ClinicalService service
     Clinic clinic
+    String origin
 
     static belongsTo = [patient: Patient]
 
@@ -28,7 +29,6 @@ class PatientServiceIdentifier extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_PatientServiceIdentifier_Idx'
-        datasource 'ALL'
     }
 
     static constraints = {
@@ -38,36 +38,16 @@ class PatientServiceIdentifier extends BaseEntity {
         })
         endDate nullable: true
         reopenDate nullable: true
+        origin nullable: true
     }
 
     boolean hasEpisodes () {
         return Utilities.listHasElements(this.episodes as ArrayList<?>)
     }
 
-//    @Override
-//    public String toString() {
-//        return "PatientServiceIdentifier{" +
-//                "patient=" + patient +
-//                ", episodes=" + episodes +
-//                ", id='" + id + '\'' +
-//                ", startDate=" + startDate +
-//                ", endDate=" + endDate +
-//                ", reopenDate=" + reopenDate +
-//                ", value='" + value + '\'' +
-//                ", state='" + state + '\'' +
-//                ", prefered=" + prefered +
-//                ", identifierType=" + identifierType +
-//                ", service=" + service +
-//                ", clinic=" + clinic +
-//                '}';
-//    }
-
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-        }
-        if (clinic && clinic.parentClinic) {
-            clinic = clinic.parentClinic
         }
     }
 

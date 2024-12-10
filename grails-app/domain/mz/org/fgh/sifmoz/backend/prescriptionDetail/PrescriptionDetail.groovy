@@ -20,6 +20,7 @@ class PrescriptionDetail extends BaseEntity {
     SpetialPrescriptionMotive spetialPrescriptionMotive
     Date creationDate = new Date()
     Clinic clinic
+    String origin
     static belongsTo = [Prescription]
 
     static mapping = {
@@ -35,13 +36,13 @@ class PrescriptionDetail extends BaseEntity {
         therapeuticLine nullable: true
         spetialPrescriptionMotive nullable: true
         creationDate nullable: true
+        origin nullable: true
         clinic blank: true, nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-            clinic = Clinic.findWhere(mainClinic: true)
         }
     }
 

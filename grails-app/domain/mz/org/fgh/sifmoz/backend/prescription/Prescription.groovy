@@ -41,12 +41,13 @@ class Prescription extends BaseEntity{
     String photoName
     String photoContentType
     Date creationDate = new Date()
+    String origin
+
     static hasMany = [prescribedDrugs: PrescribedDrug, prescriptionDetails: PrescriptionDetail]
 
     static mapping = {
        id generator: "assigned"
        id column: 'id', index: 'Pk_prescription_Idx'
-        datasource 'ALL'
     }
     static constraints = {
         prescriptionDate(nullable: false, blank: false,  validator: { prescriptionDate, urc ->
@@ -61,14 +62,12 @@ class Prescription extends BaseEntity{
         photoContentType nullable: true, blank: true
         patientStatus nullable: true, blank: true
         creationDate nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
-        }
-        if (clinic && clinic.parentClinic) {
-            clinic = clinic.parentClinic
         }
     }
 

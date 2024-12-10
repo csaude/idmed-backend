@@ -7,6 +7,7 @@ import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
+import mz.org.fgh.sifmoz.backend.stockDistributor.StockDistributor
 import mz.org.fgh.sifmoz.backend.stockentrance.StockEntrance
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
 import org.apache.commons.lang3.time.DateUtils
@@ -43,13 +44,16 @@ abstract class StockService implements IStockService {
         return list
     }
 
-    boolean validateStock(String drugId, Date dateToCompare, int qtyPrescribed, String clinicId) {
+    boolean validateStock(String drugId, Date dateToCompare, int qtyPrescribed, String clinicId, int weeks) {
         Drug drug = Drug.findById(drugId)
         Clinic clinic = Clinic.findById(clinicId)
+        int lostDays = (int) ((weeks / 4) * 2)
+        int daysToAdd = (weeks * 7 ) + lostDays
+
         List<Stock> list = Stock.executeQuery("select  s from Stock  s " +
                 " where s.expireDate > :prescriptionDate  AND " +
                 " s.stockMoviment > 0  AND s.drug = :drug AND s.clinic =:clinic ",
-                [drug: drug, prescriptionDate:  Utilities.addDaysInDate(dateToCompare, drug.packSize),clinic: clinic])
+                [drug: drug, prescriptionDate:  Utilities.addDaysInDate(dateToCompare, daysToAdd),clinic: clinic])
 
         if (list.size() > 0) {
             int qtyInStock = 0
@@ -75,6 +79,20 @@ abstract class StockService implements IStockService {
                 [drug: drug, prescriptionDate: dateToCompare]);
 
         return list;
+    }
+
+
+    List<Stock> getStocksByStockDistributor(String clinicId, int offset, int max) {
+        Clinic clinic = Clinic.findById(clinicId)
+        List<Stock> list = Stock.executeQuery("select distinct sd from StockDistributor  s " +
+                " inner join s.drugDistributors  sdb " +
+                " inner join sdb.stockDistributorBatchs  dd " +
+                " inner join dd.stock  sd" +
+                " where sdb.clinic =:clinic ",
+               [clinic: clinic,max: max, offset: offset]
+                );
+        return list;
+
     }
 
 

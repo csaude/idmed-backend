@@ -41,9 +41,10 @@ class Patient extends BaseEntity implements Auditable{
     char hisSyncStatus
     String hisProvider
     Long matchId
-
     Clinic clinic
     Date creationDate = new Date()
+    String origin
+
     static belongsTo = [Clinic]
 
     static auditable = true
@@ -59,7 +60,6 @@ class Patient extends BaseEntity implements Auditable{
         id generator: "assigned"
         id column: 'id', index: 'Pk_Patient_Idx'
         identifiers cascade: 'none'
-        datasource 'ALL'
     }
 
     static constraints = {
@@ -82,6 +82,7 @@ class Patient extends BaseEntity implements Auditable{
         creationDate nullable: true
         hisSyncStatus nullable: true
         hisProvider nullable: true
+        origin nullable: true
         matchId nullable: false, unique: true
     }
 
@@ -89,21 +90,6 @@ class Patient extends BaseEntity implements Auditable{
         if (!id) {
             id = UUID.randomUUID()
         }
-        if (clinic && clinic.parentClinic) {
-            clinic = clinic.parentClinic
-        }
-//        if (!clinic) {
-//            clinic = Clinic.findByMainClinic(true)
-//        }
-//        if (matchId == null) {
-//            def  patient =  findAll( [sort: ['matchId': 'desc']])
-//            if (patient.size() == 0) {
-//                matchId = 1
-//            } else {
-//                matchId = patient.get(0).matchId + 1
-//            }
-//
-//        }
     }
     @Override
     List<Menu> hasMenus() {

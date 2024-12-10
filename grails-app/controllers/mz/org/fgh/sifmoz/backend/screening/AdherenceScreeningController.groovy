@@ -3,6 +3,9 @@ package mz.org.fgh.sifmoz.backend.screening
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
+import mz.org.fgh.sifmoz.backend.packaging.Pack
+import mz.org.fgh.sifmoz.backend.prescriptionDrug.PrescribedDrug
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
 import static org.springframework.http.HttpStatus.CREATED
@@ -53,6 +56,7 @@ class AdherenceScreeningController extends RestfulController{
         }
 
         try {
+            configAdherenceScreeningOrigin(adherenceScreening)
             adherenceScreeningService.save(adherenceScreening)
         } catch (ValidationException e) {
             respond adherenceScreening.errors
@@ -75,6 +79,7 @@ class AdherenceScreeningController extends RestfulController{
         }
 
         try {
+            configAdherenceScreeningOrigin(adherenceScreening)
             adherenceScreeningService.save(adherenceScreening)
         } catch (ValidationException e) {
             respond adherenceScreening.errors
@@ -92,5 +97,18 @@ class AdherenceScreeningController extends RestfulController{
         }
 
         render status: NO_CONTENT
+    }
+
+    private static AdherenceScreening configAdherenceScreeningOrigin(AdherenceScreening adherenceScreening){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(adherenceScreening)){
+            adherenceScreening.origin = systemConfigs.description
+        }
+
+        return adherenceScreening
+    }
+
+    private static boolean checkHasNotOrigin(AdherenceScreening adherenceScreening){
+        return adherenceScreening.origin == null || adherenceScreening?.origin?.isEmpty()
     }
 }

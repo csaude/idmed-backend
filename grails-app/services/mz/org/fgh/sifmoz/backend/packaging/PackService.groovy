@@ -7,8 +7,11 @@ import groovy.sql.Sql
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.dispenseType.DispenseType
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
+import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.linhasUsadas.LinhasUsadasReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaRegimenSubReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaReport
+import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.segundasLinhas.SegundasLinhasReport
+import mz.org.fgh.sifmoz.backend.reports.stock.BalanceteReport
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.therapeuticLine.TherapeuticLine
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
@@ -19,6 +22,7 @@ import com.google.gson.Gson
 
 import javax.sql.DataSource
 import java.sql.Timestamp
+import java.text.ParseException
 import java.text.SimpleDateFormat
 
 @Transactional
@@ -1107,22 +1111,26 @@ abstract class PackService implements IPackService {
 
         String query = ""
 
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query =
                     """
                     select 
                         tr.code,
-                         tr.regimen_scheme,
-                         count(CASE WHEN ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentes,
-                         count(CASE WHEN ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentesReferidos,
-                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhs1,
-                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linha2,
-                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linha3,
-                         count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhaAlt,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhsdc1,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linhadc2,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linhadc3,
-                         count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhadcAlt
+                        tr.regimen_scheme,
+                        count(CASE WHEN ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentes,
+                        count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhs1,
+                        count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linha2,
+                        count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linha3,
+                        count(CASE WHEN (ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhaAlt,
+                        count(CASE WHEN ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentesReferidos,
+                        count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1' THEN 1 END) AS linhsdc1,
+                        count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '2' THEN 1 END) AS linhadc2,
+                        count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '3' THEN 1 END) AS linhadc3,
+                        count(CASE WHEN (ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND tl.code = '1_ALT' THEN 1 END) AS linhadcAlt,                    
+                        count(CASE WHEN ((ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND package.isreferral = true) THEN 1 END) AS totalReferidos,
+                        count(CASE WHEN ((ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND package.isreferral = true) AND tl.code = '1' THEN 1 END) AS totalrefline1,
+                        count(CASE WHEN ((ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND package.isreferral = true) AND tl.code = '2' THEN 1 END) AS totalrefline2,
+                        count(CASE WHEN ((ssr.code = 'REFERIDO_PARA' OR ssr.code = 'VOLTOU_A_SER_REFERIDO_PARA') AND package.isreferral = true) AND tl.code = '3' THEN 1 END) AS totalrefline3
                      FROM
                      (
                      select distinct pat.id,
@@ -1148,9 +1156,11 @@ abstract class PackService implements IPackService {
                                      'OUTRO',
                                      'VOLTOU_REFERENCIA', 
                                      'REFERIDO_DC',
+                                     'TRANSITO',
+                                     'INICIO_MATERNIDADE'
                                      'REFERIDO_PARA',
                                      'VOLTOU_A_SER_REFERIDO_PARA')
-                     AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE')
+                     AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                      group by 1,4,5
                      order by 1
                      ) patientstatistics
@@ -1165,23 +1175,13 @@ abstract class PackService implements IPackService {
                      inner join dispense_type dt on dt.id = pd.dispense_type_id
                      inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id
                      inner join clinical_service cs ON cs.id = tr.clinical_service_id
-                     WHERE (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE')
-                     AND ssr.code in ('NOVO_PACIENTE',
-                                     'INICIO_CCR',
-                                     'TRANSFERIDO_DE',
-                                     'REINICIO_TRATAMETO',
-                                     'MANUNTENCAO',
-                                     'OUTRO',
-                                     'VOLTOU_REFERENCIA', 
-                                     'REFERIDO_DC',
-                                     'REFERIDO_PARA',
-                                     'VOLTOU_A_SER_REFERIDO_PARA')
+                     where (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                      GROUP BY 1,2
                     """
         } else {
             query =
                     """
-                    select
+                     select
                      tr.code,
                      tr.regimen_scheme,
                      count(CASE WHEN ssr.code <> 'REFERIDO_PARA' AND ssr.code <> 'VOLTOU_A_SER_REFERIDO_PARA' THEN 1 END) AS totadoentes,
@@ -1210,9 +1210,7 @@ abstract class PackService implements IPackService {
                      inner join start_stop_reason ssr on ssr.id = ep.start_stop_reason_id
                      inner join clinical_service cs ON cs.id = psi.service_id
                      where ((Date(pk.pickup_date) BETWEEN :startDate AND :endDate) OR
-                     pg_catalog.date(pk.pickup_date) < :startDate and pg_catalog.date(pk.next_pick_up_date) > :endDate AND
-                     DATE(pk.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) >= :startDate
-                     AND DATE(pk.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) <= :endDate)
+                     pg_catalog.date(pk.pickup_date) < :startDate and pg_catalog.date(pk.next_pick_up_date) > :endDate 
                      AND ssr.code in ('NOVO_PACIENTE',
                                      'INICIO_CCR',
                                      'TRANSFERIDO_DE',
@@ -1224,7 +1222,7 @@ abstract class PackService implements IPackService {
                                      'REFERIDO_PARA',
                                      'VOLTOU_A_SER_REFERIDO_PARA')
                      AND cs.code = :clinicalService
-                     group by 1,4,5,6
+                     group by 1,4,5
                      order by 1
                     ) patientstatistics
                      inner join pack package on package.id = patientstatistics.packid
@@ -1263,26 +1261,599 @@ abstract class PackService implements IPackService {
         }
     }
 
+    def addLinhaUsadaInList(Object item, List<LinhasUsadasReport> linhasUsadasReports) {
+        LinhasUsadasReport linhasUsadasReport = new LinhasUsadasReport()
+        linhasUsadasReport.setCodigoRegime(String.valueOf(item[0]))
+        linhasUsadasReport.setRegimeTerapeutico(String.valueOf(item[1]))
+        linhasUsadasReport.setLinhaTerapeutica(String.valueOf(item[2]))
+        linhasUsadasReport.setEstado(String.valueOf(item[3]))
+        linhasUsadasReport.setTotalPrescricoes(Integer.valueOf(String.valueOf(item[4])))
+        linhasUsadasReports.add(linhasUsadasReport)
+    }
+
+    def addSegundasLinhasInList(Object item, List<SegundasLinhasReport> segundasLinhasReports) {
+        SegundasLinhasReport segundasLinhasReport = new SegundasLinhasReport()
+        segundasLinhasReport.setCodigoRegime(String.valueOf(item[0]))
+        segundasLinhasReport.setRegimeTerapeutico(String.valueOf(item[1]))
+        segundasLinhasReport.setLinhaTerapeutica(String.valueOf(item[2]))
+        segundasLinhasReport.setEstado(String.valueOf(item[3]))
+        segundasLinhasReport.setTotalPrescricoes(Integer.valueOf(String.valueOf(item[4])))
+        segundasLinhasReports.add(segundasLinhasReport)
+    }
+
+    def addBalanceteInList(Object item, List<BalanceteReport> balanceteReports) {
+        BalanceteReport balanceteReport = new BalanceteReport()
+        balanceteReport.setFnm(String.valueOf(item[0]))
+        balanceteReport.setMedicamento(String.valueOf(item[1]))
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd")
+            Date eventDate = inputFormat.parse(String.valueOf(item[2]))
+            balanceteReport.setDiaDoEvento(eventDate)
+
+            balanceteReport.setEntradas((int) Math.round(Double.valueOf(String.valueOf(item[3]))))
+            balanceteReport.setSaidas((int) Math.round(Double.valueOf(String.valueOf(item[4]))))
+            int perdasEAjustes =
+                    (int) Math.round(Double.valueOf(String.valueOf(item[7]))) - (int) Math.round(Double.valueOf(String.valueOf(item[5])))
+                    (int) Math.round(Double.valueOf(String.valueOf(item[8])))
+
+            balanceteReport.setPerdasEAjustes(perdasEAjustes)
+            balanceteReport.setStockExistente((int) Math.round(Double.valueOf(String.valueOf(item[6]))))
+            balanceteReport.setUnidade(String.valueOf(item[9]))
+
+            Date expireDate = inputFormat.parse(String.valueOf(item[10]))
+            balanceteReport.setValidadeMedicamento(expireDate)
+
+            balanceteReport.setNotas(String.valueOf(item[11]))
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        balanceteReports.add(balanceteReport)
+    }
+
+    @Override
+    List<LinhasUsadasReport> getLinhasUsadas(ClinicalService service, Clinic clinic, Date startDate, Date endDate) {
+
+        def starter = new java.sql.Date(startDate.time)
+        def finalDate = new java.sql.Date(endDate.time)
+        def params = [startDate: starter, endDate: finalDate, clinic: clinic.id, clinicalService: service.code]
+        def sql = new Sql(dataSource as DataSource)
+        List<LinhasUsadasReport> linhasUsadasReports = new ArrayList<>()
+
+        String query = ""
+
+        if (service.isTARV()) {
+            query =
+                    """
+                    WITH unique_prescriptions AS (
+                        SELECT DISTINCT
+                            pd.id AS prescription_detail_id,
+                            pd.therapeutic_regimen_id,
+                            pd.therapeutic_line_id,
+                            p.prescription_date
+                        FROM
+                            prescription_detail pd
+                        INNER JOIN
+                            prescription p ON pd.prescription_id = p.id
+                        INNER JOIN
+                            patient_visit_details pvd ON pvd.prescription_id = p.id
+                        WHERE
+                            p.prescription_date BETWEEN :startDate AND :endDate
+                    )
+                    SELECT
+                        tr.code AS regime_code,
+                        tr.description AS regime_description,
+                        tl.description AS line_description,
+                        tr.active AS regime_status,
+                        COUNT(up.prescription_detail_id) AS total_prescriptions
+                    FROM
+                        unique_prescriptions up
+                    INNER JOIN
+                        therapeutic_regimen tr ON up.therapeutic_regimen_id = tr.id
+                    INNER JOIN
+                        therapeutic_line tl ON up.therapeutic_line_id = tl.id
+                    INNER JOIN 
+                        clinical_service cs ON cs.id = tr.clinical_service_id
+                    WHERE
+                        cs.code = 'TARV'
+                    GROUP BY
+                        tr.code, tr.description, tl.description, tr.active
+                    ORDER BY
+                        tr.code, tl.description;
+                    """
+        } else {
+            // Futuramente
+        }
+
+        def list = sql.rows(query, params)
+
+        if (Utilities.listHasElements(list as ArrayList<?>)) {
+            for (int i = 0; i < list.size(); i++) {
+                addLinhaUsadaInList(list[i], linhasUsadasReports)
+            }
+            return linhasUsadasReports
+        }
+    }
+
+    @Override
+    List<SegundasLinhasReport> getSegundasLinhas(ClinicalService service, Clinic clinic, Date startDate, Date endDate) {
+
+        def starter = new java.sql.Date(startDate.time)
+        def finalDate = new java.sql.Date(endDate.time)
+        def params = [startDate: starter, endDate: finalDate, clinic: clinic.id, clinicalService: service.code]
+        def sql = new Sql(dataSource as DataSource)
+        List<SegundasLinhasReport> segundasLinhasReports = new ArrayList<>()
+
+        String query = ""
+
+        if (service.isTARV()) {
+            query =
+                    """
+                     WITH unique_prescriptions AS (
+                        SELECT DISTINCT
+                            pd.id AS prescription_detail_id,
+                            pd.therapeutic_regimen_id,
+                            pd.therapeutic_line_id,
+                            p.prescription_date
+                        FROM
+                            prescription_detail pd
+                        INNER JOIN
+                            prescription p ON pd.prescription_id = p.id
+                        INNER JOIN
+                            patient_visit_details pvd ON pvd.prescription_id = p.id
+                        INNER JOIN 
+                            clinic clinic ON pvd.clinic_id = :clinic
+                        WHERE
+                            p.prescription_date BETWEEN :startDate AND :endDate  
+                    )
+                    SELECT
+                        tr.code AS regime_code,
+                        tr.description AS regime_description,
+                        tl.description AS line_description,
+                        tr.active AS regime_status,
+                        COUNT(up.prescription_detail_id) AS total_prescriptions
+                    FROM
+                        unique_prescriptions up
+                    INNER JOIN
+                        therapeutic_regimen tr ON up.therapeutic_regimen_id = tr.id
+                    INNER JOIN
+                        therapeutic_line tl ON up.therapeutic_line_id = tl.id
+                    INNER JOIN 
+                        clinical_service cs ON cs.id = tr.clinical_service_id
+                    WHERE
+                        cs.code = 'TARV' and tl.code = '2'
+                    GROUP BY
+                        tr.code, tr.description, tl.description, tr.active
+                    ORDER BY
+                        tr.code, tl.description;
+                    """
+        } else {
+            // Futuramente
+        }
+
+        def list = sql.rows(query, params)
+
+        if (Utilities.listHasElements(list as ArrayList<?>)) {
+            for (int i = 0; i < list.size(); i++) {
+                addSegundasLinhasInList(list[i], segundasLinhasReports)
+            }
+            return segundasLinhasReports
+        }
+    }
+
+    @Override
+    List<BalanceteReport> getBalanceteReport(ClinicalService service, Clinic clinic, Date startDate, Date endDate){
+
+        def starter = new java.sql.Date(startDate.time)
+        def finalDate = new java.sql.Date(endDate.time)
+        def params = [startDate: starter, endDate: finalDate, clinic: clinic.id, clinicalService: service.code]
+        def sql = new Sql(dataSource as DataSource)
+        List<BalanceteReport> balanceteReports = new ArrayList<>()
+
+        String query = ""
+
+        if (service.isTARV()) {
+            query =
+                    """
+                     WITH 
+                        entrada AS (
+                            SELECT 
+                                s.drug_id,
+                                d.fnm_code,
+                                d.name,
+                                d.pack_size,
+                                date(se.date_received) AS event_date,
+                                SUM(CEIL(s.units_received::double precision)) AS incomes,
+                                0 AS outcomes,
+                                0 AS positiveadjustment,
+                                0 AS negativeadjustment,
+                                0 AS losses,
+                                0 AS stock,
+                                s.expire_date,
+                                COALESCE(se.notes, '') AS notes
+                            FROM 
+                                stock_entrance se
+                            JOIN 
+                                stock s ON se.id::text = s.entrance_id::text
+                            JOIN 
+                                drug d ON s.drug_id = d.id
+                            WHERE
+                                date(se.date_received) >= :startDate AND date(se.date_received) <= :endDate
+                            GROUP BY 
+                                date(se.date_received), s.drug_id, d.fnm_code, d.name, d.pack_size, s.expire_date, s.id, se.notes
+                            ORDER BY 
+                                date(se.date_received) DESC
+                        ),
+                        saida AS (
+                            SELECT 
+                                pd.drug_id,
+                                d.fnm_code,
+                                d.name,
+                                d.pack_size,
+                                date(p.pickup_date) AS event_date,
+                                0 AS incomes,
+                                SUM(CEIL(pd.quantity_supplied)) AS outcomes,
+                                0 AS positiveadjustment,
+                                0 AS negativeadjustment,
+                                0 AS losses,
+                                0 AS stock,
+                                s.expire_date,
+                                '' AS notes
+                            FROM 
+                                packaged_drug pd
+                            JOIN 
+                                packaged_drug_stock pds ON pd.id::text = pds.packaged_drug_id::text
+                            JOIN 
+                                stock s ON s.id::text = pds.stock_id::text
+                            JOIN 
+                                drug d ON s.drug_id = d.id
+                            JOIN 
+                                pack p ON p.id::text = pd.pack_id::text
+                            WHERE
+                                date(p.pickup_date) >= :startDate AND date(p.pickup_date) <= :endDate
+                            GROUP BY 
+                                date(p.pickup_date), pd.drug_id, d.fnm_code, d.name, d.pack_size, s.expire_date, s.id
+                            ORDER BY 
+                                date(p.pickup_date) DESC
+                        ),
+                        ajuste_positivo AS (
+                            SELECT 
+                                s.drug_id,
+                                d.fnm_code,
+                                d.name,
+                                d.pack_size,
+                                date(rsm.date) AS event_date,
+                                0 AS incomes,
+                                0 AS outcomes,
+                                SUM(sa.adjusted_value) AS positiveadjustment,
+                                0 AS negativeadjustment,
+                                0 AS losses,
+                                0 AS stock,
+                                s.expire_date,
+                                COALESCE(sa.notes, '') AS notes
+                            FROM 
+                                stock_adjustment sa
+                            JOIN 
+                                refered_stock_moviment rsm ON sa.reference_id::text = rsm.id::text
+                            JOIN 
+                                stock s ON sa.adjusted_stock_id::text = s.id::text
+                            JOIN 
+                                drug d ON s.drug_id = d.id
+                            JOIN 
+                                stock_operation_type sot ON sa.operation_id::text = sot.id::text
+                            WHERE 
+                                sot.code = 'AJUSTE_POSETIVO' AND date(rsm.date) >= :startDate AND date(rsm.date) <= :endDate
+                            GROUP BY 
+                                date(rsm.date), s.drug_id, d.fnm_code, d.name, d.pack_size, s.expire_date, s.id, sa.notes
+                            ORDER BY 
+                                date(rsm.date) DESC
+                        ),
+                        ajuste_negativo AS (
+                            SELECT 
+                                s.drug_id,
+                                d.fnm_code,
+                                d.name,
+                                d.pack_size,
+                                date(rsm.date) AS event_date,
+                                0 AS incomes,
+                                0 AS outcomes,
+                                0 AS positiveadjustment,
+                                SUM(CEIL(sa.adjusted_value::double precision)) AS negativeadjustment,
+                                0 AS losses,
+                                0 AS stock,
+                                s.expire_date,
+                                COALESCE(sa.notes, '') AS notes
+                            FROM 
+                                stock_adjustment sa
+                            JOIN 
+                                refered_stock_moviment rsm ON sa.reference_id::text = rsm.id::text
+                            JOIN 
+                                stock s ON sa.adjusted_stock_id::text = s.id::text
+                            JOIN 
+                                drug d ON s.drug_id = d.id
+                            JOIN 
+                                stock_operation_type sot ON sa.operation_id::text = sot.id::text
+                            WHERE 
+                                sot.code = 'AJUSTE_NEGATIVO' AND date(rsm.date) >= :startDate AND date(rsm.date) <= :endDate
+                            GROUP BY 
+                                date(rsm.date), s.drug_id, d.fnm_code, d.name, d.pack_size, s.expire_date, s.id, sa.notes
+                            ORDER BY 
+                                date(rsm.date) DESC
+                        ),
+                        perda AS (
+                            SELECT 
+                                s.drug_id,
+                                d.fnm_code,
+                                d.name,
+                                d.pack_size,
+                                date(ds.date) AS event_date,
+                                0 AS incomes,
+                                0 AS outcomes,
+                                0 AS positiveadjustment,
+                                0 AS negativeadjustment,
+                                SUM(CEIL(sa.adjusted_value::double precision)) AS losses,
+                                0 AS stock,
+                                s.expire_date,
+                                COALESCE(sa.notes, '') AS notes
+                            FROM 
+                                stock_adjustment sa
+                            JOIN 
+                                destroyed_stock ds ON sa.destruction_id::text = ds.id::text
+                            JOIN 
+                                stock s ON sa.adjusted_stock_id::text = s.id::text
+                            JOIN 
+                                drug d ON s.drug_id = d.id
+                            WHERE
+                                date(ds.date) >= :startDate AND date(ds.date) <= :endDate
+                            GROUP BY 
+                                date(ds.date), s.drug_id, d.fnm_code, d.name, d.pack_size, s.expire_date, s.id, sa.notes
+                            ORDER BY 
+                                date(ds.date) DESC
+                        ),
+                        inventario AS (
+                            SELECT 
+                                s.drug_id,
+                                d.fnm_code,
+                                d.name,
+                                d.pack_size,
+                                date(i.end_date) AS event_date,
+                                0 AS incomes,
+                                0 AS outcomes,
+                                SUM(
+                                    CASE
+                                        WHEN sot.code = 'AJUSTE_POSETIVO' THEN sa.adjusted_value
+                                        ELSE 0
+                                    END
+                                ) AS positiveadjustment,
+                                SUM(
+                                    CASE
+                                        WHEN sot.code = 'AJUSTE_NEGATIVO' THEN sa.adjusted_value
+                                        ELSE 0
+                                    END
+                                ) AS negativeadjustment,
+                                0 AS losses,
+                                0 AS stock,
+                                s.expire_date,
+                                COALESCE(sa.notes, '') AS notes
+                            FROM 
+                                stock_adjustment sa
+                            JOIN 
+                                inventory i ON sa.inventory_id::text = i.id::text
+                            JOIN 
+                                stock s ON sa.adjusted_stock_id::text = s.id::text
+                            JOIN 
+                                drug d ON s.drug_id = d.id
+                            JOIN 
+                                stock_operation_type sot ON sa.operation_id::text = sot.id::text
+                            WHERE 
+                                i.end_date IS NOT NULL AND date(i.end_date) >= :startDate AND date(i.end_date) <= :endDate
+                            GROUP BY 
+                                date(i.end_date), s.drug_id, d.fnm_code, d.name, d.pack_size, s.expire_date, s.id, sa.notes
+                            ORDER BY 
+                                date(i.end_date) DESC
+                        ),
+                        stock_acumulado AS (
+                            SELECT
+                                s.drug_id,
+                                SUM(CASE WHEN se.date_received < :startDate THEN CEIL(s.units_received::double precision) ELSE 0 END) AS total_entrada_ate_start,
+                                SUM(CASE WHEN rsm.date < :startDate AND sot.code = 'AJUSTE_POSETIVO' THEN sa.adjusted_value ELSE 0 END) AS total_ajuste_positivo_ate_start,
+                                SUM(CASE WHEN p.pickup_date < :startDate THEN CEIL(pd.quantity_supplied) ELSE 0 END) AS total_saida_ate_start,
+                                SUM(CASE WHEN rsm.date < :startDate AND sot.code = 'AJUSTE_NEGATIVO' THEN sa.adjusted_value ELSE 0 END) AS total_ajuste_negativo_ate_start
+                            FROM
+                                stock s
+                            LEFT JOIN stock_entrance se ON se.id::text = s.entrance_id::text
+                            LEFT JOIN packaged_drug_stock pds ON s.id::text = pds.stock_id::text
+                            LEFT JOIN packaged_drug pd ON pd.id::text = pds.packaged_drug_id::text
+                            LEFT JOIN pack p ON p.id::text = pd.pack_id::text
+                            LEFT JOIN stock_adjustment sa ON sa.adjusted_stock_id::text = s.id::text
+                            LEFT JOIN refered_stock_moviment rsm ON sa.reference_id::text = rsm.id::text
+                            LEFT JOIN stock_operation_type sot ON sa.operation_id::text = sot.id::text
+                            WHERE
+                                se.date_received < :startDate OR rsm.date < :startDate OR p.pickup_date < :startDate
+                            GROUP BY
+                                s.drug_id
+                        )
+                        SELECT DISTINCT ON (event_date, fnm_code, name, incomes, outcomes, losses, stock, positiveadjustment, negativeadjustment)
+                            fnm_code,
+                            name,
+                            event_date,
+                            incomes,
+                            outcomes,
+                            losses,
+                            stock_acumulado.total_entrada_ate_start + stock_acumulado.total_ajuste_positivo_ate_start
+                            - stock_acumulado.total_saida_ate_start - stock_acumulado.total_ajuste_negativo_ate_start  AS stock,
+                        --    + (incomes + positiveadjustment - outcomes - negativeadjustment - losses) AS stock,
+                            positiveadjustment,
+                            negativeadjustment,
+                            pack_size,
+                            expire_date,
+                            STRING_AGG(notes, ' ') AS notes
+                        FROM (
+                            SELECT 
+                                drug_id,
+                                fnm_code,
+                                name,
+                                event_date,
+                                incomes,
+                                outcomes,
+                                losses,
+                                stock,
+                                positiveadjustment,
+                                negativeadjustment,
+                                pack_size,
+                                expire_date,
+                                notes
+                            FROM 
+                                entrada
+                            UNION ALL
+                            SELECT 
+                                drug_id,
+                                fnm_code,
+                                name,
+                                event_date,
+                                incomes,
+                                outcomes,
+                                losses,
+                                stock,
+                                positiveadjustment,
+                                negativeadjustment,
+                                pack_size,
+                                expire_date,
+                                notes
+                            FROM 
+                                saida
+                            UNION ALL
+                            SELECT 
+                                drug_id,
+                                fnm_code,
+                                name,
+                                event_date,
+                                incomes,
+                                outcomes,
+                                losses,
+                                stock,
+                                positiveadjustment,
+                                negativeadjustment,
+                                pack_size,
+                                expire_date,
+                                notes
+                            FROM 
+                                ajuste_positivo
+                            UNION ALL
+                            SELECT 
+                                drug_id,
+                                fnm_code,
+                                name,
+                                event_date,
+                                incomes,
+                                outcomes,
+                                losses,
+                                stock,
+                                positiveadjustment,
+                                negativeadjustment,
+                                pack_size,
+                                expire_date,
+                                notes
+                            FROM 
+                                ajuste_negativo
+                            UNION ALL
+                            SELECT 
+                                drug_id,
+                                fnm_code,
+                                name,
+                                event_date,
+                                incomes,
+                                outcomes,
+                                losses,
+                                stock,
+                                positiveadjustment,
+                                negativeadjustment,
+                                pack_size,
+                                expire_date,
+                                notes
+                            FROM 
+                                perda
+                            UNION ALL
+                            SELECT 
+                                drug_id,
+                                fnm_code,
+                                name,
+                                event_date,
+                                incomes,
+                                outcomes,
+                                losses,
+                                stock,
+                                positiveadjustment,
+                                negativeadjustment,
+                                pack_size,
+                                expire_date,
+                                notes
+                            FROM 
+                                inventario
+                        ) AS combined
+                        JOIN stock_acumulado ON combined.drug_id = stock_acumulado.drug_id
+                        WHERE 
+                            event_date >= :startDate AND event_date <= :endDate
+                        GROUP BY
+                            fnm_code,
+                            name,
+                            event_date,
+                            incomes,
+                            outcomes,
+                            losses,
+                            positiveadjustment,
+                            negativeadjustment,
+                            pack_size,
+                            expire_date,
+                            stock_acumulado.total_entrada_ate_start,
+                            stock_acumulado.total_ajuste_positivo_ate_start,
+                            stock_acumulado.total_saida_ate_start,
+                            stock_acumulado.total_ajuste_negativo_ate_start
+                        ORDER BY 
+                            event_date;
+                    """
+        } else {
+            // Futuramente
+        }
+
+        def list = sql.rows(query, params)
+
+        if (Utilities.listHasElements(list as ArrayList<?>)) {
+            for (int i = 0; i < list.size(); i++) {
+                addBalanceteInList(list[i], balanceteReports)
+            }
+            return balanceteReports
+        }
+    }
+
+
     def addMmiaRegimenStatisticInList(Object item, List<MmiaRegimenSubReport> mmiaRegimenSubReports) {
         MmiaRegimenSubReport mmiaRegimenSubReport = new MmiaRegimenSubReport()
         mmiaRegimenSubReport.code = String.valueOf(item[0])
         mmiaRegimenSubReport.regimen = String.valueOf(item[1])
+
         mmiaRegimenSubReport.totalPatients = Integer.valueOf(String.valueOf(item[2]))
-        mmiaRegimenSubReport.cumunitaryClinic = Integer.valueOf(String.valueOf(item[3]))
+        mmiaRegimenSubReport.totalline1 = Integer.valueOf(String.valueOf(item[3]))
+        mmiaRegimenSubReport.totalline2 = Integer.valueOf(String.valueOf(item[4]))
+        mmiaRegimenSubReport.totalline3 = Integer.valueOf(String.valueOf(item[5]))
+        mmiaRegimenSubReport.totalline4 = Integer.valueOf(String.valueOf(item[6]))
+
+        mmiaRegimenSubReport.cumunitaryClinic = Integer.valueOf(String.valueOf(item[7]))
+        mmiaRegimenSubReport.totaldcline1 = Integer.valueOf(String.valueOf(item[8]))
+        mmiaRegimenSubReport.totaldcline2 = Integer.valueOf(String.valueOf(item[9]))
+        mmiaRegimenSubReport.totaldcline3 = Integer.valueOf(String.valueOf(item[10]))
+        mmiaRegimenSubReport.totaldcline4 = Integer.valueOf(String.valueOf(item[11]))
+
         mmiaRegimenSubReport.line1 = TherapeuticLine.findByCode("1").code
-        mmiaRegimenSubReport.totalline1 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[4]))
-        mmiaRegimenSubReport.totaldcline1 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[8]))
         mmiaRegimenSubReport.line2 = TherapeuticLine.findByCode("2").code
-        mmiaRegimenSubReport.totalline2 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[5]))
-        mmiaRegimenSubReport.totaldcline2 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[9]))
         mmiaRegimenSubReport.line3 = TherapeuticLine.findByCode("3").code
-        mmiaRegimenSubReport.totalline3 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[6]))
-        mmiaRegimenSubReport.totaldcline3 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[10]))
         mmiaRegimenSubReport.line4 = TherapeuticLine.findByCode("1_ALT").code
-        mmiaRegimenSubReport.totalline4 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[7]))
-        mmiaRegimenSubReport.totaldcline4 = mmiaRegimenSubReport.code.contains('PREP') ? 0 : Integer.valueOf(String.valueOf(item[11]))
+
         mmiaRegimenSubReport.line = ""
         mmiaRegimenSubReport.lineCode = ""
+        mmiaRegimenSubReport.totalReferidos = Integer.valueOf(String.valueOf(item[12]))
+        mmiaRegimenSubReport.totalrefline1 = Integer.valueOf(String.valueOf(item[13]))
+        mmiaRegimenSubReport.totalrefline2 = Integer.valueOf(String.valueOf(item[14]))
+        mmiaRegimenSubReport.totalrefline3 = Integer.valueOf(String.valueOf(item[15]))
         mmiaRegimenSubReports.add(mmiaRegimenSubReport)
     }
 
@@ -1294,38 +1865,34 @@ abstract class PackService implements IPackService {
         def sql = new Sql(dataSource as DataSource)
 
         String query = ""
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query = """
                     SELECT 
                      COUNT
                      (
                      CASE 
-                     WHEN patientstatistics.service_code = :clinicalService 
-                     AND dt.code = 'DM'
+                     WHEN dt.code = 'DM'
                      THEN 1 
                      END
                      ) AS DM,
                      COUNT 
                      (
                      CASE 
-                     WHEN patientstatistics.service_code = :clinicalService 
-                     AND dt.code = 'DT'
+                     WHEN dt.code = 'DT'
                      THEN 1 
                      END
                      ) AS DT,
                      COUNT
                      (
                      CASE 
-                     WHEN patientstatistics.service_code = :clinicalService 
-                     AND dt.code = 'DS'
+                     WHEN dt.code = 'DS'
                      THEN 1  
                      END
                      ) AS DS,
                      COUNT
                      (
                      CASE 
-                     WHEN patientstatistics.service_code = :clinicalService 
-                     AND dt.code = 'DB'
+                     WHEN dt.code = 'DB'
                      THEN 1  
                      END
                      ) AS DB
@@ -1353,7 +1920,7 @@ abstract class PackService implements IPackService {
                                      'OUTRO',
                                      'VOLTOU_REFERENCIA', 
                                      'REFERIDO_DC')
-                     AND cs.code = :clinicalService
+                     AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                      group by 1,4,5
                      order by 1
                      ) patientstatistics
@@ -1368,15 +1935,8 @@ abstract class PackService implements IPackService {
                      inner join dispense_type dt on dt.id = pd.dispense_type_id
                      inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id
                      inner join clinical_service cs ON cs.id = tr.clinical_service_id
-                     WHERE (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE')
-                    AND ssr.code in ('NOVO_PACIENTE',
-                                     'INICIO_CCR',
-                                     'TRANSFERIDO_DE',
-                                     'REINICIO_TRATAMETO',
-                                     'MANUNTENCAO',
-                                     'OUTRO',
-                                     'VOLTOU_REFERENCIA', 
-                                     'REFERIDO_DC')
+                     where (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
+        
                 """
 
         } else {
@@ -1453,19 +2013,9 @@ abstract class PackService implements IPackService {
                      inner join dispense_type dt on dt.id = pd.dispense_type_id
                      inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id
                      inner join clinical_service cs ON cs.id = tr.clinical_service_id
-                     WHERE cs.code = :clinicalService
-                    AND ssr.code in ('NOVO_PACIENTE',
-                                     'INICIO_CCR',
-                                     'TRANSFERIDO_DE',
-                                     'REINICIO_TRATAMETO',
-                                     'MANUNTENCAO',
-                                     'OUTRO',
-                                     'VOLTOU_REFERENCIA', 
-                                     'REFERIDO_DC')
                 """
 
         }
-
 
         def list = sql.rows(query, params)
 
@@ -1486,46 +2036,37 @@ abstract class PackService implements IPackService {
         def sql = new Sql(dataSource as DataSource)
         String query = ''
 
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             query =
                     """
                     SELECT  
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV' 
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'
-                            AND CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) BETWEEN 0 AND 4    
+                            WHEN CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) BETWEEN 0 AND 4    
                             THEN 1  
                         END
                     ) AS zeroquatro,        
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'  
-                            AND CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) BETWEEN 5 AND 9  
+                            WHEN CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) BETWEEN 5 AND 9  
                             THEN 1  
                         END
                     ) AS cinconove,        
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'  
-                            AND CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) BETWEEN 10 AND 14  
+                            WHEN CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) BETWEEN 10 AND 14  
                             THEN 1  
                         END
                     ) AS dezcatorze,        
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV' 
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE' 
-                            AND CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) >= 15 
+                            WHEN CAST (extract(year FROM age(:endDate, patientstatistics.date_of_birth)) AS INTEGER) >= 15 
                             THEN 1  
                         END
                     ) AS quinzemais, 
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'
+                            WHEN ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'
                             AND (p.patient_type = 'N/A' OR p.patient_type IS null OR p.patient_type = 'Inicio') 
                             AND dt.code = 'DM'
                             AND ssr.code = 'NOVO_PACIENTE'
@@ -1534,10 +2075,8 @@ abstract class PackService implements IPackService {
                         END
                     ) AS novos,        
                     COUNT (
-                        CASE  
-                            WHEN patientstatistics.service_code = 'TARV' 
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'
-                            AND (
+                        CASE  WHEN (ssr.code  <>'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE') AND
+                            (
                                 (ssr.code = 'NOVO_PACIENTE' AND DATE(ep.episode_date + INTERVAL '3 days') < DATE(pack.pickup_date)) 
                                 OR (ssr.code = 'ALTERACAO' AND DATE(ep.episode_date + INTERVAL '3 days') < DATE(pack.pickup_date)) 
                                 OR (ssr.code = 'TRANSFERIDO_DE' AND DATE(ep.episode_date + INTERVAL '3 days') < Date(pack.pickup_date)) 
@@ -1555,8 +2094,7 @@ abstract class PackService implements IPackService {
                     ) AS manutencao,        
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV' 
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE' 
+                            WHEN ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE' 
                             AND ssr.code = 'ALTERACAO' 
                             AND extract(days from pack.pickup_date - ep.episode_date) <= 3  
                             THEN 1  
@@ -1564,21 +2102,17 @@ abstract class PackService implements IPackService {
                     ) AS alteracao,        
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'  
-                            AND (ssr.code = 'TRANSITO' OR ssr.code = 'INICIO_MATERNIDADE')
-                            AND extract(days from pack.pickup_date - ep.episode_date) <= 3  
+                            WHEN (ssr.code = 'TRANSITO' OR ssr.code = 'INICIO_MATERNIDADE')
                             THEN 1  
                         END
                     ) AS transito, 
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'  
-                            AND ssr.code = 'TRANSFERIDO_DE'  
+                            WHEN ssr.code = 'TRANSFERIDO_DE'  
                             AND extract(days from pack.pickup_date - ep.episode_date) <= 3  
                             THEN 1  
                         END
-                    ) AS transferencia,
-                    
+                    ) AS transferencia,     
                     COUNT (
                         CASE  
                             WHEN patientstatistics.service_code = 'PREP'  
@@ -1595,41 +2129,33 @@ abstract class PackService implements IPackService {
                     
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'CE'  
+                            WHEN patientstatistics.service_code = 'CE' OR patientstatistics.service_code = 'CCR'    
                             THEN 1  
                         END
                     ) AS CE,
                     
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'  
-                            AND dt.code = 'DM'  
+                            WHEN  dt.code = 'DM'  
                             THEN 1  
                         END
                     ) AS DM,
                     
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'  
-                            AND dt.code = 'DT'  
+                            WHEN dt.code = 'DT'  
                             THEN 1  
                         END
                     ) AS DT,
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'  
-                            AND dt.code = 'DS'  
+                            WHEN dt.code = 'DS'  
                             THEN 1  
                         END
                     ) AS DS,
                     COUNT (
                         CASE  
-                            WHEN patientstatistics.service_code = 'TARV'
-                            AND ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'  
-                            AND dt.code = 'DB'  
+                            WHEN dt.code = 'DB'  
                             THEN 1  
                         END
                     ) AS DB
@@ -1671,7 +2197,7 @@ abstract class PackService implements IPackService {
                                      'REFERIDO_DC',
                                      'TRANSITO',
                                      'INICIO_MATERNIDADE')
-                        AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE') 
+                        AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR') 
                     GROUP BY 
                         1,4,5
                     ORDER BY 
@@ -1699,18 +2225,7 @@ abstract class PackService implements IPackService {
                     therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
                 INNER JOIN 
                     clinical_service cs ON cs.id = tr.clinical_service_id
-                WHERE 
-                    (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE')
-                    AND ssr.code in ('NOVO_PACIENTE',
-                                     'INICIO_CCR',
-                                     'TRANSFERIDO_DE',
-                                     'REINICIO_TRATAMETO',
-                                     'MANUNTENCAO',
-                                     'OUTRO',
-                                     'VOLTOU_REFERENCIA', 
-                                     'REFERIDO_DC',
-                                     'TRANSITO',
-                                     'INICIO_MATERNIDADE')
+                WHERE (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                     """
         } else {
             query =
@@ -1792,7 +2307,6 @@ abstract class PackService implements IPackService {
                         CASE  
                             WHEN patientstatistics.service_code = :clinicalService 
                             AND (ssr.code = 'TRANSITO'  OR ssr.code = 'INICIO_MATERNIDADE')
-                            AND extract(days from pack.pickup_date - ep.episode_date) <= 3  
                             THEN 1  
                         END
                     ) AS transito, 
@@ -1952,7 +2466,7 @@ abstract class PackService implements IPackService {
     List<Pack> getPacksByServiceOnPeriod(ClinicalService service, Clinic clinic, Date startDate, Date endDate) {
         List<Pack> packList = new ArrayList<>()
         def sqlPacks = ""
-        if (service.isTarv()) {
+        if (service.isTARV()) {
             sqlPacks =
                     """
                         select pk 
@@ -2078,6 +2592,131 @@ abstract class PackService implements IPackService {
                 """
         def list = Pack.executeQuery(sqlAbsent,
                 [serviceCode: clinicalService.code, clinicId: clinic.id, startDate: startDate, endDate: endDate, days: 3])
+
+        return list
+    }
+
+    @Override
+    List getAbandonmentByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService, Clinic clinic, Date startDate, Date endDate) {
+        def queryString =
+                """
+                WITH ResultTable AS (
+                    SELECT DISTINCT ON (p.id)
+                        pk.next_pick_up_date AS nextPickUpDate,
+                        c.id AS clinicId,
+                        p.id AS patient_id
+                    FROM patient p
+                    INNER JOIN (
+                        SELECT
+                            MAX(pack.pickup_date) pickupDate,
+                            p.id patientid
+                        FROM patient_visit_details pvdails
+                        INNER JOIN pack ON pack.id = pvdails.pack_id
+                        INNER JOIN patient_visit pv ON pvdails.patient_visit_id = pv.id
+                        INNER JOIN patient p ON pv.patient_id = p.id
+                        INNER JOIN patient_service_identifier psi ON psi.patient_id = pv.patient_id
+                        INNER JOIN clinical_service cs ON cs.id = psi.service_id
+                        WHERE cs.code = 'TARV'
+                        GROUP BY 2
+                    ) packAux ON packAux.patientid = p.id
+                    INNER JOIN patient_visit pv ON pv.patient_id = p.id
+                    INNER JOIN patient_visit_details pvd ON pvd.patient_visit_id = pv.id
+                    INNER JOIN pack pk ON pk.id = pvd.pack_id AND pk.pickup_date = packAux.pickupDate
+                    INNER JOIN clinic c ON pk.clinic_id = c.id AND c.id = :clinic_id
+                    WHERE (pk.next_pick_up_date + INTERVAL '60 DAY') <= :endDate
+                    GROUP BY p.id, pk.next_pick_up_date, clinicId
+                )
+                
+                SELECT DISTINCT ON (psi.patient_id)
+                    psi.value,
+                    pat.first_names,
+                    pat.middle_names,
+                    pat.last_names,
+                    pat.cellphone AS contact,
+                    last_packs.nextPickUpDate,
+                    last_packs.nextPickUpDate + INTERVAL '60 DAY' AS dateMissedPickUp,
+                    pat.address
+                FROM patient_service_identifier psi
+                INNER JOIN ResultTable last_packs ON last_packs.patient_id = psi.patient_id
+                INNER JOIN episode e ON psi.id = e.patient_service_identifier_id
+                INNER JOIN start_stop_reason ssr ON e.start_stop_reason_id = ssr.id 
+                    AND ssr.code IN ('NOVO_PACIENTE', 'INICIO_CCR', 'TRANSFERIDO_DE', 'ABANDONO', 'VOLTOU_REFERENCIA', 'REINICIO_TRATAMENTO', 'REFERIDO_DC', 'MANUTENCAO', 'OUTRO')
+                INNER JOIN clinical_service cs ON psi.service_id = cs.id AND cs.code = 'TARV'
+                INNER JOIN patient pat ON pat.id = last_packs.patient_id;    
+                """
+
+        Session session = sessionFactory.getCurrentSession()
+        def query = session.createSQLQuery(queryString)
+        query.setParameter("endDate", endDate)
+        query.setParameter("clinic_id", clinic.id)
+        List<Object[]> list = query.list()
+
+        return list
+    }
+
+    @Override
+    List getAbandonmentAndReturnByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService, Clinic clinic, Date startDate, Date endDate) {
+        def queryString =
+                """               
+                    WITH OrnemDeLivantamentos AS ( -- Pega todas packs de pacientes que nao estao na situacao de abandono em TARV e ordena de forna decrescente pela data de levantamento identificando as linhas 'ROW_NUMBER()'
+                        SELECT
+                            p.id AS patient_id,
+                            pk.pickup_date,
+                            pk.next_pick_up_date,
+                            ROW_NUMBER() OVER (PARTITION BY p.id ORDER BY pk.pickup_date DESC) AS row_num
+                        FROM patient p
+                        INNER JOIN patient_visit pv ON pv.patient_id = p.id
+                        INNER JOIN patient_visit_details pvd ON pvd.patient_visit_id = pv.id
+                        INNER JOIN pack pk ON pk.id = pvd.pack_id
+                        INNER JOIN patient_service_identifier psi ON psi.patient_id = p.id
+                        INNER JOIN clinical_service cs ON cs.id = psi.service_id
+                        INNER JOIN clinic c ON pk.clinic_id = c.id AND c.id = :clinic_id
+                        WHERE cs.code = 'TARV'
+                    )
+                    , SelectedPenultimoLevantamentoAbandono AS (-- Selecionar Os penultimos levantamentos que foram abandonos
+                        SELECT
+                            ol.patient_id,
+                            ol.pickup_date AS penultimaPickUpDate,
+                    ol.next_pick_up_date AS penultmaDPL,
+                            ol.next_pick_up_date + INTERVAL '60 DAY' AS dateMissedPickUp
+                        FROM OrnemDeLivantamentos ol
+                        WHERE ol.row_num = 2
+                        AND (ol.next_pick_up_date + INTERVAL '60 DAY') <= :endDate
+                    )
+                    , LastNextPickupDate AS ( -- Ultimo levantamento que e' na verdade a data de retorno dos nao voltaram a bandonar no periodo
+                        SELECT
+                            ol1.patient_id,
+                            ol1.pickup_date AS dateReturned,
+                            ol1.next_pick_up_date
+                        FROM OrnemDeLivantamentos ol1
+                        WHERE ol1.row_num = 1
+                        AND (ol1.next_pick_up_date + INTERVAL '60 DAY') >= :endDate
+                    )
+                    SELECT DISTINCT ON (psi.patient_id)
+                        psi.value,
+                        pat.first_names,
+                        pat.middle_names,
+                        pat.last_names,
+                        pat.cellphone AS contact,
+                    penultimos.penultmaDPL as next_pick_up_date,
+                        penultimos.dateMissedPickUp,
+                        ultimos.dateReturned,
+                        pat.address
+                    FROM patient_service_identifier psi
+                    INNER JOIN SelectedPenultimoLevantamentoAbandono penultimos ON penultimos.patient_id = psi.patient_id
+                    INNER JOIN LastNextPickupDate ultimos ON ultimos.patient_id = psi.patient_id
+                    INNER JOIN episode e ON psi.id = e.patient_service_identifier_id
+                    INNER JOIN start_stop_reason ssr ON e.start_stop_reason_id = ssr.id AND ssr.code IN ('NOVO_PACIENTE', 'INICIO_CCR', 'TRANSFERIDO_DE', 'ABANDONO', 'VOLTOU_REFERENCIA', 'REINICIO_TRATAMENTO', 'REFERIDO_DC', 'MANUTENCAO', 'OUTRO')
+                    INNER JOIN clinical_service cs ON psi.service_id = cs.id AND cs.code = 'TARV'
+                    INNER JOIN patient pat ON pat.id = ultimos.patient_id
+                    WHERE ultimos.dateReturned > penultimos.dateMissedPickUp  
+                """
+
+        Session session = sessionFactory.getCurrentSession()
+        def query = session.createSQLQuery(queryString)
+        query.setParameter("endDate", endDate)
+        query.setParameter("clinic_id", clinic.id)
+        List<Object[]> list = query.list()
 
         return list
     }
@@ -2313,7 +2952,6 @@ abstract class PackService implements IPackService {
                                     ELSE
                                         CASE 
                                             WHEN (r2.code = 'TRANSITO' OR r2.code = 'INICIO_MATERNIDADE')
-                                                AND (Date(r2.episode_date) <= Date(r3.pickUpDate) AND r3.pickUpDate <= (r2.episode_date + INTERVAL '90 days')) 
                                             THEN 'Trânsito'
                                             ELSE
                                                 CASE 
@@ -2563,7 +3201,7 @@ abstract class PackService implements IPackService {
     List<Pack> getPacksByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService, Clinic clinic, Date startDate, Date endDate) {
 
         def queryString = ""
-            if(clinicalService.isTarv()){
+            if(clinicalService.isTARV()){
                 queryString = """
                 select psi.value,
                 p.first_names,
@@ -2592,7 +3230,6 @@ abstract class PackService implements IPackService {
                                     ELSE
                                         CASE 
                                             WHEN (ssr.code = 'TRANSITO' OR ssr.code = 'INICIO_MATERNIDADE')
-                                                AND (Date(ep.episode_date) <= Date(pack2.pickup_date) AND pack2.pickup_date <= (ep.episode_date + INTERVAL '90 days')) 
                                             THEN 'Trânsito'
                                             ELSE
                                                 CASE 
@@ -2659,10 +3296,7 @@ abstract class PackService implements IPackService {
                  inner join clinical_service cs ON cs.id = psi.service_id
                  inner join clinic c on c.id = ep.clinic_id
                  where
-                ((Date(pk.pickup_date) BETWEEN :startDate AND :endDate) OR
-                pg_catalog.date(pk.pickup_date) < :startDate and pg_catalog.date(pk.next_pick_up_date) > :endDate AND
-                DATE(pk.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) >= :startDate
-                AND DATE(pk.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) <= :endDate)
+                (Date(pk.pickup_date) BETWEEN :startDate AND :endDate)
                 AND (cs.code = :serviceCode)
                 AND c.id = :clinicId
                 AND ssr.code in ('NOVO_PACIENTE','INICIO_CCR','TRANSFERIDO_DE','REINICIO_TRATAMETO','MANUNTENCAO','OUTRO','VOLTOU_REFERENCIA', 'REFERIDO_DC','TRANSITO','INICIO_MATERNIDADE')
@@ -2716,7 +3350,6 @@ abstract class PackService implements IPackService {
                                     ELSE
                                         CASE 
                                             WHEN (ssr.code = 'TRANSITO' OR ssr.code = 'INICIO_MATERNIDADE')
-                                                AND (Date(ep.episode_date) <= Date(pack2.pickup_date) AND pack2.pickup_date <= (ep.episode_date + INTERVAL '90 days')) 
                                             THEN 'Trânsito'
                                             ELSE
                                                 CASE 
@@ -2783,10 +3416,7 @@ abstract class PackService implements IPackService {
                  inner join clinical_service cs ON cs.id = psi.service_id
                  inner join clinic c on c.id = ep.clinic_id
                  where
-                ((Date(pk.pickup_date) BETWEEN :startDate AND :endDate) OR
-                pg_catalog.date(pk.pickup_date) < :startDate and pg_catalog.date(pk.next_pick_up_date) > :endDate AND
-                DATE(pk.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) >= :startDate
-                AND DATE(pk.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) <= :endDate)
+                (Date(pk.pickup_date) BETWEEN :startDate AND :endDate)
                 AND cs.code = :serviceCode
                 AND c.id = :clinicId
                 AND ssr.code in ('NOVO_PACIENTE','INICIO_CCR','TRANSFERIDO_DE','REINICIO_TRATAMETO','MANUNTENCAO','OUTRO','VOLTOU_REFERENCIA', 'REFERIDO_DC','TRANSITO','INICIO_MATERNIDADE')
@@ -3076,7 +3706,7 @@ abstract class PackService implements IPackService {
                 pg_catalog.date(pk.pickup_date) < :startDate and pg_catalog.date(pk.next_pick_up_date) > :endDate AND
                 DATE(pk.pickup_date + (INTERVAL '1 month'* cast (date_part('day',  cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) >= :startDate
                 AND DATE(pk.pickup_date + (INTERVAL '1 month'*cast (date_part('day', cast (:endDate as timestamp) - cast (pk.pickup_date as timestamp))/30 as integer))) <= :endDate)
-                AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE')
+                AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                 AND c.id = :clinicId
                 AND ssr.code in ('NOVO_PACIENTE','INICIO_CCR','TRANSFERIDO_DE','REINICIO_TRATAMETO','MANUNTENCAO','OUTRO','VOLTOU_REFERENCIA', 'REFERIDO_DC')
                 AND dt.code = 'DT' 

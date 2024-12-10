@@ -119,6 +119,8 @@ class BootStrap {
         Clinic.withTransaction {
 //            initDefaultClinic()
             initClinic()
+            updateClinicName()
+            updateClinicDistrict()
         }
 
 //        ClinicSector.withTransaction { initClinicSector()  }
@@ -408,6 +410,8 @@ class BootStrap {
                 form.id = formObject.id
                 form.code = formObject.code
                 form.description = formObject.description
+                form.unit = formObject.unit
+                form.howToUse = formObject.how_to_use
                 form.save(flush: true, failOnError: true)
             }
         }
@@ -568,6 +572,7 @@ class BootStrap {
     void initTherapeuticRegimen() {
         for (therapeuticRegimenObject in listTherapeuticRegimen()) {
 
+           ClinicalService clinicalService =  ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
             TherapeuticRegimen therapeuticRegimen1 = TherapeuticRegimen.findById(therapeuticRegimenObject.id.toString().trim())
             TherapeuticRegimen therapeuticRegimen2 = TherapeuticRegimen.findByCode(therapeuticRegimenObject.code)
 
@@ -580,8 +585,9 @@ class BootStrap {
                     therapeuticRegimen.active = therapeuticRegimenObject.active
                     therapeuticRegimen.description = therapeuticRegimenObject.description
                     therapeuticRegimen.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
-                    therapeuticRegimen.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
+//                    therapeuticRegimen.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                     therapeuticRegimen.save(flush: true, failOnError: true)
+                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen)
                 } else {
                     if (therapeuticRegimen2.code.equalsIgnoreCase("X6APed")) {
                         therapeuticRegimen2.regimenScheme = "ABC+3TC+DTG (2DFC+DTG50)"
@@ -589,8 +595,9 @@ class BootStrap {
                     }
 //                    therapeuticRegimen2.active = therapeuticRegimenObject.active
                     therapeuticRegimen2.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
-                    therapeuticRegimen2.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
+//                    therapeuticRegimen2.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                     therapeuticRegimen2.save(flush: true, failOnError: true)
+                    clinicalService.addToTherapeuticRegimens(therapeuticRegimen2)
                 }
             } else {
                 if (therapeuticRegimen1.code.equalsIgnoreCase("X6APed")) {
@@ -599,9 +606,11 @@ class BootStrap {
                 }
 //                therapeuticRegimen1.active = therapeuticRegimenObject.active
                 therapeuticRegimen1.openmrsUuid = therapeuticRegimenObject.openmrs_uuid
-                therapeuticRegimen1.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
+//                therapeuticRegimen1.clinicalService = ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
                 therapeuticRegimen1.save(flush: true, failOnError: true)
+                clinicalService.addToTherapeuticRegimens(therapeuticRegimen1)
             }
+            clinicalService.save()
         }
     }
 
@@ -620,13 +629,15 @@ class BootStrap {
                 drug.fnmCode = drugObject.fnm_code
                 drug.uuidOpenmrs = drugObject.uuid_openmrs
                 drug.active = drugObject.active
-                drug.clinicalService = ClinicalService.findById(drugObject.clinical_service_id)
+                drug.clinical_service_id = drugObject.clinical_service_id
+//                drug.clinicalService = ClinicalService.findById(drugObject.clinical_service_id)
                 drug.form = Form.findById(drugObject.form_id)
                 drug.save(flush: true, failOnError: true)
 
             } else {
-                if (drug1.getClinicalService() == null) {
-                    drug1.clinicalService = ClinicalService.findById(drugObject.clinical_service_id)
+                if (drug1.getClinical_service_id() == null) {
+                    drug1.clinical_service_id = drugObject.clinical_service_id
+//                    drug1.clinicalService = ClinicalService.findById(drugObject.clinical_service_id)
                     drug1.save(flush: true, failOnError: true)
                 } else {
                     if (drug1.getUuidOpenmrs() == null || drug1.getUuidOpenmrs().trim().empty) {
@@ -847,33 +858,46 @@ class BootStrap {
 
     List<Object> listProvincialServer() {
         List<Object> provincialServerList = new ArrayList<>()
-        provincialServerList.add(new LinkedHashMap(id: '59BA4DAD-A32F-4B60-84D9-4A7F7E8C84FC', code: '01', urlPath: 'http://idartniassa.fgh.org.mz:', port: '3001', destination: 'MOBILE', username: 'postgres', password: 'postgres'))
-        provincialServerList.add(new LinkedHashMap(id: '9BDBBAEB-F14E-4E9F-9C89-09F4D2A469FE', code: '02', urlPath: 'http://idartcabodelegado.fgh.org.mz:', port: '3002', destination: 'MOBILE', username: 'postgres', password: 'postgres'))
-        provincialServerList.add(new LinkedHashMap(id: 'C4F70C54-32BC-48F2-8BC5-A4CDD8B6571D', code: '03', urlPath: 'http://idartnampula.fgh.org.mz:', port: '3003', destination: 'MOBILE', username: 'postgres', password: 'postgres'))
-        provincialServerList.add(new LinkedHashMap(id: '9E0F91B0-14F3-4FEC-9097-64E3F2B65B59', code: '04', urlPath: 'http://idartzambezia.fgh.org.mz:', port: '3004', destination: 'MOBILE', username: 'postgres', password: 'postgres'))
-        provincialServerList.add(new LinkedHashMap(id: '168FAD26-1A41-4F46-9238-69528F35D3ED', code: '05', urlPath: 'http://idarttete.fgh.org.mz:', port: '3005', destination: 'MOBILE', username: 'postgres', password: 'postgres'))
-        provincialServerList.add(new LinkedHashMap(id: '32DAA4E4-D949-4534-8B86-AFC54262421C', code: '06', urlPath: 'http://idartmanica.fgh.org.mz:', port: '3006', destination: 'MOBILE', username: 'postgres', password: 'postgres'))
-        provincialServerList.add(new LinkedHashMap(id: '220212B7-4744-4DCD-A8CB-27DDEEA91140', code: '07', urlPath: 'http://idartsofala.fgh.org.mz:', port: '3007', destination: 'MOBILE', username: 'postgres', password: 'postgres'))
-        provincialServerList.add(new LinkedHashMap(id: 'E1DAE032-1C95-4872-9EF3-6ED9DE9D9DE5', code: '08', urlPath: 'http://idartinhambane.fgh.org.mz:', port: '3008', destination: 'MOBILE', username: 'postgres', password: 'postgres'))
-        provincialServerList.add(new LinkedHashMap(id: '4489B1B6-A485-439A-B966-1C752873BF79', code: '09', urlPath: 'http://idartgaza.fgh.org.mz:', port: '3009', destination: 'MOBILE', username: 'postgres', password: 'postgres'))
-        provincialServerList.add(new LinkedHashMap(id: 'A5336E44-A9DC-4019-8B33-9F0738DB2D55', code: '10', urlPath: 'http://idartmaputo-prov.fgh.org.mz:', port: '3010', destination: 'MOBILE', username: 'postgres', password: 'postgres'))
-        provincialServerList.add(new LinkedHashMap(id: 'F21B5D3F-9C70-40A0-BE2F-66F4A458655F', code: '11', urlPath: 'http://idartmaputo.cid.fgh.org.mz:', port: '3011', destination: 'MOBILE', username: 'postgres', password: 'postgres'))
-        provincialServerList.add(new LinkedHashMap(id: 'F86C6280-0D36-4E5E-9C2C-D68002DB7A51', code: '12', urlPath: 'http://dev.fgh.org.mz:', port: '3910', destination: 'MOBILE', username: 'postgres', password: 'postgres'))
+        provincialServerList.add(new LinkedHashMap(id: '59BA4DAD-A32F-4B60-84D9-4A7F7E8C84FC', code: '01', urlPath: 'http://idartniassa.fgh.org.mz:', port: '3001', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '9BDBBAEB-F14E-4E9F-9C89-09F4D2A469FE', code: '02', urlPath: 'http://idartcabodelegado.fgh.org.mz:', port: '3002', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: 'C4F70C54-32BC-48F2-8BC5-A4CDD8B6571D', code: '03', urlPath: 'http://idartnampula.fgh.org.mz:', port: '3003', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '9E0F91B0-14F3-4FEC-9097-64E3F2B65B59', code: '04', urlPath: 'http://idartzambezia.fgh.org.mz:', port: '3004', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '168FAD26-1A41-4F46-9238-69528F35D3ED', code: '05', urlPath: 'http://idarttete.fgh.org.mz:', port: '3005', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '32DAA4E4-D949-4534-8B86-AFC54262421C', code: '06', urlPath: 'http://idartmanica.fgh.org.mz:', port: '3006', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '220212B7-4744-4DCD-A8CB-27DDEEA91140', code: '07', urlPath: 'http://idartsofala.fgh.org.mz:', port: '3007', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: 'E1DAE032-1C95-4872-9EF3-6ED9DE9D9DE5', code: '08', urlPath: 'http://idartinhambane.fgh.org.mz:', port: '3008', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '4489B1B6-A485-439A-B966-1C752873BF79', code: '09', urlPath: 'http://idartgaza.fgh.org.mz:', port: '3009', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: 'A5336E44-A9DC-4019-8B33-9F0738DB2D55', code: '10', urlPath: 'http://idartmaputo-prov.fgh.org.mz:', port: '3010', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: 'F21B5D3F-9C70-40A0-BE2F-66F4A458655F', code: '11', urlPath: 'http://idartmaputo.cid.fgh.org.mz:', port: '3011', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: 'F86C6280-0D36-4E5E-9C2C-D68002DB7A51', code: '12', urlPath: 'http://dev.fgh.org.mz:', port: '3910', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
 
-        provincialServerList.add(new LinkedHashMap(id: '0231B69C-A7AC-4024-8DF7-E75E2828E578', code: '01', urlPath: 'https://be-idmedniassa.fgh.org.mz:', port: '5001', destination: 'IDMED', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: '2C3B00F3-C8CB-4071-A070-54819C2F0962', code: '02', urlPath: 'https://be-idmedcabodelegado.fgh.org.mz:', port: '5002', destination: 'IDMED', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: 'C44CD2E8-DCB3-464A-9F0F-F6E6421E73C8', code: '03', urlPath: 'https://be-idmednampula.fgh.org.mz:', port: '5003', destination: 'IDMED', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: '3C0BF87C-87F3-4AF6-B95B-2D93F6B274AE', code: '04', urlPath: 'https://be-idmedzambezia.fgh.org.mz:', port: '5004', destination: 'IDMED', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: '2408211C-7ACD-42C5-AC52-A3ACBCA747CF', code: '05', urlPath: 'https://be-idmedtete.fgh.org.mz:', port: '5005', destination: 'IDMED', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: '29467F85-6CE4-4757-8AC5-E18FCFE0784C', code: '06', urlPath: 'https://be-idmedmanica.fgh.org.mz:', port: '5006', destination: 'IDMED', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: '668BD439-B176-4FF5-9525-81D9DFB84F6D', code: '07', urlPath: 'https://be-idmedsofala.fgh.org.mz:', port: '5007', destination: 'IDMED', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: 'EDE2C07E-EE4B-4DED-8A7D-16D58BFB3751', code: '08', urlPath: 'https://be-idmedinhambane.fgh.org.mz:', port: '5008', destination: 'IDMED', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: '6C50D9EB-9165-49AE-8A33-C9C837F58084', code: '09', urlPath: 'https://be-idmedgaza.fgh.org.mz:', port: '5009', destination: 'IDMED', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: 'DFF5C2ED-FB41-4574-9C26-BB164605BC00', code: '10', urlPath: 'https://be-idmedmaputo-prov.fgh.org.mz:', port: '5010', destination: 'IDMED', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: '9E0AD237-9C7E-4656-9E58-D311F5E47F28', code: '11', urlPath: 'https://be-idmedmaputo.cid.fgh.org.mz:', port: '5011', destination: 'IDMED', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: 'ec74926c-77c2-4c23-9124-9591d1670ab0', code: '12', urlPath: 'https://172.104.236.126:', port: '445', destination: 'IDMED', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: '7036157a-61c3-4515-9ab8-fc68359d9402', code: '13', urlPath: 'https://idmed-metadata.fgh.org.mz:', port: '5012', destination: 'METADATA', username: 'iDMED', password: 'iDMED123'))
-        provincialServerList.add(new LinkedHashMap(id: '257016e7-628d-4d72-8b50-c16c32380767', code: '99', urlPath: 'http://172.104.203.103:', port: '3030', destination: 'SIMAM', username: 'admin', password: 'admin'))
+        provincialServerList.add(new LinkedHashMap(id: '73864BCB-5FEA-4067-81D2-E5A50C71CD8F', code: '01', urlPath: 'idmed.central.niassa:', port: '5401', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '4018D01F-B452-46C1-A97A-B1FE90A05A79', code: '02', urlPath: 'idmed.central.cabodelgado:', port: '5402', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '782A6251-673A-4180-9C8D-DE14F804B275', code: '03', urlPath: 'idmed.central.nampula:', port: '5403', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '5822E612-420F-45EE-855C-CEB051F2E901', code: '04', urlPath: 'idmed.central.zambezia:', port: '5404', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '59139F11-43BE-4E63-91D1-494C4E4637BE', code: '05', urlPath: 'idmed.central.tete:', port: '5405', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '36BDF50C-7851-46C8-BC29-7974ABF68382', code: '06', urlPath: 'idmed.central.manica:', port: '5406', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: 'CAFC1BD3-FE43-49A8-A121-A2FBA56A552E', code: '07', urlPath: 'idmed.central.sofala:', port: '5407', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: 'EF428861-BAC9-4156-B489-8B73148D81EB', code: '08', urlPath: 'idmed.central.inhambane:', port: '5408', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '6FD5A6CD-755D-4FFF-A2B3-F2FA75C3BF64', code: '09', urlPath: 'idmed.central.gaza:', port: '5409', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '48FCD6A2-80C3-46E8-AD23-3F5BC468F752', code: '10', urlPath: 'idmed.central.maputo-prov:', port: '5410', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '84383A39-0535-49EA-956C-FDAEA191D1F0', code: '11', urlPath: 'idmed.central.maputo.cid:', port: '5411', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '49896B8E-631D-4A4D-BC39-45B747688ECE', code: '12', urlPath: '172.16.60.20', port: '5433', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+
+        provincialServerList.add(new LinkedHashMap(id: '0231B69C-A7AC-4024-8DF7-E75E2828E578', code: '01', urlPath: 'https://be-idmedniassa.fgh.org.mz:', port: '5001', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '2C3B00F3-C8CB-4071-A070-54819C2F0962', code: '02', urlPath: 'https://be-idmedcabodelegado.fgh.org.mz:', port: '5002', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: 'C44CD2E8-DCB3-464A-9F0F-F6E6421E73C8', code: '03', urlPath: 'https://be-idmednampula.fgh.org.mz:', port: '5003', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '3C0BF87C-87F3-4AF6-B95B-2D93F6B274AE', code: '04', urlPath: 'https://be-idmedzambezia.fgh.org.mz:', port: '5004', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '2408211C-7ACD-42C5-AC52-A3ACBCA747CF', code: '05', urlPath: 'https://be-idmedtete.fgh.org.mz:', port: '5005', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '29467F85-6CE4-4757-8AC5-E18FCFE0784C', code: '06', urlPath: 'https://be-idmedmanica.fgh.org.mz:', port: '5006', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '668BD439-B176-4FF5-9525-81D9DFB84F6D', code: '07', urlPath: 'https://be-idmedsofala.fgh.org.mz:', port: '5007', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: 'EDE2C07E-EE4B-4DED-8A7D-16D58BFB3751', code: '08', urlPath: 'https://be-idmedinhambane.fgh.org.mz:', port: '5008', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '6C50D9EB-9165-49AE-8A33-C9C837F58084', code: '09', urlPath: 'https://be-idmedgaza.fgh.org.mz:', port: '5009', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: 'DFF5C2ED-FB41-4574-9C26-BB164605BC00', code: '10', urlPath: 'https://be-idmedmaputo-prov.fgh.org.mz:', port: '5010', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '9E0AD237-9C7E-4656-9E58-D311F5E47F28', code: '11', urlPath: 'https://be-idmedmaputo.cid.fgh.org.mz:', port: '5011', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: 'ec74926c-77c2-4c23-9124-9591d1670ab0', code: '12', urlPath: 'https://172.104.236.126:', port: '445', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '7036157a-61c3-4515-9ab8-fc68359d9402', code: '13', urlPath: 'https://idmed-metadata.fgh.org.mz:', port: '5012', destination: 'METADATA', username: 'iDMED', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '257016e7-628d-4d72-8b50-c16c32380767', code: '99', urlPath: 'http://172.104.203.103:', port: '3030', destination: 'SIMAM', username: 'admin', password: 'notyourbusiness'))
 
         return provincialServerList
     }
@@ -994,24 +1018,23 @@ class BootStrap {
 
     List<Object> listForm() {
         List<Object> formList = new ArrayList<>()
-        formList.add(new LinkedHashMap(id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', code: 'Comp', description: 'Comprimido'))
-        formList.add(new LinkedHashMap(id: 'B61168FC-0178-4DC3-A89E-46A169A7457D', code: 'Xarope', description: 'Xarope'))
-        formList.add(new LinkedHashMap(id: '74C8F060-1EA4-45E9-94DB-2DE6775E6481', code: 'Capsula', description: 'Capsula'))
-        formList.add(new LinkedHashMap(id: '4EA7EF2B-7F86-4DA7-9B74-AF9B614A8DA6', code: 'Sabonete', description: 'Sabonete'))
-        formList.add(new LinkedHashMap(id: '024D260C-F3A3-4149-ACDF-97A68855D85A', code: 'Supositório', description: 'Supositório'))
-        formList.add(new LinkedHashMap(id: '451906BE-792D-4506-98DB-408F69B97AB1', code: 'Descongestionante_nasal', description: 'Descongestionante Nasal'))
-        formList.add(new LinkedHashMap(id: 'D213A686-782C-4AF3-BC31-BA04EEF0EDB0', code: 'Solução_Oftámilca', description: 'Solução Oftámilca'))
-        formList.add(new LinkedHashMap(id: '70E72CB3-F66D-41D7-B2C9-8F545E880FC6', code: 'Gotas_Ouvidos', description: 'Gotas para os ouvidos'))
-        formList.add(new LinkedHashMap(id: '742F4BC0-E0CC-4602-829B-BEC4EAFB0D2C', code: 'Suspensão', description: 'Suspensão'))
-        formList.add(new LinkedHashMap(id: '17828974-026F-41CF-A906-E97ABFB2A0AC', code: 'Creme', description: 'Creme'))
-        formList.add(new LinkedHashMap(id: '700FBB4F-C67C-4085-B05C-33259C29F90E', code: 'Pomada', description: 'Pomada'))
-        formList.add(new LinkedHashMap(id: '935436AC-8CB2-4691-8FC6-99209CDB9906', code: 'Gel', description: 'Gel'))
-        formList.add(new LinkedHashMap(id: '3B627885-00C6-4F49-97D0-11CECD6CABB4', code: 'Gel_Oral', description: 'Gel Oral'))
-        formList.add(new LinkedHashMap(id: 'DB4162F8-A5B3-4656-ABEF-AC977E37A9EF', code: 'Loção', description: 'Loção'))
-        formList.add(new LinkedHashMap(id: 'BA8E6254-0F88-43D7-8C39-500756AA7B2F', code: 'Pomada_olhos', description: 'Pomada para os olhos'))
-        formList.add(new LinkedHashMap(id: 'A80409ED-89FC-40AF-BA34-5CD0BA886570', code: 'Creme_Vaginal', description: 'Creme Vaginal'))
+        formList.add(new LinkedHashMap(id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', code: 'Comp', description: 'Comprimido', 'unit': 'Comp(s)', 'how_to_use': 'Tomar'))
+        formList.add(new LinkedHashMap(id: 'B61168FC-0178-4DC3-A89E-46A169A7457D', code: 'Xarope', description: 'Xarope', 'unit':  'mL(s)', 'how_to_use': 'Tomar'))
+        formList.add(new LinkedHashMap(id: '74C8F060-1EA4-45E9-94DB-2DE6775E6481', code: 'Capsula', description: 'Capsula', 'unit': 'Capsula(s)', 'how_to_use': 'Tomar'))
+        formList.add(new LinkedHashMap(id: '4EA7EF2B-7F86-4DA7-9B74-AF9B614A8DA6', code: 'Sabonete', description: 'Sabonete', 'unit': 'Sabonete(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '024D260C-F3A3-4149-ACDF-97A68855D85A', code: 'Supositório', description: 'Supositório', 'unit': 'Comp(s)', 'how_to_use': 'Inserir'))
+        formList.add(new LinkedHashMap(id: '451906BE-792D-4506-98DB-408F69B97AB1', code: 'Descongestionante_nasal', description: 'Descongestionante Nasal', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: 'D213A686-782C-4AF3-BC31-BA04EEF0EDB0', code: 'Solução_Oftámilca', description: 'Solução Oftámilca', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '70E72CB3-F66D-41D7-B2C9-8F545E880FC6', code: 'Gotas_Ouvidos', description: 'Gotas para os ouvidos', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '742F4BC0-E0CC-4602-829B-BEC4EAFB0D2C', code: 'Suspensão', description: 'Suspensão', 'unit': 'mL(s)', 'how_to_use': 'Tomar'))
+        formList.add(new LinkedHashMap(id: '17828974-026F-41CF-A906-E97ABFB2A0AC', code: 'Creme', description: 'Creme', 'unit': 'Creme(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '700FBB4F-C67C-4085-B05C-33259C29F90E', code: 'Pomada', description: 'Pomada', 'unit': 'Pomada(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '935436AC-8CB2-4691-8FC6-99209CDB9906', code: 'Gel', description: 'Gel', 'unit': 'Gel', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '3B627885-00C6-4F49-97D0-11CECD6CABB4', code: 'Gel_Oral', description: 'Gel Oral', 'unit': 'Gel', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: 'DB4162F8-A5B3-4656-ABEF-AC977E37A9EF', code: 'Loção', description: 'Loção', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: 'BA8E6254-0F88-43D7-8C39-500756AA7B2F', code: 'Pomada_olhos', description: 'Pomada para os olhos', 'unit': 'Pomada(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: 'A80409ED-89FC-40AF-BA34-5CD0BA886570', code: 'Creme_Vaginal', description: 'Creme Vaginal', 'unit': 'Creme(s)', 'how_to_use': 'Aplicar'))
         //   formList.add(new LinkedHashMap(id: 'EA2A097D-0D71-43C4-B230-8A927181C3A2', code: 'Granulos', description: 'Granulados')
-
         return formList
 
     }
@@ -1578,7 +1601,7 @@ class BootStrap {
         listDrug.add(new LinkedHashMap(id: '4d2c441c-4393-489e-bd4c-bab5c7456a78', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 60, name: '[3TC/AZT/ABC] Lamivudina 150mg/Zidovudina 300mg/Abacavir 300mg', uuid_openmrs: '08S41-ec0-c1cf-42e1-9a37-9f23b4f07bba', fnm_code: '08S41', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: 'b8620a31-e203-4b1d-9f22-7e13d5c44746', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 30, name: '[TDF/FTC] Tenofovir 300mg/Emtricitabina 200mg', uuid_openmrs: '08S31-9e9-49f9-4cd6-8268-8df7315e3d09', fnm_code: '08S31', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: 'cfe9ea7f-7833-47e9-9049-f3309446e984', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 60, name: '[ABC/3TC] Abacavir 120mg/Lamivudina 60mg 60 Comp', uuid_openmrs: '08S01ZW-ec-ec31-45aa-a74e-7238872483e8', fnm_code: '08S01ZW', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
-//        listDrug.add(new LinkedHashMap(id: '3fc60321-4488-4b7a-bbf6-05c89ac04101', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 30, name: '[ABC/3TC] Abacavir 120mg/Lamivudina 60mg 30 Comp', uuid_openmrs: '08S01ZWii-527b-4c8c-9282-21826775e25b', fnm_code: '08S01ZWii', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
+        listDrug.add(new LinkedHashMap(id: '3fc60321-4488-4b7a-bbf6-05c89ac04101', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 30, name: '[ABC/3TC] Abacavir 120mg/Lamivudina 60mg 30 Comp', uuid_openmrs: '08S01ZWii-527b-4c8c-9282-21826775e25b', fnm_code: '08S01ZWii', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: '135b1a6f-0791-47d4-8e8e-6f8b75bab054', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 2, pack_size: 60, name: '[3TC/AZT] Lamivudina 30mg/ Zidovudina 60mg', uuid_openmrs: '08S40Z-fc-6563-49e4-bf81-a456bf79ec88', fnm_code: '08S40Z', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: 'f8a6a5be-9737-474b-ade2-b2789610d7ee', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 2, pack_size: 120, name: '[LPV/RTV] Lopinavir/Ritonavir -Aluvia 200mg/50mg', uuid_openmrs: '08S38Z-99-3fe6-48b7-9b25-3052660f3d8b', fnm_code: '08S38Z', default_treatment: 2, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: '909a8ee5-30cd-45ef-8540-0a44f26a1a09', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 60, name: '[ABC/3TC] Abacavir 60 and Lamivudina 30mg', uuid_openmrs: '08S01ZZ-2e-29dd-40aa-94b4-0d4fe65e081c', fnm_code: '08S01ZZ', default_treatment: 0, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
@@ -2614,9 +2637,9 @@ class BootStrap {
         clinicList.add(new LinkedHashMap(uuid: "838BA7DE-B464-43CE-9F54-E9E034FB6A71", sisma_id: "NZDdLAn0PH7", provinceCode: "03", province: "Nampula", districtCode: "22", district: "Rapale", sitename: "Namaita CS", site_nid: "1032008"))
         clinicList.add(new LinkedHashMap(uuid: "4790A926-A6C2-4943-BFDA-A796BA8398E3", sisma_id: "ZqeiHyiaQa7", provinceCode: "03", province: "Nampula", districtCode: "22", district: "Rapale", sitename: "Namucaua CS", site_nid: "1032017"))
         clinicList.add(new LinkedHashMap(uuid: "89E53120-C9B9-40BA-B92E-D367D58AFEB0", sisma_id: "KXuDpfkBJ09", provinceCode: "03", province: "Nampula", districtCode: "22", district: "Rapale", sitename: "Rapale CS", site_nid: "1032006"))
-        clinicList.add(new LinkedHashMap(uuid: "FF278E15-DC0F-4373-BFAF-DA55F1F371F2", sisma_id: "PZJadYc1os9", provinceCode: "03", province: "Nampula", districtCode: "22", district: "Ribaue", sitename: "Lapala Monapo CS", site_nid: "1032106"))
-        clinicList.add(new LinkedHashMap(uuid: "BBE12474-AE13-4EEC-A5B8-28D15EC0ED8F", sisma_id: "RqoMfI0nyMg", provinceCode: "03", province: "Nampula", districtCode: "22", district: "Ribaue", sitename: "Namiconha CS", site_nid: "1032110"))
-        clinicList.add(new LinkedHashMap(uuid: "EC209488-BBC4-41F3-ADFC-6E95BFC149B9", sisma_id: "zVIAjMTsYT4", provinceCode: "03", province: "Nampula", districtCode: "22", district: "Ribaue", sitename: "Ribaue HR", site_nid: "1032101"))
+        clinicList.add(new LinkedHashMap(uuid: "FF278E15-DC0F-4373-BFAF-DA55F1F371F2", sisma_id: "PZJadYc1os9", provinceCode: "03", province: "Nampula", districtCode: "23", district: "Ribaué", sitename: "Iapala Monapo CS", site_nid: "1032106"))
+        clinicList.add(new LinkedHashMap(uuid: "BBE12474-AE13-4EEC-A5B8-28D15EC0ED8F", sisma_id: "RqoMfI0nyMg", provinceCode: "03", province: "Nampula", districtCode: "23", district: "Ribaué", sitename: "Namiconha CS", site_nid: "1032110"))
+        clinicList.add(new LinkedHashMap(uuid: "EC209488-BBC4-41F3-ADFC-6E95BFC149B9", sisma_id: "zVIAjMTsYT4", provinceCode: "03", province: "Nampula", districtCode: "23", district: "Ribaué", sitename: "Ribaue HR", site_nid: "1032101"))
         clinicList.add(new LinkedHashMap(uuid: "3F8FDDA6-CD5E-42F1-9D0C-84FBE01A54A7", sisma_id: "Djahp380CHM", provinceCode: "10", province: "Maputo", districtCode: "05", district: "Matola", sitename: "CS Matola Santos", site_nid: "1100128"))
         clinicList.add(new LinkedHashMap(uuid: "9E1B5B9A-192B-46EC-93E8-B463A3B6E91B", sisma_id: "sbH1sYBe2Ww", provinceCode: "03", province: "Nampula", districtCode: "21", district: "Nampula", sitename: "Cadeia Regional de Nampula", site_nid: "1030119"))
         clinicList.add(new LinkedHashMap(uuid: "DA6F8CB7-C8CD-4AA0-81B8-CF5E0BF1F1FB", sisma_id: "fFs8TOTuE5x", provinceCode: "09", province: "Gaza", districtCode: "14", district: "Xai-Xai", sitename: "Xai-Xai HP", site_nid: "1090100"))
@@ -2873,35 +2896,25 @@ class BootStrap {
 
     }
 
-    void insertClinicSectorsOnClinics() {
-        List<Object> clinicSectorList = new ArrayList<>()
-        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181901608880000', code: 'CPN', clinicName: "Consulta Pre-Natal", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
-        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee018190163i0c0001', code: 'TB', clinicName: "Tuberculose", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
-        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181901074b20002', code: 'PREP', clinicName: "Profilaxia Pré-Exposição", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
-        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181902674b20003', code: 'SAAJ', clinicName: "Serviços Amigos dos Adolescentes e Jovens", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
-        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181902674b20005', code: 'CCR', clinicName: "Consulta Criança em Risco", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
-        clinicSectorList.add(new LinkedHashMap(uuid: '8a8a823b81900fee0181902674b20004', code: 'NORMAL', clinicName: "Atendimento Geral", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
+   void updateClinicName() {
 
-        for (clinicSectorObject in clinicSectorList) {
-            if (!Clinic.findById(clinicSectorObject.id)) {
-                ClinicSector clinicSector = new ClinicSector()
-                clinicSector.id = clinicSectorObject.uuid
-                clinicSector.syncStatus = 'S'
-                clinicSector.code = clinicSectorObject.code
-                clinicSector.clinicName = clinicSectorObject.clinicName
-                clinicSector.active = clinicSectorObject.active
-                clinicSector.uuid = clinicSectorObject.uuid
-                clinicSector.facilityType = FacilityType.findById(clinicSectorObject.facilityType_id)
-                clinicSector.parentClinic = Clinic.findByMainClinic(true)
-                clinicSector.province = clinicSector.parentClinic.province
-                clinicSector.district = clinicSector.parentClinic.district
-                clinicSector.active = true
-                clinicSector.withTransaction {
-                    clinicSector.save(flush: true, failOnError: true)
-                }
-            }
-        }
+       Clinic clinicToUpdate = Clinic.findByClinicName('Lapala Monapo CS');
+       if (clinicToUpdate) {
+           clinicToUpdate.setClinicName('Iapala Monapo CS')
+           clinicToUpdate.save(flush: true, failOnError: true)
+       }
     }
 
+    void updateClinicDistrict() {
+        List<String> clinicNames = Arrays.asList("Iapala Monapo CS", "Namiconha CS", "Ribaue HR");
+           District district =   District.findByDescription('Rapale')
+
+        List<Clinic> clinicsToUpdate = Clinic.findAllByClinicNameInListAndDistrict(clinicNames,district)
+        clinicsToUpdate.each{clinicToUpdate ->
+            clinicToUpdate.setDistrict(District.findByDescription('Ribaué'))
+            clinicToUpdate.save(flush: true, failOnError: true)
+        }
+
+    }
 
 }
