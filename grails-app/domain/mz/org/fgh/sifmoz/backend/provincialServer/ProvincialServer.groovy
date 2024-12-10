@@ -13,6 +13,7 @@ class ProvincialServer extends BaseEntity{
     String destination
     String username
     String password
+    String dbname
 
     static mapping = {
         id generator: "assigned"
@@ -30,6 +31,7 @@ class ProvincialServer extends BaseEntity{
         code(nullable: false, maxSize: 50, blank: false,unique: ['destination'])
         username(nullable: false,blank: false)
         password(nullable: false,blank: false)
+        dbname(nullable: true,blank: true)
     }
 
     @Override
