@@ -64,7 +64,7 @@ class BootStrap {
     SpringSecurityService springSecurityService
     DataSource dataSource
 
-   // DataSourceMigrationService dataSourceMigrationService
+    // DataSourceMigrationService dataSourceMigrationService
 
     def init = { servletContext ->
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
@@ -161,9 +161,9 @@ class BootStrap {
         }
 
         ClinicSector.withTransaction {
-        //   insertClinicSectorsOnClinics()
-     //       compareClinics()
-         //   dropClinicSector()
+            //   insertClinicSectorsOnClinics()
+            //       compareClinics()
+            //   dropClinicSector()
         }
 //        Pack.withTransaction {
 //           resolvePackWithoutPackagedDrugs()
@@ -186,7 +186,7 @@ class BootStrap {
 //        dataSourceMigrationService.loadAndSaveClinicSectorMigrationService()
 //        dataSourceMigrationService.loadAndSaveDoctorsMigrationService()
 //        dataSourceMigrationService.loadAndSavePatientVisitDetailsMigrationService()
-  //      dataSourceMigrationService.compareClinics()
+        //      dataSourceMigrationService.compareClinics()
 
     }
 
@@ -572,7 +572,7 @@ class BootStrap {
     void initTherapeuticRegimen() {
         for (therapeuticRegimenObject in listTherapeuticRegimen()) {
 
-           ClinicalService clinicalService =  ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
+            ClinicalService clinicalService =  ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
             TherapeuticRegimen therapeuticRegimen1 = TherapeuticRegimen.findById(therapeuticRegimenObject.id.toString().trim())
             TherapeuticRegimen therapeuticRegimen2 = TherapeuticRegimen.findByCode(therapeuticRegimenObject.code)
 
@@ -851,56 +851,56 @@ class BootStrap {
         List<Object> usersList = new ArrayList<>()
         usersList.add(new LinkedHashMap(username: 'admin', password: 'admin', fullName: 'admin', contact: 'admin', email: 'admin@gmail.com', openmrsPassword: Utilities.getMd5('admin')))
         usersList.add(new LinkedHashMap(username: 'iDMED', password: 'iDMED123', fullName: 'iDMED', contact: 'iDMED', email: 'iDMED@gmail.com', openmrsPassword: Utilities.getMd5('iDMED123')))
-        usersList.add(new LinkedHashMap(username: 'user.sync', password: 'user.sync', fullName: 'Usuario Sincronizacao', contact: 'USER.SYNC', email: 'user.sync@gmail.com', openmrsPassword: Utilities.getMd5('userSync')))
 
         return usersList
     }
 
     List<Object> listProvincialServer() {
         List<Object> provincialServerList = new ArrayList<>()
-        provincialServerList.add(new LinkedHashMap(id: '59BA4DAD-A32F-4B60-84D9-4A7F7E8C84FC', code: '01', urlPath: 'http://idartniassa.fgh.org.mz:', port: '3001', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '9BDBBAEB-F14E-4E9F-9C89-09F4D2A469FE', code: '02', urlPath: 'http://idartcabodelegado.fgh.org.mz:', port: '3002', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: 'C4F70C54-32BC-48F2-8BC5-A4CDD8B6571D', code: '03', urlPath: 'http://idartnampula.fgh.org.mz:', port: '3003', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '9E0F91B0-14F3-4FEC-9097-64E3F2B65B59', code: '04', urlPath: 'http://idartzambezia.fgh.org.mz:', port: '3004', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '168FAD26-1A41-4F46-9238-69528F35D3ED', code: '05', urlPath: 'http://idarttete.fgh.org.mz:', port: '3005', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '32DAA4E4-D949-4534-8B86-AFC54262421C', code: '06', urlPath: 'http://idartmanica.fgh.org.mz:', port: '3006', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '220212B7-4744-4DCD-A8CB-27DDEEA91140', code: '07', urlPath: 'http://idartsofala.fgh.org.mz:', port: '3007', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: 'E1DAE032-1C95-4872-9EF3-6ED9DE9D9DE5', code: '08', urlPath: 'http://idartinhambane.fgh.org.mz:', port: '3008', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '4489B1B6-A485-439A-B966-1C752873BF79', code: '09', urlPath: 'http://idartgaza.fgh.org.mz:', port: '3009', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: 'A5336E44-A9DC-4019-8B33-9F0738DB2D55', code: '10', urlPath: 'http://idartmaputo-prov.fgh.org.mz:', port: '3010', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: 'F21B5D3F-9C70-40A0-BE2F-66F4A458655F', code: '11', urlPath: 'http://idartmaputo.cid.fgh.org.mz:', port: '3011', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: 'F86C6280-0D36-4E5E-9C2C-D68002DB7A51', code: '12', urlPath: 'http://dev.fgh.org.mz:', port: '3910', destination: 'MOBILE', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '59BA4DAD-A32F-4B60-84D9-4A7F7E8C84FC', code: '01', urlPath: 'http://idartniassa.fgh.org.mz:', port: '3001', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '9BDBBAEB-F14E-4E9F-9C89-09F4D2A469FE', code: '02', urlPath: 'http://idartcabodelegado.fgh.org.mz:', port: '3002', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'C4F70C54-32BC-48F2-8BC5-A4CDD8B6571D', code: '03', urlPath: 'http://idartnampula.fgh.org.mz:', port: '3003', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '9E0F91B0-14F3-4FEC-9097-64E3F2B65B59', code: '04', urlPath: 'http://idartzambezia.fgh.org.mz:', port: '3004', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '168FAD26-1A41-4F46-9238-69528F35D3ED', code: '05', urlPath: 'http://idarttete.fgh.org.mz:', port: '3005', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '32DAA4E4-D949-4534-8B86-AFC54262421C', code: '06', urlPath: 'http://idartmanica.fgh.org.mz:', port: '3006', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '220212B7-4744-4DCD-A8CB-27DDEEA91140', code: '07', urlPath: 'http://idartsofala.fgh.org.mz:', port: '3007', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'E1DAE032-1C95-4872-9EF3-6ED9DE9D9DE5', code: '08', urlPath: 'http://idartinhambane.fgh.org.mz:', port: '3008', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '4489B1B6-A485-439A-B966-1C752873BF79', code: '09', urlPath: 'http://idartgaza.fgh.org.mz:', port: '3009', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'A5336E44-A9DC-4019-8B33-9F0738DB2D55', code: '10', urlPath: 'http://idartmaputo-prov.fgh.org.mz:', port: '3010', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'F21B5D3F-9C70-40A0-BE2F-66F4A458655F', code: '11', urlPath: 'http://idartmaputo.cid.fgh.org.mz:', port: '3011', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'F86C6280-0D36-4E5E-9C2C-D68002DB7A51', code: '12', urlPath: 'http://dev.fgh.org.mz:', port: '3910', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
 
-        provincialServerList.add(new LinkedHashMap(id: '73864BCB-5FEA-4067-81D2-E5A50C71CD8F', code: '01', urlPath: 'idmed.central.niassa:', port: '5401', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '4018D01F-B452-46C1-A97A-B1FE90A05A79', code: '02', urlPath: 'idmed.central.cabodelgado:', port: '5402', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '782A6251-673A-4180-9C8D-DE14F804B275', code: '03', urlPath: 'idmed.central.nampula:', port: '5403', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '5822E612-420F-45EE-855C-CEB051F2E901', code: '04', urlPath: 'idmed.central.zambezia:', port: '5404', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '59139F11-43BE-4E63-91D1-494C4E4637BE', code: '05', urlPath: 'idmed.central.tete:', port: '5405', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '36BDF50C-7851-46C8-BC29-7974ABF68382', code: '06', urlPath: 'idmed.central.manica:', port: '5406', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: 'CAFC1BD3-FE43-49A8-A121-A2FBA56A552E', code: '07', urlPath: 'idmed.central.sofala:', port: '5407', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: 'EF428861-BAC9-4156-B489-8B73148D81EB', code: '08', urlPath: 'idmed.central.inhambane:', port: '5408', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '6FD5A6CD-755D-4FFF-A2B3-F2FA75C3BF64', code: '09', urlPath: 'idmed.central.gaza:', port: '5409', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '48FCD6A2-80C3-46E8-AD23-3F5BC468F752', code: '10', urlPath: 'idmed.central.maputo-prov:', port: '5410', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '84383A39-0535-49EA-956C-FDAEA191D1F0', code: '11', urlPath: 'idmed.central.maputo.cid:', port: '5411', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '49896B8E-631D-4A4D-BC39-45B747688ECE', code: '12', urlPath: '172.16.60.20', port: '5433', destination: 'DB', username: 'postgres', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '73864BCB-5FEA-4067-81D2-E5A50C71CD8F', code: '01', urlPath: 'idmed-ns.csaude.org.mz', port: '50411', destination: 'DB', username: 'idmedns', password: 'N/A', 'dbname':'idmedns'))
+        provincialServerList.add(new LinkedHashMap(id: '4018D01F-B452-46C1-A97A-B1FE90A05A79', code: '02', urlPath: 'idmed-ca.csaude.org.mz', port: '50410', destination: 'DB', username: 'idmedca', password: 'N/A', 'dbname':'idmedca'))
+        provincialServerList.add(new LinkedHashMap(id: '782A6251-673A-4180-9C8D-DE14F804B275', code: '03', urlPath: 'idmed-np.csaude.org.mz', port: '50409', destination: 'DB', username: 'idmednp', password: 'N/A', 'dbname':'idmednp'))
+        provincialServerList.add(new LinkedHashMap(id: '5822E612-420F-45EE-855C-CEB051F2E901', code: '04', urlPath: 'idmed-zb.csaude.org.mz', port: '50408', destination: 'DB', username: 'idmedzb', password: 'N/A', 'dbname':'idmedzb'))
+        provincialServerList.add(new LinkedHashMap(id: '59139F11-43BE-4E63-91D1-494C4E4637BE', code: '05', urlPath: 'idmed-tt.csaude.org.mz', port: '50407', destination: 'DB', username: 'idmedtt', password: 'N/A', 'dbname':'idmedtt'))
+        provincialServerList.add(new LinkedHashMap(id: '36BDF50C-7851-46C8-BC29-7974ABF68382', code: '06', urlPath: 'idmed-mn.csaude.org.mz', port: '50406', destination: 'DB', username: 'idmedmn', password: 'N/A', 'dbname':'idmedmn'))
+        provincialServerList.add(new LinkedHashMap(id: 'CAFC1BD3-FE43-49A8-A121-A2FBA56A552E', code: '07', urlPath: 'idmed-sf.csaude.org.mz', port: '50405', destination: 'DB', username: 'idmedsf', password: 'N/A', 'dbname':'idmedsf'))
+        provincialServerList.add(new LinkedHashMap(id: 'EF428861-BAC9-4156-B489-8B73148D81EB', code: '08', urlPath: 'idmed-ib.csaude.org.mz', port: '50404', destination: 'DB', username: 'idmedib', password: 'N/A', 'dbname':'idmedib'))
+        provincialServerList.add(new LinkedHashMap(id: '6FD5A6CD-755D-4FFF-A2B3-F2FA75C3BF64', code: '09', urlPath: 'idmed-gz.csaude.org.mz', port: '50403', destination: 'DB', username: 'idmedgz', password: 'N/A', 'dbname':'idmedgz'))
+        provincialServerList.add(new LinkedHashMap(id: '48FCD6A2-80C3-46E8-AD23-3F5BC468F752', code: '10', urlPath: 'idmed-mp.csaude.org.mz', port: '50402', destination: 'DB', username: 'idmedmp', password: 'N/A', 'dbname':'idmedmp'))
+        provincialServerList.add(new LinkedHashMap(id: '84383A39-0535-49EA-956C-FDAEA191D1F0', code: '11', urlPath: 'idmed-mc.csaude.org.mz', port: '50401', destination: 'DB', username: 'idmedmc', password: 'N/A', 'dbname':'idmedmc'))
+        provincialServerList.add(new LinkedHashMap(id: '49896B8E-631D-4A4D-BC39-45B747688ECE', code: '12', urlPath: '172.16.60.20', port: '50420', destination: 'DB', username: 'postgres', password: 'N/A', 'dbname':'idmed_maputo'))
 
-        provincialServerList.add(new LinkedHashMap(id: '0231B69C-A7AC-4024-8DF7-E75E2828E578', code: '01', urlPath: 'https://be-idmedniassa.fgh.org.mz:', port: '5001', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '2C3B00F3-C8CB-4071-A070-54819C2F0962', code: '02', urlPath: 'https://be-idmedcabodelegado.fgh.org.mz:', port: '5002', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: 'C44CD2E8-DCB3-464A-9F0F-F6E6421E73C8', code: '03', urlPath: 'https://be-idmednampula.fgh.org.mz:', port: '5003', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '3C0BF87C-87F3-4AF6-B95B-2D93F6B274AE', code: '04', urlPath: 'https://be-idmedzambezia.fgh.org.mz:', port: '5004', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '2408211C-7ACD-42C5-AC52-A3ACBCA747CF', code: '05', urlPath: 'https://be-idmedtete.fgh.org.mz:', port: '5005', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '29467F85-6CE4-4757-8AC5-E18FCFE0784C', code: '06', urlPath: 'https://be-idmedmanica.fgh.org.mz:', port: '5006', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '668BD439-B176-4FF5-9525-81D9DFB84F6D', code: '07', urlPath: 'https://be-idmedsofala.fgh.org.mz:', port: '5007', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: 'EDE2C07E-EE4B-4DED-8A7D-16D58BFB3751', code: '08', urlPath: 'https://be-idmedinhambane.fgh.org.mz:', port: '5008', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '6C50D9EB-9165-49AE-8A33-C9C837F58084', code: '09', urlPath: 'https://be-idmedgaza.fgh.org.mz:', port: '5009', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: 'DFF5C2ED-FB41-4574-9C26-BB164605BC00', code: '10', urlPath: 'https://be-idmedmaputo-prov.fgh.org.mz:', port: '5010', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '9E0AD237-9C7E-4656-9E58-D311F5E47F28', code: '11', urlPath: 'https://be-idmedmaputo.cid.fgh.org.mz:', port: '5011', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: 'ec74926c-77c2-4c23-9124-9591d1670ab0', code: '12', urlPath: 'https://172.104.236.126:', port: '445', destination: 'IDMED', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '7036157a-61c3-4515-9ab8-fc68359d9402', code: '13', urlPath: 'https://idmed-metadata.fgh.org.mz:', port: '5012', destination: 'METADATA', username: 'iDMED', password: 'notyourbusiness'))
-        provincialServerList.add(new LinkedHashMap(id: '257016e7-628d-4d72-8b50-c16c32380767', code: '99', urlPath: 'http://172.104.203.103:', port: '3030', destination: 'SIMAM', username: 'admin', password: 'notyourbusiness'))
+        provincialServerList.add(new LinkedHashMap(id: '0231B69C-A7AC-4024-8DF7-E75E2828E578', code: '01', urlPath: 'https://be-idmedniassa.fgh.org.mz:', port: '5001', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '2C3B00F3-C8CB-4071-A070-54819C2F0962', code: '02', urlPath: 'https://be-idmedcabodelegado.fgh.org.mz:', port: '5002', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'C44CD2E8-DCB3-464A-9F0F-F6E6421E73C8', code: '03', urlPath: 'https://be-idmednampula.fgh.org.mz:', port: '5003', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '3C0BF87C-87F3-4AF6-B95B-2D93F6B274AE', code: '04', urlPath: 'https://be-idmedzambezia.fgh.org.mz:', port: '5004', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '2408211C-7ACD-42C5-AC52-A3ACBCA747CF', code: '05', urlPath: 'https://be-idmedtete.fgh.org.mz:', port: '5005', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '29467F85-6CE4-4757-8AC5-E18FCFE0784C', code: '06', urlPath: 'https://be-idmedmanica.fgh.org.mz:', port: '5006', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '668BD439-B176-4FF5-9525-81D9DFB84F6D', code: '07', urlPath: 'https://be-idmedsofala.fgh.org.mz:', port: '5007', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'EDE2C07E-EE4B-4DED-8A7D-16D58BFB3751', code: '08', urlPath: 'https://be-idmedinhambane.fgh.org.mz:', port: '5008', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '6C50D9EB-9165-49AE-8A33-C9C837F58084', code: '09', urlPath: 'https://be-idmedgaza.fgh.org.mz:', port: '5009', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'DFF5C2ED-FB41-4574-9C26-BB164605BC00', code: '10', urlPath: 'https://be-idmedmaputo-prov.fgh.org.mz:', port: '5010', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '9E0AD237-9C7E-4656-9E58-D311F5E47F28', code: '11', urlPath: 'https://be-idmedmaputo.cid.fgh.org.mz:', port: '5011', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'ec74926c-77c2-4c23-9124-9591d1670ab0', code: '12', urlPath: 'https://172.104.236.126:', port: '445', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '7036157a-61c3-4515-9ab8-fc68359d9402', code: '13', urlPath: 'https://idmed-metadata.fgh.org.mz:', port: '5012', destination: 'METADATA', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '257016e7-628d-4d72-8b50-c16c32380767', code: '99', urlPath: 'http://172.104.203.103:', port: '3030', destination: 'SIMAM', username: 'admin', password: 'N/A', 'dbname':'N/A'))
 
         return provincialServerList
     }
+
 
     List<Object> listSystemConfigs() {
         List<Object> systemConfigsList = new ArrayList<>()
@@ -955,7 +955,7 @@ class BootStrap {
         facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c8025ea10002', code: 'APE', description: 'Agente Polivalente Elementar', type: "clinic_sector"))
         facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c8029c890003', code: 'CLINICA_MOVEL', description: 'Clinica Móvel', type: "clinic_sector"))
         facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0004', code: 'BRIGADA_MOVEL', description: 'Brigada Móvel', type: "clinic_sector"))
-       facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0006', code: 'NORMAL', description: 'Atendimento Normal', type: "clinic_sector"))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0006', code: 'NORMAL', description: 'Atendimento Normal', type: "clinic_sector"))
 
 
         return facilityTypeList
@@ -1034,7 +1034,6 @@ class BootStrap {
         formList.add(new LinkedHashMap(id: 'DB4162F8-A5B3-4656-ABEF-AC977E37A9EF', code: 'Loção', description: 'Loção', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
         formList.add(new LinkedHashMap(id: 'BA8E6254-0F88-43D7-8C39-500756AA7B2F', code: 'Pomada_olhos', description: 'Pomada para os olhos', 'unit': 'Pomada(s)', 'how_to_use': 'Aplicar'))
         formList.add(new LinkedHashMap(id: 'A80409ED-89FC-40AF-BA34-5CD0BA886570', code: 'Creme_Vaginal', description: 'Creme Vaginal', 'unit': 'Creme(s)', 'how_to_use': 'Aplicar'))
-        //   formList.add(new LinkedHashMap(id: 'EA2A097D-0D71-43C4-B230-8A927181C3A2', code: 'Granulos', description: 'Granulados')
         return formList
 
     }
@@ -2896,18 +2895,18 @@ class BootStrap {
 
     }
 
-   void updateClinicName() {
+    void updateClinicName() {
 
-       Clinic clinicToUpdate = Clinic.findByClinicName('Lapala Monapo CS');
-       if (clinicToUpdate) {
-           clinicToUpdate.setClinicName('Iapala Monapo CS')
-           clinicToUpdate.save(flush: true, failOnError: true)
-       }
+        Clinic clinicToUpdate = Clinic.findByClinicName('Lapala Monapo CS');
+        if (clinicToUpdate) {
+            clinicToUpdate.setClinicName('Iapala Monapo CS')
+            clinicToUpdate.save(flush: true, failOnError: true)
+        }
     }
 
     void updateClinicDistrict() {
         List<String> clinicNames = Arrays.asList("Iapala Monapo CS", "Namiconha CS", "Ribaue HR");
-           District district =   District.findByDescription('Rapale')
+        District district =   District.findByDescription('Rapale')
 
         List<Clinic> clinicsToUpdate = Clinic.findAllByClinicNameInListAndDistrict(clinicNames,district)
         clinicsToUpdate.each{clinicToUpdate ->
