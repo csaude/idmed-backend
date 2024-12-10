@@ -566,7 +566,7 @@ class PatientVisitController extends RestfulController {
                             stock.packagedDrugs = []
                             stock.save(flush: true)
                         }
-
+                        pcDrugs.packagedDrugStocks = new HashSet<>()
                         pcDrugs.packagedDrugStocks.add(packagedDrugStock)
                     }
                 }

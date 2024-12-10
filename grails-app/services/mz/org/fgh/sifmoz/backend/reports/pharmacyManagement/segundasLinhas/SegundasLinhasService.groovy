@@ -40,7 +40,7 @@ abstract class SegundasLinhasService implements ISegundasLinhasService {
 
         String reportId = searchParams.getId()
 
-        if (result.size() == 0) {
+        if (result == null || result.size() == 0) {
             processMonitor.setProgress(100)
             processMonitor.setMsg(PROCESS_STATUS_PROCESSING_FINISHED)
             reportProcessMonitorService.save(processMonitor)
