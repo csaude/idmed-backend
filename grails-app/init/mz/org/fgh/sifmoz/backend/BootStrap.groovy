@@ -825,6 +825,8 @@ class BootStrap {
                     provincialServer.password = "iDMED123"
                 }
                 provincialServer.urlPath = provincialServerObject.urlPath
+                provincialServer.port = provincialServerObject.port
+                provincialServer.username = provincialServerObject.username
                 provincialServer.save(flush: true, failOnError: true)
             }
         }
@@ -2112,6 +2114,7 @@ class BootStrap {
         clinicList.add(new LinkedHashMap(uuid: "27CA5DFB-4EB1-4061-8648-203CACC9231C", sisma_id: "E15hMrnuTpP", provinceCode: "11", province: "Cidade De Maputo", districtCode: "02", district: "Nlhamankulu", sitename: "José Macamo HG", site_nid: "1110202"))
         clinicList.add(new LinkedHashMap(uuid: "C33B0730-7145-49E4-AC31-000D8BB03E45", sisma_id: "jwVLYEoX4J7", provinceCode: "11", province: "Cidade De Maputo", districtCode: "02", district: "Nlhamankulu", sitename: "Xipamanine CS", site_nid: "1110212"))
         clinicList.add(new LinkedHashMap(uuid: "11743D97-75F4-4A04-8FED-63FF4AB58C25", sisma_id: "C5sZYUmuWE2", provinceCode: "06", province: "Manica", districtCode: "01", district: "Barue", sitename: "Catandica HD", site_nid: "1060200"))
+        clinicList.add(new LinkedHashMap(uuid: "B7AFC71E-5D6E-48FE-8C7F-19D0F8A193BF", sisma_id: "N/A", provinceCode: "06", province: "Manica", districtCode: "01", district: "Barue", sitename: " Centro de Saude Militar de Catandica", site_nid: "1060201"))
         clinicList.add(new LinkedHashMap(uuid: "AEF6B98D-FE63-4247-9388-D8DD0FF098D7", sisma_id: "yZ2DkwwDjTE", provinceCode: "06", province: "Manica", districtCode: "01", district: "Barue", sitename: "Chuala CS", site_nid: "1060216"))
         clinicList.add(new LinkedHashMap(uuid: "1EA3D1D7-CF8E-4937-92A0-B66E94589633", sisma_id: "sojvZgmkmY5", provinceCode: "06", province: "Manica", districtCode: "01", district: "Barue", sitename: "Cruz de Macossa CS", site_nid: "1060206"))
         clinicList.add(new LinkedHashMap(uuid: "7416D320-4978-4B15-8EC1-029587AEEEF3", sisma_id: "CQuZCqsENQC", provinceCode: "06", province: "Manica", districtCode: "01", district: "Barue", sitename: "Honde CS", site_nid: "1060208"))

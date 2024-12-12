@@ -103,7 +103,7 @@ environments:
   development:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://localhost:9876/idmed_derre
+      url: jdbc:postgresql://localhost:9876/idmed
   test:
     dataSource:
       dbCreate: update
