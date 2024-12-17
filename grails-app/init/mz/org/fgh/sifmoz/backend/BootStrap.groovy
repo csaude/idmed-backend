@@ -64,7 +64,7 @@ class BootStrap {
     SpringSecurityService springSecurityService
     DataSource dataSource
 
-   // DataSourceMigrationService dataSourceMigrationService
+    // DataSourceMigrationService dataSourceMigrationService
 
     def init = { servletContext ->
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
@@ -161,9 +161,9 @@ class BootStrap {
         }
 
         ClinicSector.withTransaction {
-        //   insertClinicSectorsOnClinics()
-     //       compareClinics()
-         //   dropClinicSector()
+            //   insertClinicSectorsOnClinics()
+            //       compareClinics()
+            //   dropClinicSector()
         }
 //        Pack.withTransaction {
 //           resolvePackWithoutPackagedDrugs()
@@ -186,7 +186,7 @@ class BootStrap {
 //        dataSourceMigrationService.loadAndSaveClinicSectorMigrationService()
 //        dataSourceMigrationService.loadAndSaveDoctorsMigrationService()
 //        dataSourceMigrationService.loadAndSavePatientVisitDetailsMigrationService()
-  //      dataSourceMigrationService.compareClinics()
+        //      dataSourceMigrationService.compareClinics()
 
     }
 
@@ -410,6 +410,8 @@ class BootStrap {
                 form.id = formObject.id
                 form.code = formObject.code
                 form.description = formObject.description
+                form.unit = formObject.unit
+                form.howToUse = formObject.how_to_use
                 form.save(flush: true, failOnError: true)
             }
         }
@@ -570,7 +572,7 @@ class BootStrap {
     void initTherapeuticRegimen() {
         for (therapeuticRegimenObject in listTherapeuticRegimen()) {
 
-           ClinicalService clinicalService =  ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
+            ClinicalService clinicalService =  ClinicalService.findById(therapeuticRegimenObject.clinical_service_id)
             TherapeuticRegimen therapeuticRegimen1 = TherapeuticRegimen.findById(therapeuticRegimenObject.id.toString().trim())
             TherapeuticRegimen therapeuticRegimen2 = TherapeuticRegimen.findByCode(therapeuticRegimenObject.code)
 
@@ -955,7 +957,7 @@ class BootStrap {
         facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c8025ea10002', code: 'APE', description: 'Agente Polivalente Elementar', type: "clinic_sector"))
         facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c8029c890003', code: 'CLINICA_MOVEL', description: 'Clinica Móvel', type: "clinic_sector"))
         facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0004', code: 'BRIGADA_MOVEL', description: 'Brigada Móvel', type: "clinic_sector"))
-       facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0006', code: 'NORMAL', description: 'Atendimento Normal', type: "clinic_sector"))
+        facilityTypeList.add(new LinkedHashMap(id: '8a8a823b81c7fa9d0181c802d7ec0006', code: 'NORMAL', description: 'Atendimento Normal', type: "clinic_sector"))
 
 
         return facilityTypeList
@@ -1018,24 +1020,25 @@ class BootStrap {
 
     List<Object> listForm() {
         List<Object> formList = new ArrayList<>()
-        formList.add(new LinkedHashMap(id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', code: 'Comp', description: 'Comprimido'))
-        formList.add(new LinkedHashMap(id: 'B61168FC-0178-4DC3-A89E-46A169A7457D', code: 'Xarope', description: 'Xarope'))
-        formList.add(new LinkedHashMap(id: '74C8F060-1EA4-45E9-94DB-2DE6775E6481', code: 'Capsula', description: 'Capsula'))
-        formList.add(new LinkedHashMap(id: '4EA7EF2B-7F86-4DA7-9B74-AF9B614A8DA6', code: 'Sabonete', description: 'Sabonete'))
-        formList.add(new LinkedHashMap(id: '024D260C-F3A3-4149-ACDF-97A68855D85A', code: 'Supositório', description: 'Supositório'))
-        formList.add(new LinkedHashMap(id: '451906BE-792D-4506-98DB-408F69B97AB1', code: 'Descongestionante_nasal', description: 'Descongestionante Nasal'))
-        formList.add(new LinkedHashMap(id: 'D213A686-782C-4AF3-BC31-BA04EEF0EDB0', code: 'Solução_Oftámilca', description: 'Solução Oftámilca'))
-        formList.add(new LinkedHashMap(id: '70E72CB3-F66D-41D7-B2C9-8F545E880FC6', code: 'Gotas_Ouvidos', description: 'Gotas para os ouvidos'))
-        formList.add(new LinkedHashMap(id: '742F4BC0-E0CC-4602-829B-BEC4EAFB0D2C', code: 'Suspensão', description: 'Suspensão'))
-        formList.add(new LinkedHashMap(id: '17828974-026F-41CF-A906-E97ABFB2A0AC', code: 'Creme', description: 'Creme'))
-        formList.add(new LinkedHashMap(id: '700FBB4F-C67C-4085-B05C-33259C29F90E', code: 'Pomada', description: 'Pomada'))
-        formList.add(new LinkedHashMap(id: '935436AC-8CB2-4691-8FC6-99209CDB9906', code: 'Gel', description: 'Gel'))
-        formList.add(new LinkedHashMap(id: '3B627885-00C6-4F49-97D0-11CECD6CABB4', code: 'Gel_Oral', description: 'Gel Oral'))
-        formList.add(new LinkedHashMap(id: 'DB4162F8-A5B3-4656-ABEF-AC977E37A9EF', code: 'Loção', description: 'Loção'))
-        formList.add(new LinkedHashMap(id: 'BA8E6254-0F88-43D7-8C39-500756AA7B2F', code: 'Pomada_olhos', description: 'Pomada para os olhos'))
-        formList.add(new LinkedHashMap(id: 'A80409ED-89FC-40AF-BA34-5CD0BA886570', code: 'Creme_Vaginal', description: 'Creme Vaginal'))
-        //   formList.add(new LinkedHashMap(id: 'EA2A097D-0D71-43C4-B230-8A927181C3A2', code: 'Granulos', description: 'Granulados')
+        formList.add(new LinkedHashMap(id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', code: 'Comp', description: 'Comprimido', 'unit': 'Comp(s)', 'how_to_use': 'Tomar'))
+        formList.add(new LinkedHashMap(id: 'B61168FC-0178-4DC3-A89E-46A169A7457D', code: 'Xarope', description: 'Xarope', 'unit':  'mL(s)', 'how_to_use': 'Tomar'))
+        formList.add(new LinkedHashMap(id: '74C8F060-1EA4-45E9-94DB-2DE6775E6481', code: 'Capsula', description: 'Capsula', 'unit': 'Capsula(s)', 'how_to_use': 'Tomar'))
+        formList.add(new LinkedHashMap(id: '4EA7EF2B-7F86-4DA7-9B74-AF9B614A8DA6', code: 'Sabonete', description: 'Sabonete', 'unit': 'Sabonete(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '024D260C-F3A3-4149-ACDF-97A68855D85A', code: 'Supositório', description: 'Supositório', 'unit': 'Comp(s)', 'how_to_use': 'Inserir'))
+        formList.add(new LinkedHashMap(id: '451906BE-792D-4506-98DB-408F69B97AB1', code: 'Descongestionante_nasal', description: 'Descongestionante Nasal', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: 'D213A686-782C-4AF3-BC31-BA04EEF0EDB0', code: 'Solução_Oftámilca', description: 'Solução Oftámilca', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '70E72CB3-F66D-41D7-B2C9-8F545E880FC6', code: 'Gotas_Ouvidos', description: 'Gotas para os ouvidos', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '742F4BC0-E0CC-4602-829B-BEC4EAFB0D2C', code: 'Suspensão', description: 'Suspensão', 'unit': 'mL(s)', 'how_to_use': 'Tomar'))
+        formList.add(new LinkedHashMap(id: '17828974-026F-41CF-A906-E97ABFB2A0AC', code: 'Creme', description: 'Creme', 'unit': 'Creme(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '700FBB4F-C67C-4085-B05C-33259C29F90E', code: 'Pomada', description: 'Pomada', 'unit': 'Pomada(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '935436AC-8CB2-4691-8FC6-99209CDB9906', code: 'Gel', description: 'Gel', 'unit': 'Gel', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: '3B627885-00C6-4F49-97D0-11CECD6CABB4', code: 'Gel_Oral', description: 'Gel Oral', 'unit': 'Gel', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: 'DB4162F8-A5B3-4656-ABEF-AC977E37A9EF', code: 'Loção', description: 'Loção', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: 'BA8E6254-0F88-43D7-8C39-500756AA7B2F', code: 'Pomada_olhos', description: 'Pomada para os olhos', 'unit': 'Pomada(s)', 'how_to_use': 'Aplicar'))
+        formList.add(new LinkedHashMap(id: 'A80409ED-89FC-40AF-BA34-5CD0BA886570', code: 'Creme_Vaginal', description: 'Creme Vaginal', 'unit': 'Creme(s)', 'how_to_use': 'Aplicar'))
 
+        formList.add(new LinkedHashMap(id: 'E8427B78-B4B2-4570-8721-03A60425909D', code: 'Suspensão_Injectável', description: 'Suspensão Injectável', 'unit': 'mL(s)', 'how_to_use': 'Administrar'))
+        formList.add(new LinkedHashMap(id: 'A19B6D0E-4F11-42C9-B720-9C8B617E29F8', code: 'Anel_Vaginal', description: 'A19B6D0E-4F11-42C9-B720-9C8B617E29F8', 'unit': 'Anel', 'how_to_use': 'Inserir'))
         return formList
 
     }
@@ -1563,6 +1566,7 @@ class BootStrap {
         therapeuticRegimenList.add(new LinkedHashMap(id: '3116136c-675c-4936-af9b-c8976a624c14', regimen_scheme: 'TTPT - INH300', code: 'TPT - INH300', openmrs_uuid: 'e1d43e52-1d5f-11e0-b929-000c29ad1d07', active: true, description: 'TPT - INH300', clinical_service_id: '6D12193B-7D5D-4665-8FC6-A03855986FBD'))
 
         therapeuticRegimenList.add(new LinkedHashMap(id: '017b6045-2c7c-437c-96c1-8e0867c6b579', regimen_scheme: 'TDF+3TC PrEP', code: 'TDF+3TC PrEP', openmrs_uuid: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', active: true, description: 'TDF+3TC PrEP', clinical_service_id: '165C876C-F850-436F-B0BB-80D519056BC3'))
+        therapeuticRegimenList.add(new LinkedHashMap(id: 'bbcf6efc-be7f-4011-821d-04b4683c327e', regimen_scheme: 'Cabotegravir PrEP', code: 'Cabotegravir PrEP', openmrs_uuid: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', active: false, description: 'Cabotegravir PrEP', clinical_service_id: '165C876C-F850-436F-B0BB-80D519056BC3'))
 
         return therapeuticRegimenList
 
@@ -1653,6 +1657,10 @@ class BootStrap {
         listDrug.add(new LinkedHashMap(id: '6641A2EE-8AAD-4E35-AEDE-A42E3DCBFC7A', form_id: '74C8F060-1EA4-45E9-94DB-2DE6775E6481', default_times: 1, pack_size: 180, name: '[IDV] Indinavir 400mg,', uuid_openmrs: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', fnm_code: '08S26', default_treatment: 1, default_period_treatment: 'Dia', active: false, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: 'A487066D-31F1-43C2-AA40-7720071F8310', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 60, name: '[D4T/3TC] Estavudina 40mg/Lamivudina 150mg ', uuid_openmrs: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', fnm_code: '08S33', default_treatment: 1, default_period_treatment: 'Dia', active: false, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: '0064E589-AB56-4D06-B52C-AFF6D8BDE4D5', form_id: '74C8F060-1EA4-45E9-94DB-2DE6775E6481', default_times: 1, pack_size: 30, name: '[LPV/RTV] Lopinavir 133,3mg/Ritonavir 33,3mg Gelatinosas', uuid_openmrs: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', fnm_code: '08S38', default_treatment: 1, default_period_treatment: 'Dia', active: false, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
+
+        listDrug.add(new LinkedHashMap(id: '04BCD7CD-5770-4140-BAA2-931DC70EA2E9', form_id: 'E8427B78-B4B2-4570-8721-03A60425909D', default_times: 1, pack_size: 3, name: '[CAB-LA] Cabotegravir 600mg/3ml Inj', uuid_openmrs: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', fnm_code: '08S18ZW', default_treatment: 1, default_period_treatment: 'Mês', active: false, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
+        listDrug.add(new LinkedHashMap(id: 'E7C7B604-0C34-48B3-A941-6DF3ADBEA3A8', form_id: 'A19B6D0E-4F11-42C9-B720-9C8B617E29F8', default_times: 1, pack_size: 1, name: '[DPV-VR] Dapivirina anel vaginal 25mg', uuid_openmrs: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', fnm_code: '08S18ZY', default_treatment: 1, default_period_treatment: 'Mês', active: false, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
+
 
         return listDrug
 
@@ -1939,6 +1947,7 @@ class BootStrap {
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'TDF13', drug_id: '08S39Z'))
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'TDF+3TC PrEP', drug_id: '08S18Z'))
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'PreEP', drug_id: '08S31'))
+        listDrugRegimen.add(new LinkedHashMap(regimen_id: 'Cabotegravir PrEP', drug_id: '08S18ZW'))
 
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'TPT - INH300', drug_id: '12D14'))
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'TPT - INH300', drug_id: '08L03'))
