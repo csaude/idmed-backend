@@ -7,6 +7,8 @@ class Form extends BaseEntity {
     String id
     String code
     String description
+    String unit
+    String howToUse
 
     static mapping = {
         id generator: "assigned"
@@ -22,6 +24,8 @@ class Form extends BaseEntity {
     static constraints = {
         code nullable: false, unique: true
         description nullable: false, blank: false
+        unit nullable: true, blank: true
+        howToUse nullable: true, blank: true
     }
 
     @Override

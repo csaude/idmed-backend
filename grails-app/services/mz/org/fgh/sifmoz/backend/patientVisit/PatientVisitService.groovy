@@ -18,7 +18,7 @@ abstract class PatientVisitService implements IPatientVisitService{
 
     @Override
     List<PatientVisit> getAllByPatientId(String patientId) {
-        return PatientVisit.findAllByPatient(Patient.findById(patientId))
+        return PatientVisit.findAllByPatient(Patient.findById(patientId), [max: 3, sort: "visitDate", order:"desc"])
     }
 
     @Override
@@ -47,5 +47,33 @@ abstract class PatientVisitService implements IPatientVisitService{
     PatientVisit getLastVisitOfPatient(String patientId) {
         List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(patientId), [sort: ['visitDate': 'desc']])
         return patientVisitList.get(0)
+    }
+
+    List<PatientVisit> getAllLastWithScreeningByPatientIds(List<String> patientIds) {
+        Session session = sessionFactory.getCurrentSession()
+
+        String queryString ="select *  " +
+                "from patient_last_visit_screening_vw  " +
+                "where patient_id in (:patientIds)"
+
+
+        def query = session.createSQLQuery(queryString).addEntity(PatientVisit.class)
+        query.setParameter("patientIds", patientIds)
+        List<PatientVisit> result = query.list()
+        return result
+    }
+
+    List<PatientVisit> getAllLast3VisitsWithScreeningByPatientIds(List<String> patientIds) {
+        Session session = sessionFactory.getCurrentSession()
+
+        String queryString ="select *  " +
+                "from patient_last_3_visits_screening_vw  " +
+                "where patient_id in (:patientIds)"
+
+
+        def query = session.createSQLQuery(queryString).addEntity(PatientVisit.class)
+        query.setParameter("patientIds", patientIds)
+        List<PatientVisit> result = query.list()
+        return result
     }
 }

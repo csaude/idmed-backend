@@ -63,6 +63,7 @@ class TherapeuticRegimenRestService extends SynchronizerTask {
                             getRegimenDrugs(therapeuticRegimenObject.getAt(("drugs")) as ArrayList, therapeuticRegimenExist)
                             therapeuticRegimenExist.save()
                         }
+                        if(therapeuticRegimenExist)
                         therapeuticRegimenList.add(therapeuticRegimenExist)
                     } catch (Exception e) {
                         e.printStackTrace()

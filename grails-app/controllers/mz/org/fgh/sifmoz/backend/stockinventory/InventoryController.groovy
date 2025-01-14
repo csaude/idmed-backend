@@ -4,6 +4,8 @@ import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
+import mz.org.fgh.sifmoz.backend.stock.Stock
+import mz.org.fgh.sifmoz.backend.stock.StockService
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
 
@@ -17,6 +19,8 @@ import grails.gorm.transactions.Transactional
 class InventoryController extends RestfulController{
 
     IInventoryService inventoryService
+    StockService stockService
+
 
 
     static responseFormats = ['json', 'xml']
@@ -36,17 +40,27 @@ class InventoryController extends RestfulController{
     }
 
     @Transactional
-    def close(String id) {
+    def close(String id, String endDate) {
         Inventory inventory = inventoryService.get(id)
 
         if (!Utilities.listHasElements(inventory.adjustments as ArrayList<?>)) {
             throw new RuntimeException("Não foram carregados os ajustes deste inventário, impossivel fechar!")
         } else {
             try {
-                inventory.close();
-                inventory.setEndDate(ConvertDateUtils.getCurrentDate())
-                inventoryService.processInventoryAdjustments(inventory)
+                inventory.close()
+                inventory.setEndDate(ConvertDateUtils.createDate(endDate, ConvertDateUtils.DDMM_DATE_FORMAT))
+                def adjustmentsTemp = inventory.adjustments
+                inventory.adjustments = []
                 inventoryService.save(inventory)
+                inventory.setAdjustments(adjustmentsTemp)
+                inventoryService.processInventoryAdjustments(inventory)
+                inventory.adjustments.each { adjustment ->
+                    adjustment.save(flush: true)
+                    Stock stock = adjustment.adjustedStock
+                    stock.stockMoviment = adjustment.getBalance()
+                    stockService.save(stock)
+                }
+
             } catch (ValidationException e) {
                 respond inventory.errors
                 return
@@ -55,6 +69,7 @@ class InventoryController extends RestfulController{
             respond inventory, [status: OK, view: "show"]
         }
     }
+
 
     @Transactional
     def save() {
@@ -102,7 +117,7 @@ class InventoryController extends RestfulController{
         inventoryDb.adjustments.eachWithIndex { item, index ->
             objectJSON.adjustments.eachWithIndex { item2, index2 ->
                 if (item.adjustedStockId == objectJSON.adjustments[index2].adjustedStockId)
-                item.id = UUID.fromString(objectJSON.adjustments[index].id)
+                    item.id = UUID.fromString(objectJSON.adjustments[index].id)
             }
         }
 
@@ -144,5 +159,10 @@ class InventoryController extends RestfulController{
     @Transactional
     def isInventoryPeriod(String clinicId) {
         render inventoryService.isInventoryPeriod(clinicId)
+    }
+
+    @Transactional
+    def hasInventoryInPreviousMonth(String clinicId) {
+        render inventoryService.hasInventoryInPreviousMonth(clinicId)
     }
 }

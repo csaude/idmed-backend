@@ -41,6 +41,8 @@ class Prescription extends BaseEntity{
     String photoName
     String photoContentType
     Date creationDate = new Date()
+    String origin
+
     static hasMany = [prescribedDrugs: PrescribedDrug, prescriptionDetails: PrescriptionDetail]
 
     static mapping = {
@@ -60,6 +62,7 @@ class Prescription extends BaseEntity{
         photoContentType nullable: true, blank: true
         patientStatus nullable: true, blank: true
         creationDate nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {

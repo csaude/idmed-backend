@@ -20,16 +20,19 @@ class PatientVisitDetails extends BaseEntity {
     Pack pack
     PatientVisit patientVisit
     Date creationDate = new Date()
+    String origin
 
     static belongsTo = [PatientVisit]
 
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_patientVisitDetails_Idx'
+        pack lazy: false
     }
     static constraints = {
         pack nullable: false
         creationDate nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {

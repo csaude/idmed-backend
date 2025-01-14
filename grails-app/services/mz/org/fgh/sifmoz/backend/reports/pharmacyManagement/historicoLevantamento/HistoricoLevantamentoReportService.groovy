@@ -136,6 +136,7 @@ abstract class HistoricoLevantamentoReportService implements IHistoricoLevantame
         item[8] == null? historicoLevantamentoReport.setDispenseType("") : historicoLevantamentoReport.setDispenseType(item[8].toString())
         item[9] == null? historicoLevantamentoReport.setDispenseMode("") : historicoLevantamentoReport.setDispenseMode(item[9].toString())
         item[15] == null? historicoLevantamentoReport.setClinicsector("") : historicoLevantamentoReport.setClinicsector(item[15].toString())
+        item[16] == null? historicoLevantamentoReport.setIdmeduser("") : historicoLevantamentoReport.setIdmeduser(extractUserName(item[16].toString()))
 
 
         // set pickUpDate
@@ -149,5 +150,25 @@ abstract class HistoricoLevantamentoReportService implements IHistoricoLevantame
             historicoLevantamentoReport.setNexPickUpDate(nextPickUpDate)
         }
         save(historicoLevantamentoReport)
+    }// Groovy
+
+
+    String extractUserName(String encodedString) {
+        String decodedStringBase64 = ""
+
+        try {
+            byte[] decodedBytes = Base64.decoder.decode(encodedString)
+            String decodedStr = new String(decodedBytes)
+            int stopIndex = decodedStr.indexOf(":")
+
+            if (stopIndex != -1) {
+                decodedStringBase64 = decodedStr.substring(0, stopIndex)
+            }
+        } catch (Exception e) {
+            log.error("Error decoding string: ", e)
+        }
+
+        return decodedStringBase64
     }
+
 }

@@ -3,13 +3,17 @@ package mz.org.fgh.sifmoz.backend.patientVisitDetails
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.openmrsErrorLog.OpenmrsErrorLog
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
 import mz.org.fgh.sifmoz.backend.packaging.Pack
+import mz.org.fgh.sifmoz.backend.packaging.PackService
 import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.IPatientVisitService
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.prescription.IPrescriptionService
@@ -17,6 +21,8 @@ import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.stock.IStockService
 import mz.org.fgh.sifmoz.backend.stock.Stock
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
+
+//import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer2
 
 import javax.transaction.TransactionalException
 
@@ -70,6 +76,7 @@ class PatientVisitDetailsController extends RestfulController {
         }
 
         try {
+            configPatientVisitDetailsOrigin(patientVisitDetails)
             determinePrescriptionPatientType(patientVisitDetails)
             patientVisitDetailsService.save(patientVisitDetails)
         } catch (ValidationException e) {
@@ -93,6 +100,7 @@ class PatientVisitDetailsController extends RestfulController {
         }
 
         try {
+            configPatientVisitDetailsOrigin(patientVisitDetails)
             patientVisitDetailsService.save(patientVisitDetails)
         } catch (ValidationException e) {
             respond patientVisitDetails.errors
@@ -115,7 +123,7 @@ class PatientVisitDetailsController extends RestfulController {
             restoreStock(patientVisitDetail.pack)
             packService.delete(patientVisitDetail.pack.id)
             updateErrorLog(id)
-            if(PatientVisitDetails.countByPrescription(patientVisitDetail.prescription) == 1)
+            if (PatientVisitDetails.countByPrescription(patientVisitDetail.prescription) == 1)
                 prescriptionService.delete(patientVisitDetail.prescription.id)
             render status: NO_CONTENT
             return
@@ -139,7 +147,38 @@ class PatientVisitDetailsController extends RestfulController {
     }
 
     def getLastByPatientId(String patientId) {
-        render JSONSerializer.setObjectListJsonResponse(PatientVisitDetails.findAllByPatientVisitInList(PatientVisit.findAllByPatient(Patient.get(patientId)))) as JSON
+
+        def patient = Patient.get(patientId)
+
+        def patientServiceIdentifierList = PatientServiceIdentifier.createCriteria().list {
+            eq('patient', patient)
+        }
+
+        def patientVisitDetailsList = new ArrayList<PatientVisitDetails>()
+        patientServiceIdentifierList.each { patientServiceIdentifier ->
+
+            def lastPrescriptionByService = PatientVisitDetails.createCriteria().get {
+                createAlias('patientVisit', 'pv' )
+                createAlias('prescription', 'p')
+                createAlias('episode', 'e')
+                eq('pv.patient', patient)
+                eq('e.patientServiceIdentifier.id',patientServiceIdentifier.id)
+                projections {
+                    max('p.prescriptionDate')
+                }
+            }
+
+            def lastPatientVisitDetails = PatientVisitDetails.createCriteria().list {
+                createAlias('patientVisit', 'pv')
+                eq('pv.patient', patient)
+                createAlias('prescription', 'p')
+                eq('p.prescriptionDate',lastPrescriptionByService)
+            }
+
+            patientVisitDetailsList.addAll(lastPatientVisitDetails as List<PatientVisitDetails>)
+        }
+
+        render JSONSerializer.setObjectListJsonResponseLevel3(patientVisitDetailsList as List) as JSON
     }
 
     def getAllofPrecription(String prescriptionId) {
@@ -188,9 +227,9 @@ class PatientVisitDetailsController extends RestfulController {
         }
     }
 
-    def updateErrorLog(String patientVisitDetails){
+    def updateErrorLog(String patientVisitDetails) {
         OpenmrsErrorLog patientVisitDetailsInLog = OpenmrsErrorLog.findByPatientVisitDetails(patientVisitDetails)
-        if(patientVisitDetailsInLog){
+        if (patientVisitDetailsInLog) {
             patientVisitDetailsInLog.returnPickupDate = new Date()
             patientVisitDetailsInLog.save()
         }
@@ -198,5 +237,33 @@ class PatientVisitDetailsController extends RestfulController {
 
     def getAllByPatientId(String patientId) {
         render JSONSerializer.setObjectListJsonResponse(patientVisitDetailsService.getAllByPatientId(patientId)) as JSON
+    }
+
+    def getLastAllByListPatientId() {
+
+        def objectJSON = request.JSON
+        List<String> ids = objectJSON.ids
+
+        def result = patientVisitDetailsService.getLastAllByListPatientId(ids)
+
+        def jsonSerialize =  JSONSerializer.setObjectListJsonResponse(result) as JSON
+
+        render jsonSerialize
+    }
+
+
+
+    private static PatientVisitDetails configPatientVisitDetailsOrigin(PatientVisitDetails patientVisitDetails) {
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(patientVisitDetails)){
+            patientVisitDetails.origin = systemConfigs.description
+        }
+
+        return patientVisitDetails
+
+    }
+
+    private static boolean checkHasNotOrigin(PatientVisitDetails patientVisitDetails){
+        return patientVisitDetails.origin == null || patientVisitDetails?.origin?.isEmpty()
     }
 }

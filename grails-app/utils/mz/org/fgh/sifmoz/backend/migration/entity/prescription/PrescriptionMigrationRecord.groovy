@@ -80,7 +80,7 @@ class PrescriptionMigrationRecord extends AbstractMigrationRecord {
                 psi.setIdentifierType(clinicalService.getIdentifierType())
                 psi.setValue(this.nid)
                 psi.setState("Activo")
-                psi.setPrefered(clinicalService.isTarv())
+                psi.setPrefered(clinicalService.isTARV())
                 psi.setValue(this.nid)
 
                 List<PatientServiceIdentifier> listPSI = PatientServiceIdentifier.findAllByPatient(psi.getPatient())
@@ -194,8 +194,10 @@ class PrescriptionMigrationRecord extends AbstractMigrationRecord {
             prescriptionDetail.setTherapeuticRegimen(regimen)
             prescriptionDetail.setDispenseType(DispenseType.findByCode(getTipoDispensa()))
             prescriptionDetail.setId(UUID.randomUUID().toString())
+            prescriptionDetail.setClinic(clinic)
             prescription.setPrescriptionDetails(new ArrayList<>() as Set<PrescriptionDetail>)
             prescription.getPrescriptionDetails().add(prescriptionDetail)
+            prescription.setClinic(clinic)
 
             /*
             if (this.reasonforupdate == "Alterar") { // Novo Paciente - Epsiodio

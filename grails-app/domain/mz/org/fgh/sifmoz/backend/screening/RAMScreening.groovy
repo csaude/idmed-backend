@@ -14,6 +14,8 @@ class RAMScreening extends BaseEntity {
    // boolean referedToUSRam
     @JsonBackReference
     PatientVisit visit
+    Clinic clinic
+    String origin
 
     static belongsTo = [PatientVisit]
 
@@ -24,11 +26,14 @@ class RAMScreening extends BaseEntity {
 
     static constraints = {
         adverseReaction(nullable: true, blank: true)
+        clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
+            clinic = Clinic.findWhere(mainClinic: true)
         }
     }
 

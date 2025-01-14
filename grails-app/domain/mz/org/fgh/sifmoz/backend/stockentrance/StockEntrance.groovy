@@ -12,6 +12,7 @@ class StockEntrance extends BaseEntity {
     Clinic clinic
     Date creationDate
     String notes
+    boolean isDistribution
     static hasMany = [stocks: Stock]
 
     static mapping = {
@@ -20,7 +21,7 @@ class StockEntrance extends BaseEntity {
     }
 
     static constraints = {
-        orderNumber(nullable: false, blank: false, unique: ['dateReceived'])
+        orderNumber(nullable: false, blank: false, unique: ['dateReceived','clinic'] )
         dateReceived(nullable: false, blank: false, validator: { dateReceived, urc ->
             return ((dateReceived <= new Date()))
         })

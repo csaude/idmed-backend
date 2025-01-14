@@ -1,6 +1,8 @@
 package mz.org.fgh.sifmoz.backend.stockinventory
 
-import mz.org.fgh.sifmoz.backend.drug.Drug
+
+import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
+import mz.org.fgh.sifmoz.backend.reports.stock.InventoryReportTemp
 
 interface IInventoryService {
 
@@ -23,5 +25,9 @@ interface IInventoryService {
     Inventory removeInventory(String id)
 
     boolean isInventoryPeriod(String clinicId)
+
+    List getInventoriesData(ReportSearchParams reportSearchParams)
+
+    List<InventoryReportTemp> getInventoryListByReportId(String reportId)
 
 }

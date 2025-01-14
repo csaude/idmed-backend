@@ -50,7 +50,7 @@ class RestPostPatientCentralMobileService extends SynchronizerTask {
             "Nome",
             "NID");
 
-    @Scheduled(fixedDelay = 60000L)
+    // @Scheduled(fixedDelay = 60000L)
     void execute() {
         PatientTransReference.withTransaction {
             if (this.instalationConfig != null && !this.isProvincial()) {
@@ -99,7 +99,7 @@ class RestPostPatientCentralMobileService extends SynchronizerTask {
                             // syncTempPatient.setClinic(clinicDestination.matchId)
                         } else if (pt.operationType.code.equals("REFERENCIA_DC")) {
                             ClinicSector clinicSectorDestination = ClinicSector.findById(pt.destination.contains(":") ? pt.destination.substring(pt.destination.indexOf(":") + 1).trim() : pt.destination.trim())
-                            syncTempPatient.setClinicname(clinicSectorDestination != null ? clinicSectorDestination.description : 'Desconhecido')
+                            syncTempPatient.setClinicname(clinicSectorDestination != null ? clinicSectorDestination.clinicName : 'Desconhecido')
                           //  syncTempPatient.setClinicuuid(clinicSectorDestination != null ? clinicSectorDestination.uuid : 'Desconhecido')
                             syncTempPatient.setClinicuuid(pt.destination.contains(":") ? pt.destination.substring(pt.destination.indexOf(":") + 1).trim() : pt.destination.trim())
                         }

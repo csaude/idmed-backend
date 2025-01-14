@@ -6,8 +6,11 @@ import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.dispenseType.DispenseType
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
+import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.linhasUsadas.LinhasUsadasReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaRegimenSubReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaReport
+import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.segundasLinhas.SegundasLinhasReport
+import mz.org.fgh.sifmoz.backend.reports.stock.BalanceteReport
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 
 
@@ -32,6 +35,12 @@ interface IPackService {
 
     List<MmiaRegimenSubReport> getMMIARegimenStatisticTB(ClinicalService service, Clinic clinic, Date startDate, Date endDate)
 
+    List<LinhasUsadasReport> getLinhasUsadas(ClinicalService service, Clinic clinic, Date startDate, Date endDate)
+
+    List<SegundasLinhasReport> getSegundasLinhas(ClinicalService service, Clinic clinic, Date startDate, Date endDate)
+
+    List<BalanceteReport> getBalanceteReport(ClinicalService service, Clinic clinic, Date startDate, Date endDate)
+
     Object getMMIADispenseTypeStatisticOnPeriod(ClinicalService service, Clinic clinic, Date startDate, Date endDate)
 
     int countPacksByServiceOnPeriod(ClinicalService service, Clinic clinic, Date startDate, Date endDate)
@@ -42,7 +51,15 @@ interface IPackService {
 
     List<Pack> getAbsentReferredPatientsByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
 
+    List<Pack> getAbandonmentByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
+
+    List<Pack> getAbandonmentAndReturnByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
+
     List<Pack> getAbsentPatientsByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
+
+    List<Pack> getAbsentPatientsDTByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
+
+    List<Pack> getAbsentPatientsDSByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
 
     List<Pack> getAbsentPatientsApssByClinicalServiceAndClinicOnPeriod(ClinicalService clinicalService,Clinic clinic,Date startDate, Date endDate)
 

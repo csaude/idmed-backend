@@ -112,7 +112,6 @@ abstract class EpisodeService implements IEpisodeService{
                 "inner join psi.patient p" +
                 "inner join ep.clinic c " +
                 "where ep.clinicSector = :clinicSector " +
-                "and exists (select pvd from PatientVisitDetails pvd where pvd.episode = ep ) " +
                 "and ep.episodeDate = ( " +
                 "  SELECT MAX(e.episodeDate)" +
                 "  FROM Episode e" +
@@ -129,5 +128,29 @@ abstract class EpisodeService implements IEpisodeService{
         return episodes
     }
 
+    public closePatientServiceIdentifierOfPatientWhenOpenMrsObit(Patient patient){
+        def patientServiceIdentifiers = PatientServiceIdentifier.findAllByPatient(patient)
+
+        patientServiceIdentifiers.each { item ->
+            Episode lastEpisode =  item.episodes.stream().reduce((prev, next) -> next).orElse(null)
+                Episode closureEpisode = new Episode()
+                closureEpisode.episodeDate = new Date()
+                closureEpisode.episodeType = EpisodeType.findByCode('FIM')
+                closureEpisode.patientServiceIdentifier = item
+                closureEpisode.clinic = item.clinic
+                closureEpisode.clinicSector = lastEpisode.getClinicSector()
+                closureEpisode.creationDate = new Date()
+                closureEpisode.notes = 'Fechado Devido ao' + StartStopReason.OBITO
+                closureEpisode.startStopReason =StartStopReason.findByCode(StartStopReason.OBITO)
+                closureEpisode.origin = lastEpisode.getClinic().getUuid()
+                closureEpisode.beforeInsert()
+                this.save(closureEpisode)
+                item.endDate = new Date()
+                item.state = 'Inactivo'
+                item.origin =  lastEpisode.getClinic().getUuid()
+                item.save(flush: true)
+            }
+
+        }
 
 }

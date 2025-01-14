@@ -3,6 +3,7 @@ package mz.org.fgh.sifmoz.backend.packagedDrug
 import com.fasterxml.jackson.annotation.JsonBackReference
 import com.fasterxml.jackson.annotation.JsonManagedReference
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.protection.Menu
@@ -21,6 +22,8 @@ class PackagedDrug extends BaseEntity {
     Date creationDate = new Date()
     Pack pack
     int quantityRemain
+    Clinic clinic
+    String origin
     static belongsTo = [Pack]
 
     static hasMany = [packagedDrugStocks: PackagedDrugStock]
@@ -28,7 +31,6 @@ class PackagedDrug extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_PackagedDrug_Idx'
-
     }
 
     static constraints = {
@@ -37,11 +39,14 @@ class PackagedDrug extends BaseEntity {
         form nullable: true
         nextPickUpDate nullable: true
         creationDate nullable: true
+        clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
+            clinic = Clinic.findWhere(mainClinic: true)
         }
     }
 

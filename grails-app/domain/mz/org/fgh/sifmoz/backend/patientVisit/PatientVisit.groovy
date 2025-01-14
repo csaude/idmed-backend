@@ -15,12 +15,15 @@ import mz.org.fgh.sifmoz.backend.screening.TBScreening
 import mz.org.fgh.sifmoz.backend.screening.VitalSignsScreening
 import org.springframework.cglib.proxy.Mixin
 
+import javax.persistence.Table
+
 class PatientVisit extends BaseEntity {
     String id
     Date visitDate
     @JsonIgnore
     Clinic clinic
     Date creationDate = new Date()
+    String origin
 
     @JsonIgnore
     Patient patient
@@ -37,6 +40,7 @@ class PatientVisit extends BaseEntity {
 
     static constraints = {
         creationDate nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {

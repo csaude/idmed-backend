@@ -1,7 +1,9 @@
 package mz.org.fgh.sifmoz.backend.patient
 
 import grails.gorm.services.Service
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
+import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
 
 
 interface IPatientService {
@@ -16,7 +18,7 @@ interface IPatientService {
 
     Patient save(Patient patient)
 
-    List<Patient> search(Patient patient)
+    List<Patient> search(Patient patient,int offset, int limit)
 
     List<Patient> search(String searchString, String clinicId)
 
@@ -24,6 +26,16 @@ interface IPatientService {
 
     Long count(Patient patient)
 
-    List<Patient> getAllPatientsInClinicSector(ClinicSector clinicSector)
+    List getPatientWithoutDispense(ReportSearchParams reportSearchParams)
+
+    List getAllPatientsInClinicSector(String clinicSector, int offset, int limit)
+
+    List getAllExpectedPatients(ReportSearchParams reportSearchParams)
+  
+    Long countPatientSearchResult(Patient patient)
+
+    List findPossibleDuplicatePatients()
+
+    List<Patient> getAllPatientsIsAbandonment(int offset, int max)
 
 }

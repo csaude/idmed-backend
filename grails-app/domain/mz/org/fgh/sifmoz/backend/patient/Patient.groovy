@@ -1,5 +1,6 @@
 package mz.org.fgh.sifmoz.backend.patient
 
+import grails.plugins.orm.auditable.Auditable
 import mz.org.fgh.sifmoz.backend.appointment.Appointment
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
@@ -17,7 +18,7 @@ import mz.org.fgh.sifmoz.backend.protection.Menu
 import mz.org.fgh.sifmoz.backend.tansreference.PatientTransReference
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
 
-class Patient extends BaseEntity {
+class Patient extends BaseEntity implements Auditable{
     String id
     String firstNames
     String middleNames
@@ -40,10 +41,13 @@ class Patient extends BaseEntity {
     char hisSyncStatus
     String hisProvider
     Long matchId
-
     Clinic clinic
     Date creationDate = new Date()
+    String origin
+
     static belongsTo = [Clinic]
+
+    static auditable = true
 
     static hasMany = [
             attributes           : PatientAttribute,
@@ -55,6 +59,7 @@ class Patient extends BaseEntity {
     static mapping = {
         id generator: "assigned"
         id column: 'id', index: 'Pk_Patient_Idx'
+        identifiers cascade: 'none'
     }
 
     static constraints = {
@@ -77,6 +82,7 @@ class Patient extends BaseEntity {
         creationDate nullable: true
         hisSyncStatus nullable: true
         hisProvider nullable: true
+        origin nullable: true
         matchId nullable: false, unique: true
     }
 
@@ -84,18 +90,18 @@ class Patient extends BaseEntity {
         if (!id) {
             id = UUID.randomUUID()
         }
-        if (!clinic) {
-            clinic = Clinic.findByMainClinic(true)
-        }
-        if (matchId == null) {
-            def  patient =  findAll( [sort: ['matchId': 'desc']])
-            if (patient.size() == 0) {
-                matchId = 1
-            } else {
-                matchId = patient.get(0).matchId + 1
-            }
-
-        }
+//        if (!clinic) {
+//            clinic = Clinic.findByMainClinic(true)
+//        }
+//        if (matchId == null) {
+//            def  patient =  findAll( [sort: ['matchId': 'desc']])
+//            if (patient.size() == 0) {
+//                matchId = 1
+//            } else {
+//                matchId = patient.get(0).matchId + 1
+//            }
+//
+//        }
     }
     @Override
     List<Menu> hasMenus() {

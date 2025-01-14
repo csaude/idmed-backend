@@ -3,6 +3,8 @@ package mz.org.fgh.sifmoz.backend.stocklevel
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
+import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
 import static org.springframework.http.HttpStatus.CREATED
@@ -93,5 +95,10 @@ class StockLevelController extends RestfulController{
         }
 
         render status: NO_CONTENT
+    }
+
+    def getStockLevelByClinicAndDrug(String clinicId, String drugId) {
+        def stockLevel = StockLevel.findByClinicAndDrug(Clinic.findById(clinicId), Drug.findById(drugId))
+        render JSONSerializer.setObjectListJsonResponse(stockLevel) as JSON
     }
 }

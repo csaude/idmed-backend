@@ -5,7 +5,11 @@ import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
 import mz.org.fgh.sifmoz.backend.doctor.DoctorService
+import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
+import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
@@ -71,6 +75,7 @@ class PrescriptionController extends RestfulController{
             if (!Utilities.stringHasValue(prescription.id)) {
                 prescription.generateNextSeq()
             }
+            configPrescriptionOrigin(prescription)
             prescriptionService.save(prescription)
         } catch (ValidationException e) {
             respond prescription.errors
@@ -93,6 +98,7 @@ class PrescriptionController extends RestfulController{
         }
 
         try {
+            configPrescriptionOrigin(prescription)
             prescriptionService.save(prescription)
         } catch (ValidationException e) {
             respond prescription.errors
@@ -130,14 +136,64 @@ class PrescriptionController extends RestfulController{
     // Futuramente reduzir para 2 ultimas prescricoes
     def getAllPrescriptionByPatientId(String patientId){
         def patient = Patient.get(patientId)
-        def lastPatientVisit = PatientVisit.findAllByPatient(patient)
-        def patientVisitDetails = PatientVisitDetails.findAllByPatientVisitInList(lastPatientVisit)
-        def prescriptions = Prescription.findAllByIdInList(patientVisitDetails?.prescription?.id)
+        List<Prescription> prescriptionList = new ArrayList<Prescription>()
 
-        render JSONSerializer.setObjectListJsonResponse(prescriptions) as JSON
+        if(patient){
+            def patientServiceIdentifierList = PatientServiceIdentifier.createCriteria().list {
+                eq("patient", patient)
+            }
+
+            patientServiceIdentifierList.each { patientServiceIdentifier ->
+                def episode = Episode.createCriteria().get {
+                    eq("patientServiceIdentifier", patientServiceIdentifier)
+                    maxResults(1)
+                    order("episodeDate", "desc")
+                }
+
+                if(episode){
+                    def patientVisitDetails = PatientVisitDetails.createCriteria().list {
+                        eq("episode", episode)
+                    }
+
+                    if(!patientVisitDetails.isEmpty()){
+                        def prescriptionIds = patientVisitDetails.collect { it.prescription.id }
+                        def prescription = Prescription.createCriteria().get {
+                            'in'("id", prescriptionIds)
+                            maxResults(1)
+                            order("prescriptionDate", "desc")
+                        }
+
+                        if(prescription){
+                            prescriptionList.add(prescription as Prescription)
+                        }
+                    }
+                }
+            }
+        }
+
+        render JSONSerializer.setObjectListJsonResponse(prescriptionList) as JSON
     }
 
     def getAllLastPrescriptionOfClinic(String clinicId, int offset, int max) {
         render JSONSerializer.setObjectListJsonResponse(prescriptionService.getAllLastPrescriptionOfClinic(clinicId, offset, max)) as JSON
+    }
+
+    def getAllByPrescriptionIds() {
+        def objectJSON = request.JSON
+        List<String> ids = objectJSON
+        render JSONSerializer.setObjectListJsonResponse(Prescription.findAllByIdInList(ids)) as JSON
+    }
+
+    private static Prescription configPrescriptionOrigin(Prescription prescription){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(prescription)){
+            prescription.origin = systemConfigs.description
+        }
+
+        return prescription
+    }
+
+    private static boolean checkHasNotOrigin(Prescription prescription){
+        return prescription.origin == null || prescription?.origin?.isEmpty()
     }
 }

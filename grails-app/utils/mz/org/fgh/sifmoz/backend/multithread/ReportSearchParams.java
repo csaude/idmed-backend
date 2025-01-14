@@ -21,6 +21,17 @@ public class ReportSearchParams implements Validateable {
     public static final String PERIOD_TYPE_SEMESTER = "SEMESTER";
     public static final String PERIOD_TYPE_ANNUAL = "ANNUAL";
 
+
+    public static final String PERIOD_QUARTER_1 = "1";
+    public static final String PERIOD_QUARTER_2 = "2";
+    public static final String PERIOD_QUARTER_3 = "3";
+    public static final String PERIOD_QUARTER_4 = "4";
+    public static final String PERIOD_SEMESTER_1 = "1";
+
+    public static final String PERIOD_SEMESTER_2 = "2";
+
+    public static final String PERIOD_TYPE_NA = "NOT_APPLICABLE";
+
     private String id;
     private String clinicId;
     private String provinceId;
@@ -48,89 +59,96 @@ public class ReportSearchParams implements Validateable {
         params.determineStartEndDate();
         return params;
     }
+
     public void determineStartEndDate() {
-        Date currentDate = new Date(); // Obtém a data atual
+        Date currentDate = new Date();
+
         switch (getPeriodType()) {
             case PERIOD_TYPE_SPECIFIC:
-                setStartDate(ConvertDateUtils.getDateAtStartOfDay(ConvertDateUtils.createDate(getStartDateParam(),"dd-MM-yyyy")));
-                setEndDate(ConvertDateUtils.createDate(getEndDateParam(),"dd-MM-yyyy"));
+                handleSpecificPeriod();
                 break;
             case PERIOD_TYPE_MONTH:
-                int month = Integer.parseInt(getPeriod());
-                Date startDateTemp = DateUtils.addMonths(ConvertDateUtils.getDateFromDayAndMonthAndYear(21, month, getYear()), -1);
-                int yearStartDate = DateUtils.toCalendar(startDateTemp).get(Calendar.YEAR);
-                int monthStartDate = DateUtils.toCalendar(startDateTemp).get(Calendar.MONTH);
-                setStartDate(ConvertDateUtils.getDateAtStartOfDay(startDateTemp));
-                setEndDate(ConvertDateUtils.getDateFromDayAndMonthAndYear(20, month, getYear()));
-
-                if (endDate.after(currentDate)) {
-                    setEndDate(currentDate);
-                }
+                handleMonthPeriod(currentDate);
                 break;
             case PERIOD_TYPE_QUARTER:
-                switch (getPeriod()) {
-                    case "1":
-                        setStartDate(ConvertDateUtils.getDateAtStartOfDay(ConvertDateUtils.getDateFromDayAndMonthAndYear(21, 12, getYear() - 1)));
-                        setEndDate(ConvertDateUtils.getDateFromDayAndMonthAndYear(20, 3, getYear()));
-
-                        if (endDate.after(currentDate)) {
-                            setEndDate(currentDate);
-                        }
-                        break;
-                    case "2":
-                        setStartDate(ConvertDateUtils.getDateAtStartOfDay(ConvertDateUtils.getDateFromDayAndMonthAndYear(21, 3, getYear())));
-                        setEndDate(ConvertDateUtils.getDateFromDayAndMonthAndYear(20, 6, getYear()));
-
-                        if (endDate.after(currentDate)) {
-                            setEndDate(currentDate);
-                        }
-                        break;
-                    case "3":
-                        setStartDate(ConvertDateUtils.getDateAtStartOfDay(ConvertDateUtils.getDateFromDayAndMonthAndYear(21, 6, getYear())));
-                        setEndDate(ConvertDateUtils.getDateFromDayAndMonthAndYear(20, 9, getYear()));
-
-                        if (endDate.after(currentDate)) {
-                            setEndDate(currentDate);
-                        }
-                        break;
-                    case "4":
-                        setStartDate(ConvertDateUtils.getDateAtStartOfDay(ConvertDateUtils.getDateFromDayAndMonthAndYear(21, 9, getYear())));
-                        setEndDate(ConvertDateUtils.getDateFromDayAndMonthAndYear(20, 12, getYear()));
-
-                        if (endDate.after(currentDate)) {
-                            setEndDate(currentDate);
-                        }
-                        break;
-                }
+                handleQuarterPeriod(currentDate);
                 break;
             case PERIOD_TYPE_SEMESTER:
-                switch (getPeriod()) {
-                    case "1":
-                        setStartDate(ConvertDateUtils.getDateAtStartOfDay(ConvertDateUtils.getDateFromDayAndMonthAndYear(21, 12, getYear() - 1)));
-                        setEndDate(ConvertDateUtils.getDateFromDayAndMonthAndYear(20, 6, getYear()));
-
-                        if (endDate.after(currentDate)) {
-                            setEndDate(currentDate);
-                        }
-                        break;
-                    case "2":
-                        setStartDate(ConvertDateUtils.getDateAtStartOfDay(ConvertDateUtils.getDateFromDayAndMonthAndYear(21, 6, getYear())));
-                        setEndDate(ConvertDateUtils.getDateFromDayAndMonthAndYear(20, 12, getYear()));
-
-                        if (endDate.after(currentDate)) {
-                            setEndDate(currentDate);
-                        }
-                        break;
-                }
+                handleSemesterPeriod(currentDate);
                 break;
             case PERIOD_TYPE_ANNUAL:
-                setStartDate(ConvertDateUtils.getDateAtStartOfDay(ConvertDateUtils.getDateFromDayAndMonthAndYear(21, 12, getYear() - 1)));
-                setEndDate(ConvertDateUtils.getDateFromDayAndMonthAndYear(20, 12, getYear()));
-
-                if (endDate.after(currentDate)) {
-                    setEndDate(currentDate);
-                }
+                handleAnnualPeriod(currentDate);
                 break;
+            case PERIOD_TYPE_NA:
+                break;
+        }
+    }
+
+    private void handleSpecificPeriod() {
+        this.startDate = ConvertDateUtils.getDateAtStartOfDay(ConvertDateUtils.createDate(getStartDateParam(), "dd-MM-yyyy"));
+        this.endDate = ConvertDateUtils.createDate(getEndDateParam(), "dd-MM-yyyy");
+    }
+
+    private void handleMonthPeriod(Date currentDate) {
+        int month = Integer.parseInt(getPeriod());
+        Date startDateTemp = DateUtils.addMonths(ConvertDateUtils.getDateFromDayAndMonthAndYear(21, month, getYear()), -1);
+        this.startDate = ConvertDateUtils.getDateAtStartOfDay(startDateTemp);
+        this.endDate = ConvertDateUtils.getDateFromDayAndMonthAndYear(20, month, getYear());
+        adjustEndDateIfAfterCurrentDate(currentDate);
+    }
+
+    private void handleQuarterPeriod(Date currentDate) {
+        int startMonth, endMonth;
+        switch (getPeriod()) {
+            case PERIOD_QUARTER_1:
+                startMonth = 12;
+                endMonth = 3;
+                break;
+            case PERIOD_QUARTER_2:
+                startMonth = 3;
+                endMonth = 6;
+                break;
+            case PERIOD_QUARTER_3:
+                startMonth = 6;
+                endMonth = 9;
+                break;
+            default:
+                startMonth = 9;
+                endMonth = 12;
+                break;
+        }
+        this.startDate = ConvertDateUtils.getDateAtStartOfDay(ConvertDateUtils.getDateFromDayAndMonthAndYear(21, startMonth, (startMonth == 12 ? getYear() - 1 : getYear())));
+        this.endDate = ConvertDateUtils.getDateFromDayAndMonthAndYear(20, endMonth, getYear());
+        adjustEndDateIfAfterCurrentDate(currentDate);
+    }
+
+    private void handleSemesterPeriod(Date currentDate) {
+        int startMonth, endMonth;
+        switch (getPeriod()) {
+            case PERIOD_SEMESTER_1:
+                startMonth = 12;
+                endMonth = 6;
+                break;
+            default:
+                startMonth = 6;
+                endMonth = 12;
+                break;
+        }
+        this.startDate = ConvertDateUtils.getDateAtStartOfDay(ConvertDateUtils.getDateFromDayAndMonthAndYear(21, startMonth, (startMonth == 12 ? getYear() - 1 : getYear())));
+        this.endDate = ConvertDateUtils.getDateFromDayAndMonthAndYear(20, endMonth, getYear());
+        adjustEndDateIfAfterCurrentDate(currentDate);
+    }
+
+    private void handleAnnualPeriod(Date currentDate) {
+        this.startDate = ConvertDateUtils.getDateAtStartOfDay(ConvertDateUtils.getDateFromDayAndMonthAndYear(21, 12, getYear() - 1));
+        this.endDate = ConvertDateUtils.getDateFromDayAndMonthAndYear(20, 12, getYear());
+        adjustEndDateIfAfterCurrentDate(currentDate);
+    }
+
+    private void adjustEndDateIfAfterCurrentDate(Date currentDate) {
+        if(getReportType() != null)
+        if (!getReportType().equalsIgnoreCase("EXPECTED_PATIENTS") && endDate.after(currentDate)) {
+            setEndDate(currentDate);
         }
     }
 

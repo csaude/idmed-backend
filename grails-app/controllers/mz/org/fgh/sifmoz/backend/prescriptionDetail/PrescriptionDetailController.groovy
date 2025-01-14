@@ -3,6 +3,9 @@ package mz.org.fgh.sifmoz.backend.prescriptionDetail
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
+import mz.org.fgh.sifmoz.backend.packaging.Pack
+import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
 import static org.springframework.http.HttpStatus.CREATED
@@ -53,6 +56,7 @@ class PrescriptionDetailController extends RestfulController{
         }
 
         try {
+            configPrescriptionDetailOrigin(prescriptionDetail)
             prescriptionDetailService.save(prescriptionDetail)
         } catch (ValidationException e) {
             respond prescriptionDetail.errors
@@ -75,6 +79,7 @@ class PrescriptionDetailController extends RestfulController{
         }
 
         try {
+            configPrescriptionDetailOrigin(prescriptionDetail)
             prescriptionDetailService.save(prescriptionDetail)
         } catch (ValidationException e) {
             respond prescriptionDetail.errors
@@ -97,4 +102,18 @@ class PrescriptionDetailController extends RestfulController{
     def getAllByPrescriptionId(String prescriptionId) {
         respond prescriptionDetailService.getAllByPrescriptionId(prescriptionId)
     }
+
+    private static PrescriptionDetail configPrescriptionDetailOrigin(PrescriptionDetail prescriptionDetail){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(prescriptionDetail)){
+            prescriptionDetail.origin = systemConfigs.description
+        }
+
+        return prescriptionDetail
+    }
+
+    private static boolean checkHasNotOrigin(PrescriptionDetail prescriptionDetail){
+        return prescriptionDetail.origin == null || prescriptionDetail?.origin?.isEmpty()
+    }
+
 }

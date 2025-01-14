@@ -17,6 +17,8 @@ class AdherenceScreening extends BaseEntity {
 
     @JsonBackReference
     PatientVisit visit
+    Clinic clinic
+    String origin
 
     static belongsTo = [PatientVisit]
     static mapping = {
@@ -28,11 +30,14 @@ class AdherenceScreening extends BaseEntity {
         lateMotives(nullable: true, maxSize: 1000)
         daysWithoutMedicine(nullable: true,blank: true)
         lateDays(nullable: true, blank: true)
+        clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
+            clinic = Clinic.findWhere(mainClinic: true)
         }
     }
 

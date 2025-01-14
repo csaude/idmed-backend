@@ -22,6 +22,8 @@ class TBScreening extends BaseEntity {
 
     @JsonBackReference
     PatientVisit visit
+    Clinic clinic
+    String origin
 
     static belongsTo = [PatientVisit]
 
@@ -33,11 +35,14 @@ class TBScreening extends BaseEntity {
     static constraints = {
         startTreatmentDate(nullable: true, blank: true)
         visit(nullable: true, blank: true)
+        clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
+            clinic = Clinic.findWhere(mainClinic: true)
         }
     }
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonManagedReference
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.protection.Menu
@@ -19,6 +20,8 @@ class PrescribedDrug extends BaseEntity {
     Drug drug
     @JsonBackReference
     Prescription prescription
+    Clinic clinic
+    String origin
     static belongsTo = [Prescription]
 
     static mapping = {
@@ -27,11 +30,14 @@ class PrescribedDrug extends BaseEntity {
     }
     static constraints = {
         timesPerDay(min: 1)
+        clinic blank: true, nullable: true
+        origin nullable: true
     }
 
     def beforeInsert() {
         if (!id) {
             id = UUID.randomUUID()
+            clinic = Clinic.findWhere(mainClinic: true)
         }
     }
 

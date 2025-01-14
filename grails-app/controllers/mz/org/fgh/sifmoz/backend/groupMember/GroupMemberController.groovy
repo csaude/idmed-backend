@@ -3,6 +3,7 @@ package mz.org.fgh.sifmoz.backend.groupMember
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import mz.org.fgh.sifmoz.group.GroupMemberInfoView
 
@@ -95,6 +96,11 @@ class GroupMemberController extends RestfulController{
 
     def  getMembersInfoByGroupId(String groupId) {
         respond groupMemberService.getMembersInfoByGroupId(groupId)
+    }
+
+    def getMembersInfoByPatientId(String patientId){
+        Patient patient = Patient.get(patientId)
+        render JSONSerializer.setObjectListJsonResponse(GroupMember.findAllByPatientAndEndDateIsNull(patient, [max: 3, sort:"startDate", order:"desc"])) as JSON
     }
 
 }

@@ -3,6 +3,8 @@ package mz.org.fgh.sifmoz.backend.screening
 import grails.converters.JSON
 import grails.rest.RestfulController
 import grails.validation.ValidationException
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
+import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
 import static org.springframework.http.HttpStatus.CREATED
@@ -53,6 +55,7 @@ class TBScreeningController extends RestfulController{
         }
 
         try {
+            configTBScreeningOrigin(tBScreening)
             TBScreeningService.save(tBScreening)
         } catch (ValidationException e) {
             respond tBScreening.errors
@@ -75,6 +78,7 @@ class TBScreeningController extends RestfulController{
         }
 
         try {
+            configTBScreeningOrigin(tBScreening)
             TBScreeningService.save(tBScreening)
         } catch (ValidationException e) {
             respond tBScreening.errors
@@ -92,5 +96,18 @@ class TBScreeningController extends RestfulController{
         }
 
         render status: NO_CONTENT
+    }
+
+    private static TBScreening configTBScreeningOrigin(TBScreening tbScreening){
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if(systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(tbScreening)){
+            tbScreening.origin = systemConfigs.description
+        }
+
+        return tbScreening
+    }
+
+    private static boolean checkHasNotOrigin(TBScreening tbScreening){
+        return tbScreening.origin == null || tbScreening?.origin?.isEmpty()
     }
 }

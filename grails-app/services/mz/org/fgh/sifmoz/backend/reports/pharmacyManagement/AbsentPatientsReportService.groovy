@@ -39,8 +39,12 @@ abstract class AbsentPatientsReportService implements IAbsentPatientsReportServi
         List absentReferredPatients
         if (searchParams.reportType.equalsIgnoreCase("FALTOSOS_AO_LEVANTAMENTO_APSS")) {
             absentReferredPatients = packService.getAbsentPatientsApssByClinicalServiceAndClinicOnPeriod(clinicalService,clinic,searchParams.startDate,searchParams.endDate)
-        } else {
+        } else if (searchParams.reportType.equalsIgnoreCase("FALTOSOS_AO_LEVANTAMENTO")) {
             absentReferredPatients = packService.getAbsentPatientsByClinicalServiceAndClinicOnPeriod(clinicalService,clinic,searchParams.startDate,searchParams.endDate)
+        } else if (searchParams.reportType.equalsIgnoreCase("FALTOSOS_AO_LEVANTAMENTO_DT")) {
+            absentReferredPatients = packService.getAbsentPatientsDTByClinicalServiceAndClinicOnPeriod(clinicalService,clinic,searchParams.startDate,searchParams.endDate)
+        } else if (searchParams.reportType.equalsIgnoreCase("FALTOSOS_AO_LEVANTAMENTO_DS")) {
+            absentReferredPatients = packService.getAbsentPatientsDSByClinicalServiceAndClinicOnPeriod(clinicalService,clinic,searchParams.startDate,searchParams.endDate)
         }
 
         String reportId = searchParams.getId()
@@ -80,7 +84,7 @@ abstract class AbsentPatientsReportService implements IAbsentPatientsReportServi
                     processMonitor.save(flush: true)
                 }
             }
-        }
+            }
         }
     }
 

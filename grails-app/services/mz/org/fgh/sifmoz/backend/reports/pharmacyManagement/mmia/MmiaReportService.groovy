@@ -41,7 +41,6 @@ abstract class MmiaReportService implements IMmiaReportService {
     void processReport(ReportSearchParams searchParams, MmiaReport curMmiaReport, ReportProcessMonitor processMonitor) {
         if(searchParams.reportType.equalsIgnoreCase("MAPA_MENSAL_DE_MEDICAMENTO_DA_TB")){
             try {
-//                def clinicalServiceParams = ClinicalService.findById('80A7852B-57DF-4E40-90EC-ABDE8403E01F') // Forcando TARVs
                 def clinicalServiceParams = ClinicalService.findById(searchParams.getClinicalService())
                 def clinicParams = Clinic.findById(searchParams.getClinicId())
 

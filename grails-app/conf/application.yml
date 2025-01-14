@@ -77,11 +77,21 @@ grails:
         scriptlet: html
         taglib: none
         staticparts: none
+  plugin :
+    auditLog :
+      auditDomainClassName: 'mz.org.fgh.sifmoz.backend.auditTrail.AuditTrail'
+      verbose: false
+      verboseEvents: [AuditEventType.UPDATE, AuditEventType.INSERT]
+      failOnError: true
+      excluded: ['version', 'lastUpdated', 'lastUpdatedBy']
+      mask: ['password']
+      logIds: true
+      stampEnabled: true
 dataSource:
-  url: jdbc:postgresql://localhost:5432/postgres
   driverClassName: org.postgresql.Driver
-  username: postgres
-  password: postgres
+  dialect: hibernate.MyPostgreSQLDialect
+  username: '${DB_USER:postgres}'
+  password: '${DB_PASS:postgres}'
   pooled: true
   jmxExport: true
 hibernate:
@@ -93,7 +103,7 @@ environments:
   development:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://localhost:2345/chabeco
+      url: jdbc:postgresql://localhost:9876/idmed
   test:
     dataSource:
       dbCreate: update
@@ -101,5 +111,5 @@ environments:
   production:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://db:5432/idmed
+      url: '${DB_URL}'
 

@@ -1,41 +1,30 @@
 package mz.org.fgh.sifmoz.backend.patient
 
 import grails.converters.JSON
+import grails.gorm.transactions.Transactional
 import grails.rest.RestfulController
 import grails.validation.ValidationException
 import groovy.json.JsonSlurper
-import mz.org.fgh.sifmoz.backend.appointment.Appointment
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
-import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.District
 import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.Localidade
 import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.LocalidadeService
-import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.PostoAdministrativo
-import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.Province
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.interoperabilityAttribute.InteroperabilityAttribute
 import mz.org.fgh.sifmoz.backend.interoperabilityType.InteroperabilityType
-import mz.org.fgh.sifmoz.backend.patientAttribute.PatientAttribute
+import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifierService
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
-import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.restUtils.RestOpenMRSClient
-import mz.org.fgh.sifmoz.backend.screening.AdherenceScreening
-import mz.org.fgh.sifmoz.backend.service.ClinicalService
-import mz.org.fgh.sifmoz.backend.tansreference.PatientTransReference
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
-import mz.org.fgh.sifmoz.backend.report.ReportGenerator
+import org.grails.web.json.JSONObject
 import org.hibernate.SessionFactory
-import org.springframework.orm.hibernate5.SessionFactoryUtils
 
-import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.NO_CONTENT
-import static org.springframework.http.HttpStatus.OK
-
-import grails.gorm.transactions.Transactional
 
 class PatientController extends RestfulController {
 
@@ -66,11 +55,21 @@ class PatientController extends RestfulController {
     @Transactional
     def save() {
         Patient patient = new Patient()
+        Clinic clinic = Clinic.findByMainClinic(true)
         def objectJSON = request.JSON
         patient = objectJSON as Patient
         patient.identifiers = [].withDefault { new PatientServiceIdentifier() }
+        patient.clinic = clinic
         patient.beforeInsert()
 
+        if (patient.getMatchId() == null) {
+            def patientAux = Patient.findAll([max: 2, sort: ['matchId': 'desc']])
+            if (patientAux.size() == 0) {
+                patient.setMatchId(1)
+            } else {
+                patient.setMatchId(patientAux.get(0).matchId + 1)
+            }
+        }
         patient.validate()
 
         if (objectJSON.id) {
@@ -91,7 +90,7 @@ class PatientController extends RestfulController {
                     localidadeService.save(patient.bairro)
                 }
             }
-
+            configPatientOrigin(patient)
             patientService.save(patient)
 
             (objectJSON.identifiers as List).collect { item ->
@@ -99,6 +98,7 @@ class PatientController extends RestfulController {
                     def identifier = new PatientServiceIdentifier(item as Map)
                     identifier.patient = null
                     identifier.patient = patient
+                    identifier.origin = patient.origin
                     identifier.id = item.id
                     patientServiceIdentifierService.save(identifier)
                     patient.addToIdentifiers(identifier)
@@ -117,26 +117,26 @@ class PatientController extends RestfulController {
 
     @Transactional
     def update() {
-
         def objectJSON = request.JSON
         def patientFromJSON = (parseTo(objectJSON.toString()) as Map) as Patient
         Patient patient = Patient.get(objectJSON.id)
 
-        bindData(patient, patientFromJSON, [exclude: ['id', 'clinicId', 'his', 'hisId', 'provinceId', 'districtId', 'bairroId', 'clinic', 'attributes', 'appointments', 'patientTransReference', 'validated', 'postoAdministrativoId','matchId', 'entity']])
+        patient.firstNames = patientFromJSON.firstNames
+        patient.middleNames = patientFromJSON.middleNames
+        patient.lastNames = patientFromJSON.lastNames
+        patient.gender = patientFromJSON.gender
+        patient.dateOfBirth = patientFromJSON.dateOfBirth
+        patient.cellphone = patientFromJSON.cellphone
+        patient.alternativeCellphone = patientFromJSON.alternativeCellphone
+        patient.address = patientFromJSON.address
+        patient.addressReference = patientFromJSON.addressReference
+        patient.province = patientFromJSON.province
+        patient.bairro = patientFromJSON.bairro
+        patient.district = patientFromJSON.district
+        patient.postoAdministrativo = patientFromJSON.postoAdministrativo
+        patient.hisUuid = patientFromJSON.hisUuid
+
         List<PatientServiceIdentifier> identifiersList = new ArrayList<>()
-
-        if (patient.identifiers != null) {
-            patient.identifiers = [].withDefault { new PatientServiceIdentifier() }
-
-            (objectJSON.identifiers as List).collect { item ->
-                if (item) {
-                    def identifier = PatientServiceIdentifier.get(item.id)
-                    identifier.patient = patient
-                    identifiersList.add(identifier)
-                }
-            }
-            patient.identifiers = identifiersList
-        }
         if (patient == null) {
             render status: NOT_FOUND
             return
@@ -158,6 +158,7 @@ class PatientController extends RestfulController {
                     localidadeService.save(patient.bairro)
                 }
             }
+            configPatientOrigin(patient)
             patientService.save(patient)
         } catch (ValidationException e) {
             respond patient.errors
@@ -181,10 +182,16 @@ class PatientController extends RestfulController {
         List<String> toIncludeProps = new ArrayList<>()
         toIncludeProps.add("identifiers")
         toIncludeProps.add("clinic")
-        // patientService.getAllByClinicId(clinicId, offset, max)
-        //render JSONSerializer.setLightObjectListJsonResponse(patientService.getAllByClinicId(clinicId, offset, max), toIncludeProps) as JSON
         render JSONSerializer.setObjectListJsonResponse(patientService.getAllByClinicId(clinicId, offset, max)) as JSON
-        //respond patientService.getAllByClinicId(clinicId, offset, max)
+    }
+
+    def countPatientSearchResult() {
+
+        Patient patient = new Patient()
+        def objectJSON = request.JSON
+        patient = objectJSON as Patient
+
+        render patientService.countPatientSearchResult(patient)
     }
 
     def search() {
@@ -192,20 +199,13 @@ class PatientController extends RestfulController {
         def objectJSON = request.JSON
         patient = objectJSON as Patient
 
-        List<Patient> patientList = Patient.findAllByFirstNamesIlikeOrLastNamesIlike("%" + patient?.firstNames + "%", "%" + patient?.lastNames + "%")
 
-        if (!patient?.identifiers?.empty) {
-            if (patient.identifiers.first().value != null)
-                if (!patient.identifiers.first().value.trim().isEmpty()) {
-                    patientList = Patient.findAllByIdInListAndIdInList(patientList?.id, PatientServiceIdentifier.findAllByValueIlike("%" + patient?.identifiers?.first()?.value + "%")?.patient?.id)
-                    if (patientList.isEmpty()) {
-                        patientList = Patient.findAllByIdInList(PatientServiceIdentifier.findAllByValueIlike("%" + patient?.identifiers?.first()?.value + "%")?.patient?.id)
-                    }
-                }
-        }
+        def limit = objectJSON.limit != null ? objectJSON.limit as int : 10 // Default limit to 10 if not provided
+        def offset = objectJSON.offset != null ? objectJSON.offset as int : 0
+
+        def patientList = patientService.search(patient, offset, limit)
 
         def result = JSONSerializer.setLightObjectListJsonResponse(patientList)
-
         (result as List).collect { rs ->
             def auxPatient = Patient.get(rs.id)
             if (auxPatient.identifiers.size() > 0)
@@ -214,6 +214,7 @@ class PatientController extends RestfulController {
 
         render result as JSON
     }
+
 
     def searchByParam(String searchString, String clinicId) {
         String replacedString = searchString.replace("-", "/");
@@ -255,15 +256,62 @@ class PatientController extends RestfulController {
 
     }
 
-    def getPatientsInClinicSector(String clinicSectorId) {
-        render JSONSerializer.setObjectListJsonResponse(patientService.getAllPatientsInClinicSector(ClinicSector.findById(clinicSectorId))) as JSON
+    def updatePatientUUID(String base64) {
+
+        def objectJSON = request.JSON
+        def patientFromJSON = (parseTo(objectJSON.toString()) as Map) as Patient
+
+        if (patientFromJSON.his) {
+            HealthInformationSystem healthInformationSystem = HealthInformationSystem.get(patientFromJSON.his.id)
+            InteroperabilityType interoperabilityType = InteroperabilityType.findByCode("URL_BASE")
+            InteroperabilityAttribute interoperabilityAttribute = InteroperabilityAttribute.findByHealthInformationSystemAndInteroperabilityType(healthInformationSystem, interoperabilityType)
+
+            JSONObject responsePost = (JSONObject) RestOpenMRSClient.getResponseOpenMRSClient(base64, null, interoperabilityAttribute.value, "session", "GET")
+            if (responsePost == null || responsePost.authenticated == false ||
+                    responsePost.authenticated == null) {
+                response.status = 400 // Set the HTTP status code to indicate a bad request
+                response.setContentType("text/plain")
+                response.outputStream << 'O Utilizador não se encontra no OpenMRS ou serviço rest no OpenMRS não se encontra em funcionamento'
+            } else {
+                String urlPath = "patient/" + patientFromJSON.hisUuid
+                List<PatientServiceIdentifier> identifiersList = new ArrayList<>()
+                JSONObject responsePostGet = (JSONObject) RestOpenMRSClient.getResponseOpenMRSClient(base64, null, interoperabilityAttribute.value, urlPath, "GET")
+
+                if (responsePostGet != null && responsePostGet.person != null) {
+                    Patient existsPatientUUID = Patient.findByHisUuid(patientFromJSON.hisUuid)
+                    if (existsPatientUUID == null) {
+                        Patient patientToUpdate = Patient.findById(objectJSON.id)
+                        patientToUpdate.hisUuid = patientFromJSON.hisUuid
+                        render JSONSerializer.setJsonLightObjectResponse(patientToUpdate) as JSON
+                    } else if (existsPatientUUID.id != patientFromJSON.id) {
+                        response.status = 400
+                        response.setContentType("text/plain")
+                        response.outputStream << 'Ja Existe no iDMED um paciente com UUID digitado'
+                    }
+                    render status: NO_CONTENT
+                } else {
+                    response.status = 400
+                    response.setContentType("text/plain")
+                    response.outputStream << 'O paciente com o UUID digitado nao existe no openMRS'
+                }
+            }
+        } else {
+            response.status = 400
+            response.setContentType("text/plain")
+            response.outputStream << 'Paciente criado a partir do iDMED. Este paciente não tem ligação com fonte de dados OpenMRS'
+        }
+    }
+
+    def getPatientsInClinicSector(String clinicSectorId, int offset, int max) {
+        def allPatientResult = patientService.getAllPatientsInClinicSector(clinicSectorId, offset, max)
+        render JSONSerializer.setObjectListJsonResponse(Patient.findAllByIdInList(allPatientResult.id)) as JSON
     }
 
     private static def parseTo(String jsonString) {
         return new JsonSlurper().parseText(jsonString)
     }
 
-    def mergeUnitePatients (String patientToHoldId , String patientToDeleteId) {
+    def mergeUnitePatients(String patientToHoldId, String patientToDeleteId) {
         def patientToHold = Patient.findById(patientToHoldId)
         def patientToDelete = Patient.findById(patientToDeleteId)
 
@@ -275,22 +323,23 @@ class PatientController extends RestfulController {
         }
         println(resultMap)
 
-        resultMap.keySet().each {it ->
+        resultMap.keySet().each { it ->
             def psis = resultMap.get(it)
             if (psis.size() == 2) {
-                psis.eachWithIndex {it2,index ->
+                psis.eachWithIndex { it2, index ->
                     if (it2.patient.id == patientToDeleteId) {
                         def episodes = Episode.findAllByPatientServiceIdentifier(it2)
                         for (Episode episode : episodes) {
                             episode.setPatientServiceIdentifier(psis[index == 0 ? 1 : 0])
                             Episode.withTransaction {
+                                episode.origin = it2.patient.origin
                                 episode.save()
                             }
                         }
                     }
                 }
             } else {
-                psis.eachWithIndex {it2,index ->
+                psis.eachWithIndex { it2, index ->
                     if (it2.patient.id == patientToDeleteId) {
                         it2.setPatient(patientToHold)
                         PatientServiceIdentifier.withTransaction {
@@ -309,51 +358,38 @@ class PatientController extends RestfulController {
         }
         println(commonVisits)
         if (commonVisits.size() == 0) {
-        for (PatientVisit patientVisit : patientVisits) {
+            for (PatientVisit patientVisit : patientVisits) {
                 patientVisit.setPatient(patientToHold)
                 PatientVisit.withTransaction {
+                    patientVisit.origin = patientToHold.origin
                     patientVisit.save()
                 }
-        }
+            }
         }
         Patient.withTransaction {
-            /*
-            def patientToDelete1 = patientServiceToDelete.patient
-            patientServiceToDelete.episodes = []
-            patientServiceToDelete.delete()
-            patientToDelete.delete()
-*/
-            patientServiceToDelete.each {it5 ->
+            patientServiceToDelete.each { it5 ->
                 it5.episodes = []
                 it5.delete()
             }
             patientToDelete.delete()
         }
         render status: NO_CONTENT
-/*
-        def patientVisits = PatientVisit.findAllByPatient(patientToDelete)
-        for (PatientVisit patientVisit : patientVisits) {
-            patientVisit.setPatient(patientToHold)
-            PatientVisit.withTransaction {
-                patientVisit.save()
-                println(matchId++)
-            }
+    }
+
+    def getAllPatientsIsAbandonment(int offset, int max) {
+        render JSONSerializer.setObjectListJsonResponse(patientService.getAllPatientsIsAbandonment(offset, max)) as JSON
+    }
+
+    private static Patient configPatientOrigin(Patient patient) {
+        SystemConfigs systemConfigs = SystemConfigs.findByKey("INSTALATION_TYPE")
+        if (systemConfigs && systemConfigs.value.equalsIgnoreCase("LOCAL") && checkHasNotOrigin(patient)) {
+            patient.origin = systemConfigs.description
         }
 
-        for (PatientServiceIdentifier patientService : patientServiceToDelete) {
+        return patient
+    }
 
-            def episodes = Episode.findAllByPatientServiceIdentifier(patientService)
-            for (Episode episode : episodes) {
-                episode.setPatientServiceIdentifier(patientService)
-                Episode.withTransaction {
-                    episode.save()
-                    println(matchIdd++)
-                }
-            }
-        }
-
-
-         */
-
+    private static boolean checkHasNotOrigin(Patient patient) {
+        return patient.origin == null || patient?.origin?.isEmpty()
     }
 }
