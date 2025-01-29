@@ -128,29 +128,85 @@ abstract class EpisodeService implements IEpisodeService{
         return episodes
     }
 
-    public closePatientServiceIdentifierOfPatientWhenOpenMrsObit(Patient patient){
+    @Override
+    closePatientServiceIdentifierOfPatientWhenOpenMrsObitOrTransferred(Patient patient,String statusCode,Date statusDate) {
         def patientServiceIdentifiers = PatientServiceIdentifier.findAllByPatient(patient)
-
+        StartStopReason startStopReason = StartStopReason.findByCode(statusCode)
         patientServiceIdentifiers.each { item ->
-            Episode lastEpisode =  item.episodes.stream().reduce((prev, next) -> next).orElse(null)
+            Episode lastEpisode = item.episodes.stream().reduce((prev, next) -> next).orElse(null)
+            if (lastEpisode.startStopReason == startStopReason) {
                 Episode closureEpisode = new Episode()
-                closureEpisode.episodeDate = new Date()
+                closureEpisode.episodeDate = statusDate
                 closureEpisode.episodeType = EpisodeType.findByCode('FIM')
                 closureEpisode.patientServiceIdentifier = item
                 closureEpisode.clinic = item.clinic
                 closureEpisode.clinicSector = lastEpisode.getClinicSector()
                 closureEpisode.creationDate = new Date()
-                closureEpisode.notes = 'Fechado Devido ao' + StartStopReason.OBITO
-                closureEpisode.startStopReason =StartStopReason.findByCode(StartStopReason.OBITO)
+                closureEpisode.notes = 'Fechado Devido ao ' + startStopReason
+                closureEpisode.startStopReason = startStopReason
                 closureEpisode.origin = lastEpisode.getClinic().getUuid()
                 closureEpisode.beforeInsert()
                 this.save(closureEpisode)
                 item.endDate = new Date()
                 item.state = 'Inactivo'
-                item.origin =  lastEpisode.getClinic().getUuid()
+                item.origin = lastEpisode.getClinic().getUuid()
                 item.save(flush: true)
             }
-
         }
+        }
+    @Override
+    closeEpisodeWhenOpenmrsStatusCodeAbandonAndSuspended(Patient patient, String statusCode,Date statusDate){
+        def patientServiceIdentifiers = PatientServiceIdentifier.findAllByPatient(patient)
+     StartStopReason startStopReason = StartStopReason.findByCode(statusCode)
+        patientServiceIdentifiers.each { item ->
+            Episode lastEpisode =  item.episodes.stream().reduce((prev, next) -> next).orElse(null)
+            if (lastEpisode.startStopReason == startStopReason) {
+                Episode closureEpisode = new Episode()
+                closureEpisode.episodeDate = statusDate
+                closureEpisode.episodeType = EpisodeType.findByCode('FIM')
+                closureEpisode.patientServiceIdentifier = item
+                closureEpisode.clinic = item.clinic
+                closureEpisode.clinicSector = lastEpisode.getClinicSector()
+                closureEpisode.creationDate = new Date()
+                closureEpisode.notes = 'Fechado Devido ao' + startStopReason
+                closureEpisode.startStopReason = startStopReason
+                closureEpisode.origin = lastEpisode.getClinic().getUuid()
+                closureEpisode.beforeInsert()
+                this.save(closureEpisode)
+            }
+        }
+
+    }
+
+    @Override
+    reopenEpisodeAndServiceWhenPatientActiveInSesp(Patient patient) {
+        def patientServiceIdentifiers = PatientServiceIdentifier.findAllByPatient(patient)
+        List<String> startStopReasonList = ['ABANDONO', 'OBITO', 'SUSPENSO','TRANSFERIDO_PARA'].asList()
+        List<String> stopPatientService = [ 'OBITO','TRANSFERIDO_PARA'].asList()
+
+        patientServiceIdentifiers.each { item ->
+            Episode lastEpisode =  item.episodes.stream().reduce((prev, next) -> next).orElse(null)
+            if (startStopReasonList.contains(lastEpisode.startStopReason.getCode())) {
+                Episode openingEpisode = new Episode()
+                openingEpisode.episodeDate = new Date()
+                openingEpisode.episodeType = EpisodeType.findByCode('INICIO')
+                openingEpisode.patientServiceIdentifier = item
+                openingEpisode.clinic = item.clinic
+                openingEpisode.clinicSector = lastEpisode.getClinicSector()
+                openingEpisode.creationDate = new Date()
+                openingEpisode.notes = 'Aberto Devido a Reabertura no SESP'
+                openingEpisode.startStopReason = StartStopReason.findByCode(StartStopReason.MANUNTENCAO)
+                openingEpisode.origin = lastEpisode.getClinic().getUuid()
+                openingEpisode.beforeInsert()
+                this.save(openingEpisode)
+            }
+            if (stopPatientService.contains(lastEpisode.startStopReason.getCode())) {
+                item.reopenDate = new Date()
+                item.state = 'Activo'
+                item.origin = lastEpisode.getClinic().getUuid()
+                item.save(flush: true)
+            }
+        }
+    }
 
 }
