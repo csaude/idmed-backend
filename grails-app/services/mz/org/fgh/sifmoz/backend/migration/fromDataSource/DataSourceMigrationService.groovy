@@ -241,6 +241,7 @@ class DataSourceMigrationService implements DataBinder {
                 episode.clinic = Clinic.get(episodeObject.clinic_id)
                 episode.referralClinic = Clinic.get(episodeObject.referral_clinic_id)
                 episode.patientServiceIdentifier = checkAndSavePatientServiceIdentifier(episodeObject.patient_service_identifier_id)
+                episode.residentInCountry = episodeObject.resident_in_country
                 episode.save(flush: true, failOnError: true)
             }
             return episode

@@ -26,6 +26,7 @@ class Episode extends BaseEntity {
     Clinic referralClinic
     boolean isAbandonmentDC
     String origin
+    boolean residentInCountry
 
     static belongsTo = [patientServiceIdentifier: PatientServiceIdentifier]
 

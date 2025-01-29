@@ -121,6 +121,7 @@ class RestGetPatientMobileCentralService extends SynchronizerTask {
                     episode.setEpisodeDate(ConvertDateUtils.createDate(patient.getAt("enrolldate").toString(), "yyyy-MM-dd"))
                     episode.setEpisodeType(episodeTypeInitial)
                     episode.setStartStopReason(startStopReasonIni)
+                    episode.setResidentInCountry(true)
 
                     Episode createdPatientEp = episodeService.save(episode)
 

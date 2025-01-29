@@ -869,7 +869,7 @@ class BootStrap {
         provincialServerList.add(new LinkedHashMap(id: 'E1DAE032-1C95-4872-9EF3-6ED9DE9D9DE5', code: '08', urlPath: 'http://idartinhambane.fgh.org.mz:', port: '3008', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
         provincialServerList.add(new LinkedHashMap(id: '4489B1B6-A485-439A-B966-1C752873BF79', code: '09', urlPath: 'http://idartgaza.fgh.org.mz:', port: '3009', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
         provincialServerList.add(new LinkedHashMap(id: 'A5336E44-A9DC-4019-8B33-9F0738DB2D55', code: '10', urlPath: 'http://idartmaputo-prov.fgh.org.mz:', port: '3010', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: 'F21B5D3F-9C70-40A0-BE2F-66F4A458655F', code: '11', urlPath: 'http://idartmaputo.cid.fgh.org.mz:', port: '3011', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'F21B5D3F-9C70-40A0-BE2F-66F4A458655F', code: '11', urlPath: 'http://idartmaputo-cid.fgh.org.mz:', port: '3011', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
         provincialServerList.add(new LinkedHashMap(id: 'F86C6280-0D36-4E5E-9C2C-D68002DB7A51', code: '12', urlPath: 'http://dev.fgh.org.mz:', port: '3910', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
 
         provincialServerList.add(new LinkedHashMap(id: '73864BCB-5FEA-4067-81D2-E5A50C71CD8F', code: '01', urlPath: 'idmed-ns.csaude.org.mz', port: '50411', destination: 'DB', username: 'idmedns', password: 'N/A', 'dbname':'idmedns'))

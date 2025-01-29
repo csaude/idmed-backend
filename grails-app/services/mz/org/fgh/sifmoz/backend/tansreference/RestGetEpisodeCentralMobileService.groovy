@@ -87,6 +87,7 @@ class RestGetEpisodeCentralMobileService extends SynchronizerTask {
                         backReferenceEpisode.setClinicSector(ClinicSector.findByCode("TARV"))
                         //Correct
                         backReferenceEpisode.setCreationDate(new Date())
+                        backReferenceEpisode.setResidentInCountry(true)
                         episodeService.save(backReferenceEpisode)
 
                         //Send the episode to Update - Patch Server

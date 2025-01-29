@@ -67,7 +67,9 @@ class PatientVisitController extends RestfulController {
     def save() {
         PatientVisit visit = new PatientVisit()
         def objectJSON = request.JSON
-
+        def isTransitPatient = false
+        def isNationalTransitPatient = false
+        def lastEpisode = null
         if (!objectJSON?.patientVisitDetails?.isEmpty()) {
             def amtPerTimePackaged = objectJSON?.patientVisitDetails[0]?.pack?.packagedDrugs[0]?.amtPerTime + ""
             objectJSON?.patientVisitDetails[0]?.pack?.packagedDrugs[0]?.amtPerTime = amtPerTimePackaged ? Double.parseDouble(amtPerTimePackaged) : 0
@@ -98,11 +100,10 @@ class PatientVisitController extends RestfulController {
                 item.prescription.prescribedDrugs.eachWithIndex { item2, index2 ->
                     item2.beforeInsert()
                     item2.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.prescribedDrugs[index2].id)
-                    if (prescriptionCheck){
+                    if (prescriptionCheck) {
                         item2.origin = prescriptionCheck.origin
                         item2.clinic = prescriptionCheck.clinic
-                    }
-                    else {
+                    } else {
                         item2.origin = item.prescription.origin
                         item2.clinic = item.prescription.clinic
                     }
@@ -111,10 +112,10 @@ class PatientVisitController extends RestfulController {
                 item.prescription.prescriptionDetails.eachWithIndex { item3, index3 ->
                     item3.beforeInsert()
                     item3.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.prescriptionDetails[index3].id)
-                    if (prescriptionCheck){
+                    if (prescriptionCheck) {
                         item3.origin = prescriptionCheck.origin
                         item3.clinic = prescriptionCheck.clinic
-                    }else{
+                    } else {
                         item3.origin = item.prescription.origin
                         item3.clinic = item.prescription.clinic
                     }
@@ -129,6 +130,11 @@ class PatientVisitController extends RestfulController {
                     item4.packagedDrugStocks.eachWithIndex { item5, index5 ->
                         item5.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.packagedDrugs[index4].packagedDrugStocks[index5].id)
                     }
+                }
+                if (item.episode.startStopReason.code.equalsIgnoreCase("TRANSITO")) {
+                    isTransitPatient = true
+                    isNationalTransitPatient = item.episode.isResidentInCountry()
+                    lastEpisode = item.episode
                 }
             }
 
@@ -255,11 +261,16 @@ class PatientVisitController extends RestfulController {
                     packService.save(item.pack)
                     // if(!syncStatus)
                     reduceStock(item.pack, syncStatus)
+
+                    if (item.episode.startStopReason.code.equalsIgnoreCase("TRANSITO")) {
+                        isTransitPatient = true
+                        isNationalTransitPatient = item.episode.isResidentInCountry()
+                        lastEpisode = item.episode
+                    }
                 }
             }
-
-            patientVisitService.save(visit)
-
+            if (patientVisitService.save(visit) && isTransitPatient)
+                saveExternalPatientVisit(isNationalTransitPatient, visit, lastEpisode)
         } catch (ValidationException e) {
             transactionStatus.setRollbackOnly()
             respond visit.errors
@@ -629,4 +640,51 @@ class PatientVisitController extends RestfulController {
         return patientVisit.origin == null || patientVisit?.origin?.isEmpty()
     }
 
+private saveExternalPatientVisit(boolean isNational, PatientVisit patientVisit, Episode lastEpisode) {
+        ExternalPatientVisit externalPatientVisit = new ExternalPatientVisit()
+        externalPatientVisit.patientId = patientVisit.patient.id
+        externalPatientVisit.patientName = patientVisit.patient.firstNames.concat(" ").concat(patientVisit.patient.lastNames)
+        externalPatientVisit.patientGender = patientVisit.patient.gender
+        externalPatientVisit.patientDateOfBirth = patientVisit.patient.dateOfBirth
+        externalPatientVisit.patientCellphone = patientVisit.patient.cellphone
+        externalPatientVisit.nid = lastEpisode.patientServiceIdentifier.value
+        externalPatientVisit.jsonObject = patientVisit.toString()
+        externalPatientVisit.syncStatus = 'R'
+        if(isNational) {
+            populateWithActualEpisodeDetails(externalPatientVisit, lastEpisode)
+        } else {
+            populateWithDefaultEpisodeDetails(externalPatientVisit)
+        }
+        externalPatientVisit.save()
+    }
+
+   private static populateWithActualEpisodeDetails(ExternalPatientVisit externalPatientVisit, Episode lastEpisode){
+        externalPatientVisit.sourceProvinceName = lastEpisode.clinic.province.description
+        externalPatientVisit.sourceProvinceId = lastEpisode.clinic.province.id
+        externalPatientVisit.sourceDistrictId = lastEpisode.clinic.district.id
+        externalPatientVisit.sourceDistrictName = lastEpisode.clinic.province.description
+        externalPatientVisit.sourceClinicId = lastEpisode.clinic.id
+        externalPatientVisit.sourceClinicName = lastEpisode.clinic.clinicName
+        externalPatientVisit.targetProvinceId = lastEpisode.referralClinic.province.id
+        externalPatientVisit.targetProvinceName = lastEpisode.referralClinic.province.description
+        externalPatientVisit.targetDistrictId = lastEpisode.referralClinic.district.id
+        externalPatientVisit.targetDistrictName = lastEpisode.referralClinic.district.description
+        externalPatientVisit.targetClinicId = lastEpisode.referralClinic.id
+        externalPatientVisit.targetClinicName = lastEpisode.referralClinic.clinicName
+    }
+
+  private static  populateWithDefaultEpisodeDetails(ExternalPatientVisit externalPatientVisit){
+        externalPatientVisit.sourceProvinceName = "N/A"
+        externalPatientVisit.sourceProvinceId = "N/A"
+        externalPatientVisit.sourceDistrictId = "N/A"
+        externalPatientVisit.sourceDistrictName = "N/A"
+        externalPatientVisit.sourceClinicId = "N/A"
+        externalPatientVisit.sourceClinicName = "N/A"
+        externalPatientVisit.targetProvinceId = "N/A"
+        externalPatientVisit.targetProvinceName = "N/A"
+        externalPatientVisit.targetDistrictId = "N/A"
+        externalPatientVisit.targetDistrictName = "N/A"
+        externalPatientVisit.targetClinicId = "N/A"
+        externalPatientVisit.targetClinicName = "N/A"
+    }
 }

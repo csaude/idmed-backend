@@ -217,6 +217,7 @@ class EpisodeController extends RestfulController {
                 closureEpisode.notes = 'Fechado Devido ao' + episode.startStopReason.code
                 closureEpisode.startStopReason = episode.startStopReason
                 closureEpisode.origin = episode.clinic.uuid
+                closureEpisode.residentInCountry = episode.residentInCountry
                 closureEpisode.beforeInsert()
                 episodeService.save(closureEpisode)
                 item.endDate = episode.episodeDate
@@ -249,6 +250,7 @@ class EpisodeController extends RestfulController {
                 closureEpisode.notes = 'Fechado Devido ao' + episode.startStopReason.code
                 closureEpisode.startStopReason = episode.startStopReason
                 closureEpisode.origin = episode.origin
+                closureEpisode.residentInCountry = episode.residentInCountry
                 closureEpisode.beforeInsert()
                 episodeService.save(closureEpisode)
             }
@@ -268,6 +270,7 @@ class EpisodeController extends RestfulController {
             openingEpisode.notes = 'Aberto Devido ao' + episode.startStopReason.code
             openingEpisode.startStopReason = StartStopReason.findByCode('MANUNTENCAO')
             openingEpisode.origin = episode.origin
+            openingEpisode.residentInCountry = episode.residentInCountry
             openingEpisode.beforeInsert()
             episodeService.save(openingEpisode)
         }

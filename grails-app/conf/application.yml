@@ -103,7 +103,7 @@ environments:
   development:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://localhost:9876/idmed
+      url: jdbc:postgresql://10.10.2.30:9876/idmed_maputo
   test:
     dataSource:
       dbCreate: update

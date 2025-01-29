@@ -85,6 +85,8 @@ class RestGetEpisodeToCorrectCentralMobileService extends SynchronizerTask {
                             backReferenceEpisode.setClinicSector(ClinicSector.findByCode("TARV"))
                             // to do get clinic
                             backReferenceEpisode.setCreationDate(new Date())
+                            backReferenceEpisode.setResidentInCountry(true)
+
                             episodeService.save(backReferenceEpisode)
 
                             Episode newReferenceEpisode = new Episode()
@@ -99,6 +101,7 @@ class RestGetEpisodeToCorrectCentralMobileService extends SynchronizerTask {
                             Clinic newRefferalClinic = Clinic.findByUuid(patient.getAt("clinicuuid").toString())
                             newReferenceEpisode.setReferralClinic(newRefferalClinic)
                             backReferenceEpisode.setCreationDate(new Date())
+                            backReferenceEpisode.setResidentInCountry(true)
                             episodeService.save(newReferenceEpisode)
                             //Send the patient to Update modified flag - Patch Server
 
