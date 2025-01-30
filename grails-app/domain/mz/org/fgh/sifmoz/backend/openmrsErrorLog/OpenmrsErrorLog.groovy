@@ -16,7 +16,9 @@ class OpenmrsErrorLog  {
     static constraints = {
         returnPickupDate nullable: true, blank: true
         errorDescription maxSize: 15000
-        jsonRequest maxSize: 15000
+        jsonRequest  nullable:true , maxSize: 15000
+
+
     }
 
     static mapping = {

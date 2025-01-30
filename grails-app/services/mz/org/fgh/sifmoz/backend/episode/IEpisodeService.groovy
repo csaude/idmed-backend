@@ -36,5 +36,9 @@ interface IEpisodeService {
 
     List<Episode> getLastWithVisitByClinicAndClinicSector(ClinicSector clinicSector)
 
-    closePatientServiceIdentifierOfPatientWhenOpenMrsObit(Patient patient)
+    closePatientServiceIdentifierOfPatientWhenOpenMrsObitOrTransferred(Patient patient,String statusCode,Date statusDate)
+
+    closeEpisodeWhenOpenmrsStatusCodeAbandonAndSuspended(Patient patient, String statusCode,Date statusDate)
+
+    reopenEpisodeAndServiceWhenPatientActiveInSesp(Patient patient)
 }
