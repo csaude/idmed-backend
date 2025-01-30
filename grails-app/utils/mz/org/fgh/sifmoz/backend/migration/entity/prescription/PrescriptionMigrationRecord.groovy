@@ -336,6 +336,7 @@ class PrescriptionMigrationRecord extends AbstractMigrationRecord {
             }
         }
         episode.setStartStopReason(startStopReason)
+        episode.setResidentInCountry(true)
         episode.setCreationDate(new Date())
         ClinicSector clinicSector = ClinicSector.findByCode(getClinicSectorCode())
         episode.setClinicSector(clinicSector)
@@ -367,6 +368,7 @@ class PrescriptionMigrationRecord extends AbstractMigrationRecord {
         genericEpisode.setCreationDate(new Date())
         ClinicSector clinicSector = ClinicSector.findByCode(getClinicSectorCode())
         genericEpisode.setClinicSector(clinicSector)
+        genericEpisode.setResidentInCountry(true)
         genericEpisode.setPatientServiceIdentifier(patientServiceIdentifier)
         return genericEpisode
     }
@@ -382,6 +384,7 @@ class PrescriptionMigrationRecord extends AbstractMigrationRecord {
         migrationEpisode.episodeDate = this.prescriptiondate
         migrationEpisode.creationDate = new Date()
         migrationEpisode.notes = 'Episodio de Transito'
+        migrationEpisode.residentInCountry = true
         //  migrationEpisode.save()
         return migrationEpisode
     }

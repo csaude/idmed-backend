@@ -143,6 +143,7 @@ abstract class EpisodeService implements IEpisodeService{
                 closureEpisode.notes = 'Fechado Devido ao' + StartStopReason.OBITO
                 closureEpisode.startStopReason =StartStopReason.findByCode(StartStopReason.OBITO)
                 closureEpisode.origin = lastEpisode.getClinic().getUuid()
+                closureEpisode.residentInCountry = lastEpisode.residentInCountry
                 closureEpisode.beforeInsert()
                 this.save(closureEpisode)
                 item.endDate = new Date()
