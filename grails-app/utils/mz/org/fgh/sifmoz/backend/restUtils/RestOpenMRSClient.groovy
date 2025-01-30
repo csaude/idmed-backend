@@ -49,15 +49,15 @@ class RestOpenMRSClient {
 
 //                TherapeuticRegimen therapeuticRegimen = null
 
-                if(clinicalService){
+                if (clinicalService) {
 //                    therapeuticRegimen = TherapeuticRegimen.findById(prescriptionDetail.therapeuticRegimen.id)
-                    if(clinicalService.isTARV() || clinicalService.isPPE() || clinicalService.isCCR()){
-                        inputAddPerson =  setOpenMRSFILA(interoperabilityAttributes, pack, patient, customizedDosage, obsGroupsJson, dispenseMod, packSize, obsGroups)
+                    if (clinicalService.isTARV() || clinicalService.isPPE() || clinicalService.isCCR()) {
+                        inputAddPerson = setOpenMRSFILA(interoperabilityAttributes, pack, patient, customizedDosage, obsGroupsJson, dispenseMod, packSize, obsGroups)
                     }
-                    if(clinicalService.isTPT())
-                        inputAddPerson =  setOpenMRSFILT(interoperabilityAttributes, pack, patient)
-                }else{
-                    logger.error("Paciente "+ patient.firstNames +" "+ patient.lastNames+" com prescricao sem Regime Terapeutico")
+                    if (clinicalService.isTPT())
+                        inputAddPerson = setOpenMRSFILT(interoperabilityAttributes, pack, patient)
+                } else {
+                    logger.error("Paciente " + patient.firstNames + " " + patient.lastNames + " com prescricao sem Regime Terapeutico")
 //                    PrescriptionDetail.withNewTransaction {
 //                        List<Drug> drugs = new ArrayList<Drug>()
 //                        Drug drug = Drug.findById(pack.packagedDrugs.first().drug.id)
@@ -100,9 +100,9 @@ class RestOpenMRSClient {
             code = connection.getResponseCode()
             connection.disconnect()
             if (code == 201) {
-                result = "-> Green <-\t" + "Code: " + code +"\n"+ messageResponse
+                result = "-> Green <-\t" + "Code: " + code + "\n" + messageResponse
             } else {
-                result = "-> Yellow <-\t" + "Code: " + code +"\n"+ messageResponse
+                result = "-> Yellow <-\t" + "Code: " + code + "\n" + messageResponse
             }
         } catch (Exception e) {
             result = "-> Red <-\t" + "Wrong domain - Exception: " + e.getMessage();
@@ -130,7 +130,7 @@ class RestOpenMRSClient {
 
             code = connection.getResponseCode()
 
-            if (code==HttpURLConnection.HTTP_OK ||  code==HttpURLConnection.HTTP_CREATED ) { // success
+            if (code == HttpURLConnection.HTTP_OK || code == HttpURLConnection.HTTP_CREATED) { // success
                 BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()))
                 String inputLine
                 StringBuffer response = new StringBuffer()
@@ -139,7 +139,7 @@ class RestOpenMRSClient {
                 }
                 input.close()
                 return new JSONObject(response.toString())
-            } else if (code==HttpURLConnection.HTTP_NO_CONTENT) {
+            } else if (code == HttpURLConnection.HTTP_NO_CONTENT) {
                 return null
             } else {
                 println("GET request not worked")
@@ -176,7 +176,7 @@ class RestOpenMRSClient {
             wr.close()
             code = connection.getResponseCode()
 
-            if (code==HttpURLConnection.HTTP_OK ||  code==HttpURLConnection.HTTP_CREATED ) { // success
+            if (code == HttpURLConnection.HTTP_OK || code == HttpURLConnection.HTTP_CREATED) { // success
                 BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()))
                 String inputLine
                 StringBuffer response = new StringBuffer()
@@ -199,7 +199,7 @@ class RestOpenMRSClient {
 
 
     String setOpenMRSFILA(List<InteroperabilityAttribute> interoperabilityAttributes, Pack pack, Patient patient,
-                          String customizedDosage, String obsGroupsJson, String dispenseMod, int packSize, List<String> obsGroups){
+                          String customizedDosage, String obsGroupsJson, String dispenseMod, int packSize, List<String> obsGroups) {
 
         String filaUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "FORM_FILA_UUID" }.value
         String dispenseModeUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "DISPENSE_MODE_CONCEPT_UUID" }.value
@@ -216,7 +216,7 @@ class RestOpenMRSClient {
 
         for (PackagedDrug pd : pack.packagedDrugs) {
             //posologia
-            customizedDosage = "Tomar " + String.valueOf(pd.timesPerDay) +" "+pd.drug.form.description+" "+String.valueOf(pd.amtPerTime).replace(".0","")+" vez(es) por "+pd.drug.defaultPeriodTreatment
+            customizedDosage = "Tomar " + String.valueOf(pd.timesPerDay) + " " + pd.drug.form.description + " " + String.valueOf(pd.amtPerTime).replace(".0", "") + " vez(es) por " + pd.drug.defaultPeriodTreatment
 
             String formulationString = "{\"" +
                     "person\":\"" + patient.hisUuid + "\"," +
@@ -246,7 +246,7 @@ class RestOpenMRSClient {
                     "person\":\"" + patient.hisUuid + "\"," +
                     "\"obsDatetime\":\"" + Utilities.formatToYYYYMMDD(pack.pickupDate) + "\"," +
                     "\"concept\":\"a46a603e-788d-4edc-9465-5f2fa69f060e\"," +
-                    "\"value\":\""+customizedDosage+"\"," +
+                    "\"value\":\"" + customizedDosage + "\"," +
                     "\"comment\":\"IDMED\"" +
                     "}"
 
@@ -294,7 +294,7 @@ class RestOpenMRSClient {
                 .concat("]")
                 .concat("}")
 
-        return  new String(buildDispenseMap.getBytes(), StandardCharsets.UTF_8)
+        return new String(buildDispenseMap.getBytes(), StandardCharsets.UTF_8)
     }
 
 
@@ -331,23 +331,23 @@ class RestOpenMRSClient {
                 .concat("\",\"value\":\"" + Utilities.formatToYYYYMMDD(pack.nextPickUpDate))
                 .concat("\",\"comment\":\"IDMED\"},")
 
-        if(!strCodeDispenseType.equalsIgnoreCase("DM")){
+        if (!strCodeDispenseType.equalsIgnoreCase("DM")) {
             strDispenseType = interoperabilityAttributes.find { it.interoperabilityType.code == "QUARTERLY_DISPENSED_TYPE_CONCEPT_UUID" }.value
         }
 
-        if(patientVisitDetails.episode.getStartStopReason().isNew()){
-            nextFollowUp =  interoperabilityAttributes.find { it.interoperabilityType.code == "PATIENT_TYPE_INITIAL_UUID" }.value
-        }else{
-            if(packContinue){
-                nextFollowUp =  interoperabilityAttributes.find { it.interoperabilityType.code == "PATIENT_TYPE_CONTINUE_UUID" }.value
-            }else {
+        if (patientVisitDetails.episode.getStartStopReason().isNew()) {
+            nextFollowUp = interoperabilityAttributes.find { it.interoperabilityType.code == "PATIENT_TYPE_INITIAL_UUID" }.value
+        } else {
+            if (packContinue) {
+                nextFollowUp = interoperabilityAttributes.find { it.interoperabilityType.code == "PATIENT_TYPE_CONTINUE_UUID" }.value
+            } else {
                 nextVisitDate = ""
-                nextFollowUp =  interoperabilityAttributes.find { it.interoperabilityType.code == "PATIENT_TYPE_END_UUID" }.value
+                nextFollowUp = interoperabilityAttributes.find { it.interoperabilityType.code == "PATIENT_TYPE_END_UUID" }.value
             }
         }
 
-        if(patientVisitDetails.episode.getStartStopReason().code.startsWith("REIN")){
-            nextFollowUp =  interoperabilityAttributes.find { it.interoperabilityType.code == "PATIENT_TYPE_RESTART_UUID" }.value
+        if (patientVisitDetails.episode.getStartStopReason().code.startsWith("REIN")) {
+            nextFollowUp = interoperabilityAttributes.find { it.interoperabilityType.code == "PATIENT_TYPE_RESTART_UUID" }.value
         }
 
 
@@ -370,15 +370,12 @@ class RestOpenMRSClient {
                 .concat("]")
                 .concat("}")
 
-        return  new String(buildDispenseMap.getBytes(), StandardCharsets.UTF_8)
+        return new String(buildDispenseMap.getBytes(), StandardCharsets.UTF_8)
 
     }
 
 
-
-
-    String createOpenMRSPatient( Patient patient, PatientServiceIdentifier patientServiceIdentifier, String identifierTypeIdOpenMrs) {
-
+    String createOpenMRSPatient(Patient patient, PatientServiceIdentifier patientServiceIdentifier, String identifierTypeIdOpenMrs) {
 
 
         Patient.withNewSession {
@@ -387,31 +384,28 @@ class RestOpenMRSClient {
                 LocalDateTime localDateTime = timestamp.toLocalDateTime();
                 String dateOfBirthFormated = localDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-                String openmrsJSON  =
-                         "{\"person\":"
+                String openmrsJSON =
+                        "{\"person\":"
                                 .concat("{")
-                                .concat( "\"gender\": \"" + patient?.gender?.toString()?.charAt(0)?.toUpperCase() + "\",")
-                                .concat( "\"names\":")
-                                .concat("[{\"givenName\": \"" + patient.firstNames + "\", \"middleName\": \"" + patient.middleNames + "\", \"familyName\": \"" + patient.lastNames + "\"}], \"birthdate\": \"" + dateOfBirthFormated+ "\"")
-                                .concat( "},")
-                                .concat( "\"identifiers\":")
+                                .concat("\"gender\": \"" + patient?.gender?.toString()?.charAt(0)?.toUpperCase() + "\",")
+                                .concat("\"names\":")
+                                .concat("[{\"givenName\": \"" + patient.firstNames + "\", \"middleName\": \"" + patient.middleNames + "\", \"familyName\": \"" + patient.lastNames + "\"}], \"birthdate\": \"" + dateOfBirthFormated + "\"")
+                                .concat("},")
+                                .concat("\"identifiers\":")
                                 .concat("[")
                                 .concat("{")
-                                .concat("\"identifier\": \"" + patientServiceIdentifier.value + "\", \"identifierType\":  \"" + identifierTypeIdOpenMrs+ "\",")
-                                .concat( "\"location\": \"" + patient.hisLocation+ "\", \"preferred\": \"true\"")
+                                .concat("\"identifier\": \"" + patientServiceIdentifier.value + "\", \"identifierType\":  \"" + identifierTypeIdOpenMrs + "\",")
+                                .concat("\"location\": \"" + patient.hisLocation + "\", \"preferred\": \"true\"")
                                 .concat("}")
                                 .concat("]")
-                                .concat( "}");
+                                .concat("}");
 
-             return   new String(openmrsJSON.getBytes(), StandardCharsets.UTF_8)
+                return new String(openmrsJSON.getBytes(), StandardCharsets.UTF_8)
 
 
             } catch (Exception e) {
                 e.printStackTrace()
             }
-
         }
     }
-
-
-    }
+}
