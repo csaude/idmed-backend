@@ -1,25 +1,17 @@
 package mz.org.fgh.sifmoz.backend.patient
 
-import com.google.gson.JsonObject
+
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import mz.org.fgh.sifmoz.backend.clinic.Clinic
-import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
 import mz.org.fgh.sifmoz.backend.interoperabilityAttribute.InteroperabilityAttribute
-import mz.org.fgh.sifmoz.backend.openmrsErrorLog.OpenmrsErrorLog
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patientIdentifier.IPatientServiceIdentifierService
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
-import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
-import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetailsService
 import mz.org.fgh.sifmoz.backend.restUtils.RestOpenMRSClient
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
-import org.apache.commons.lang.StringUtils
-import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.scheduling.annotation.Scheduled
 
 @Slf4j
 @CompileStatic
