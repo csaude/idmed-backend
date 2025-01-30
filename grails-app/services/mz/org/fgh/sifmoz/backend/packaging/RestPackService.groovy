@@ -57,7 +57,7 @@ class RestPackService {
     final String GET_LOCATION = "location/";
     static lazyInit = false
 
-    @Scheduled(fixedDelay = 30000L)
+    //@Scheduled(fixedDelay = 30000L)
     void schedulerRequestRunning() {
         Pack.withTransaction {
             List<Pack> packList = Pack.findAllWhere(syncStatus: 'R' as char)
@@ -88,7 +88,7 @@ class RestPackService {
                     String openMRSUuuidLocation = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_LOCATION_UUID" }.value
                     String patientNid = StringUtils.replace(patientServiceIdentifier.value, " ", "%20")
 
-                    String nidUuid = fetchNidUuid(patientNid, urlBase, universalProviderUUid)
+                    String nidUuid = fetchNidUuid( patient,  pack,  patientVisitDetails, patientServiceIdentifier,patientNid, urlBase, universalProviderUUid)
                     if (!isValidNidUuid(patient, pack, patientVisitDetails, nidUuid, patientServiceIdentifier)) return
 
                     if (!isPatientActiveInProgram(patient, pack, patientVisitDetails,patientServiceIdentifier, urlBaseReportingRest, universalProviderUUid)) return
@@ -186,9 +186,12 @@ class RestPackService {
         }
     }
 
-    String fetchNidUuid(String patientNid, String urlBase, String universalProviderUuid) {
+    String fetchNidUuid(Patient patient, Pack pack, PatientVisitDetails patientVisitDetails,PatientServiceIdentifier patientServiceIdentifier,String patientNid, String urlBase, String universalProviderUuid) {
         String urlPath = 'patient?q=' + patientNid
         String nidRest = new RestOpenMRSClient().getResponseOpenMRSClient(universalProviderUuid, null, urlBase, urlPath, requestMethod_GET)
+        if (nidRest == null) {
+            saveErrorLog(pack, patientVisitDetails, patient, MessageFormat.format(NID_DOESNT_EXIST_IN_OPENMRS, patientServiceIdentifier.value), null)
+        }
         JSONArray results = new JSONObject(nidRest).getJSONArray("results")
 
         return results.length() > 0 ? results.getJSONObject(0).getString("uuid") : null
