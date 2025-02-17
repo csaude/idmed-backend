@@ -67,6 +67,7 @@ class BootStrap {
     // DataSourceMigrationService dataSourceMigrationService
 
     def init = { servletContext ->
+
         TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
 
         FacilityType.withTransaction { initFacilityType() }
@@ -823,8 +824,8 @@ class BootStrap {
                 provincialServer.save(flush: true, failOnError: true)
             } else {
                 if (provincialServer.destination.equalsIgnoreCase("IDMED")) {
-                    provincialServer.username = "iDMED"
-                    provincialServer.password = "iDMED123"
+                    provincialServer.username = grailsApplication.config.dataSource.useraccess
+                    provincialServer.password = grailsApplication.config.dataSource.userpassaccess
                 }
                 provincialServer.urlPath = provincialServerObject.urlPath
                 provincialServer.save(flush: true, failOnError: true)
@@ -849,9 +850,8 @@ class BootStrap {
 
     List<Object> listUsers() {
         List<Object> usersList = new ArrayList<>()
-        usersList.add(new LinkedHashMap(username: 'admin', password: 'admin', fullName: 'admin', contact: 'admin', email: 'admin@gmail.com', openmrsPassword: Utilities.getMd5('admin')))
-        usersList.add(new LinkedHashMap(username: 'iDMED', password: 'iDMED123', fullName: 'iDMED', contact: 'iDMED', email: 'iDMED@gmail.com', openmrsPassword: Utilities.getMd5('iDMED123')))
-
+        usersList.add(new LinkedHashMap(username: 'admin', password: grailsApplication.config.dataSource.userpassaccess, fullName: 'admin', contact: 'admin', email: 'admin@gmail.com', openmrsPassword: Utilities.getMd5(grailsApplication.config.dataSource.userpassaccess)))
+        usersList.add(new LinkedHashMap(username: grailsApplication.config.dataSource.useraccess, password: grailsApplication.config.dataSource.userpassaccess, fullName: 'iDMED', contact: 'iDMED', email: 'iDMED@gmail.com', openmrsPassword: Utilities.getMd5(grailsApplication.config.dataSource.userpassaccess)))
         return usersList
     }
 
@@ -883,19 +883,19 @@ class BootStrap {
         provincialServerList.add(new LinkedHashMap(id: '84383A39-0535-49EA-956C-FDAEA191D1F0', code: '11', urlPath: 'idmed-mc.csaude.org.mz', port: '50401', destination: 'DB', username: 'idmedmc', password: 'N/A', 'dbname':'idmedmc'))
         provincialServerList.add(new LinkedHashMap(id: '49896B8E-631D-4A4D-BC39-45B747688ECE', code: '12', urlPath: '172.16.60.20', port: '50420', destination: 'DB', username: 'postgres', password: 'N/A', 'dbname':'idmed_maputo'))
 
-        provincialServerList.add(new LinkedHashMap(id: '0231B69C-A7AC-4024-8DF7-E75E2828E578', code: '01', urlPath: 'https://be-idmedniassa.fgh.org.mz:', port: '5001', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '2C3B00F3-C8CB-4071-A070-54819C2F0962', code: '02', urlPath: 'https://be-idmedcabodelegado.fgh.org.mz:', port: '5002', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: 'C44CD2E8-DCB3-464A-9F0F-F6E6421E73C8', code: '03', urlPath: 'https://be-idmednampula.fgh.org.mz:', port: '5003', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '3C0BF87C-87F3-4AF6-B95B-2D93F6B274AE', code: '04', urlPath: 'https://be-idmedzambezia.fgh.org.mz:', port: '5004', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '2408211C-7ACD-42C5-AC52-A3ACBCA747CF', code: '05', urlPath: 'https://be-idmedtete.fgh.org.mz:', port: '5005', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '29467F85-6CE4-4757-8AC5-E18FCFE0784C', code: '06', urlPath: 'https://be-idmedmanica.fgh.org.mz:', port: '5006', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '668BD439-B176-4FF5-9525-81D9DFB84F6D', code: '07', urlPath: 'https://be-idmedsofala.fgh.org.mz:', port: '5007', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: 'EDE2C07E-EE4B-4DED-8A7D-16D58BFB3751', code: '08', urlPath: 'https://be-idmedinhambane.fgh.org.mz:', port: '5008', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '6C50D9EB-9165-49AE-8A33-C9C837F58084', code: '09', urlPath: 'https://be-idmedgaza.fgh.org.mz:', port: '5009', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: 'DFF5C2ED-FB41-4574-9C26-BB164605BC00', code: '10', urlPath: 'https://be-idmedmaputo-prov.fgh.org.mz:', port: '5010', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '9E0AD237-9C7E-4656-9E58-D311F5E47F28', code: '11', urlPath: 'https://be-idmedmaputo.cid.fgh.org.mz:', port: '5011', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: 'ec74926c-77c2-4c23-9124-9591d1670ab0', code: '12', urlPath: 'https://172.104.236.126:', port: '445', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '7036157a-61c3-4515-9ab8-fc68359d9402', code: '13', urlPath: 'https://idmed-metadata.fgh.org.mz:', port: '5012', destination: 'METADATA', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '0231B69C-A7AC-4024-8DF7-E75E2828E578', code: '01', urlPath: 'https://be-idmedniassa.fgh.org.mz:', port: '5001', destination: 'IDMED', username: 'iDMED', password: grailsApplication.config.dataSource.userpassaccess, 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '2C3B00F3-C8CB-4071-A070-54819C2F0962', code: '02', urlPath: 'https://be-idmedcabodelegado.fgh.org.mz:', port: '5002', destination: 'IDMED', username: 'iDMED', password: grailsApplication.config.dataSource.userpassaccess, 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'C44CD2E8-DCB3-464A-9F0F-F6E6421E73C8', code: '03', urlPath: 'https://be-idmednampula.fgh.org.mz:', port: '5003', destination: 'IDMED', username: 'iDMED', password: grailsApplication.config.dataSource.userpassaccess, 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '3C0BF87C-87F3-4AF6-B95B-2D93F6B274AE', code: '04', urlPath: 'https://be-idmedzambezia.fgh.org.mz:', port: '5004', destination: 'IDMED', username: 'iDMED', password: grailsApplication.config.dataSource.userpassaccess, 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '2408211C-7ACD-42C5-AC52-A3ACBCA747CF', code: '05', urlPath: 'https://be-idmedtete.fgh.org.mz:', port: '5005', destination: 'IDMED', username: 'iDMED', password: grailsApplication.config.dataSource.userpassaccess, 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '29467F85-6CE4-4757-8AC5-E18FCFE0784C', code: '06', urlPath: 'https://be-idmedmanica.fgh.org.mz:', port: '5006', destination: 'IDMED', username: 'iDMED', password: grailsApplication.config.dataSource.userpassaccess, 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '668BD439-B176-4FF5-9525-81D9DFB84F6D', code: '07', urlPath: 'https://be-idmedsofala.fgh.org.mz:', port: '5007', destination: 'IDMED', username: 'iDMED', password: grailsApplication.config.dataSource.userpassaccess, 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'EDE2C07E-EE4B-4DED-8A7D-16D58BFB3751', code: '08', urlPath: 'https://be-idmedinhambane.fgh.org.mz:', port: '5008', destination: 'IDMED', username: 'iDMED', password: grailsApplication.config.dataSource.userpassaccess, 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '6C50D9EB-9165-49AE-8A33-C9C837F58084', code: '09', urlPath: 'https://be-idmedgaza.fgh.org.mz:', port: '5009', destination: 'IDMED', username: 'iDMED', password: grailsApplication.config.dataSource.userpassaccess, 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'DFF5C2ED-FB41-4574-9C26-BB164605BC00', code: '10', urlPath: 'https://be-idmedmaputo-prov.fgh.org.mz:', port: '5010', destination: 'IDMED', username: 'iDMED', password: grailsApplication.config.dataSource.userpassaccess, 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '9E0AD237-9C7E-4656-9E58-D311F5E47F28', code: '11', urlPath: 'https://be-idmedmaputo.cid.fgh.org.mz:', port: '5011', destination: 'IDMED', username: 'iDMED', password: grailsApplication.config.dataSource.userpassaccess, 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'ec74926c-77c2-4c23-9124-9591d1670ab0', code: '12', urlPath: 'https://172.104.236.126:', port: '445', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':grailsApplication.config.dataSource.userpassaccess))
+        provincialServerList.add(new LinkedHashMap(id: '7036157a-61c3-4515-9ab8-fc68359d9402', code: '13', urlPath: 'https://idmed-metadata.fgh.org.mz:', port: '5012', destination: 'METADATA', username: 'iDMED', password: grailsApplication.config.dataSource.userpassaccess, 'dbname':'N/A'))
         provincialServerList.add(new LinkedHashMap(id: '257016e7-628d-4d72-8b50-c16c32380767', code: '99', urlPath: 'http://172.104.203.103:', port: '3030', destination: 'SIMAM', username: 'admin', password: 'N/A', 'dbname':'N/A'))
 
         return provincialServerList
