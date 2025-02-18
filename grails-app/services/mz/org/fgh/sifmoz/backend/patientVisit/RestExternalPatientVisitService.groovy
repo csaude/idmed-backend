@@ -23,7 +23,8 @@ import org.springframework.scheduling.annotation.Scheduled
 class RestExternalPatientVisitService {
 
     final String requestMethod_POST = "POST"
-    final char syncStatusReady = "R"
+    final char syncStatusReady = 'R'.toCharacter()
+    final char syncStatusUPDATED = 'U'.toCharacter()
 
     IPatientVisitService patientVisitService
     IPrescriptionService prescriptionService
@@ -39,7 +40,7 @@ class RestExternalPatientVisitService {
         PatientVisit.withTransaction {
             Clinic mainClinic = Clinic.findWhere(mainClinic: true)
 
-            List<ExternalPatientVisit> externalPatientVisitList = ExternalPatientVisit.findAllByTargetClinicIdAndSyncStatus(mainClinic.id, syncStatusReady)
+            List<ExternalPatientVisit> externalPatientVisitList = ExternalPatientVisit.findAllWhere(targetClinicId:mainClinic.id, syncStatus: syncStatusReady)
 
             externalPatientVisitList.each { externalPatientVisit ->
                 PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findWhere(value: externalPatientVisit.nid)
@@ -74,7 +75,7 @@ class RestExternalPatientVisitService {
 //            item.id = UUID.fromString(objectJSON.patientVisitDetails[index].id)
             item.origin = visit.origin
 //            item.prescription.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.id)
-            Prescription prescriptionCheck = Prescription.findById(item.prescription.id)
+            Prescription prescriptionCheck = Prescription.findWhere(id:  item.prescription.id)
 
             if (prescriptionCheck)
                 item.prescription.origin = prescriptionCheck.origin
@@ -145,7 +146,7 @@ class RestExternalPatientVisitService {
         }
 
         try {
-            PatientVisit existingPatientVisit = PatientVisit.findByVisitDateAndPatient(visit.visitDate, visit.patient)
+            PatientVisit existingPatientVisit = PatientVisit.findWhere(visitDate:  visit.visitDate, patient:  visit.patient)
             if (existingPatientVisit != null) {
                 visit.vitalSignsScreenings.each { item ->
                     item.visit = existingPatientVisit
@@ -183,7 +184,7 @@ class RestExternalPatientVisitService {
                 visit.patientVisitDetails.each { item ->
                     item.patientVisit = existingPatientVisit
                     item.origin = existingPatientVisit.origin
-                    Prescription existingPrescription = Prescription.findById(item.prescription.id)
+                    Prescription existingPrescription = Prescription.findWhere(id:  item.prescription.id)
                     if (existingPrescription == null) {
                         //  item.prescription.origin = existingPatientVisit.origin
                         incrementPrescriptionSeq(item.prescription, item.episode)
@@ -201,7 +202,7 @@ class RestExternalPatientVisitService {
                 visit.patientVisitDetails.each { item ->
                     item.pack.origin = visit.origin
                     //  item.episode.origin = visit.origin
-                    Prescription existingPrescription = Prescription.findById(item.prescription.id)
+                    Prescription existingPrescription = Prescription.findWhere(id:  item.prescription.id)
                     if (existingPrescription != null) {
                         item.prescription = existingPrescription
                         // item.prescription.origin = existingPrescription.origin
@@ -219,7 +220,7 @@ class RestExternalPatientVisitService {
                 }
             }
             if(patientVisitService.save(visit)){
-                externalPatientVisit.syncStatus = 'U'
+                externalPatientVisit.syncStatus = syncStatusUPDATED
                 externalPatientVisitService.save(externalPatientVisit)
             }
 
