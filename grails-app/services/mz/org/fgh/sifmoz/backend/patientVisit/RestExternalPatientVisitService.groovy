@@ -8,6 +8,7 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.episode.IEpisodeService
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.IPatientVisitDetailsService
@@ -31,11 +32,12 @@ class RestExternalPatientVisitService {
     IPatientVisitDetailsService patientVisitDetailsService
     ExternalPatientVisitService externalPatientVisitService
     IPackService packService
+    IEpisodeService episodeService
 
     static lazyInit = false
 
 //    @Scheduled(cron = "0 0 12 * * 1,5")
-    @Scheduled(fixedDelay = 30000L)
+    @Scheduled(fixedDelay = 90000L)
     void schedulerRequestRunning() {
         PatientVisit.withTransaction {
             Clinic mainClinic = Clinic.findWhere(mainClinic: true)
@@ -44,9 +46,10 @@ class RestExternalPatientVisitService {
 
             externalPatientVisitList.each { externalPatientVisit ->
                 PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findWhere(value: externalPatientVisit.nid)
+                def lastEpisode = episodeService.getLastWithVisitByIndentifier(patientServiceIdentifier, mainClinic)
 
                 if(patientServiceIdentifier){
-                    savePatientVisit(externalPatientVisit, patientServiceIdentifier)
+                    savePatientVisit(externalPatientVisit, patientServiceIdentifier, lastEpisode)
                 }
             }
 
@@ -54,7 +57,7 @@ class RestExternalPatientVisitService {
     }
 
     @Transactional
-    void savePatientVisit(ExternalPatientVisit externalPatientVisit, PatientServiceIdentifier patientServiceIdentifier) {
+    void savePatientVisit(ExternalPatientVisit externalPatientVisit, PatientServiceIdentifier patientServiceIdentifier, Episode lastEpisode) {
         PatientVisit visit = new PatientVisit(parseTo(externalPatientVisit.jsonObject) as Map)
 
         if (!visit?.patientVisitDetails?.isEmpty()) {
@@ -105,6 +108,7 @@ class RestExternalPatientVisitService {
             }
 
 //            item.pack.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.id)
+            item.episode = lastEpisode
             item.pack.origin = visit.origin
             item.pack.packagedDrugs.eachWithIndex { item4, index4 ->
 //                item4.beforeInsert()
@@ -183,6 +187,7 @@ class RestExternalPatientVisitService {
                 }
                 visit.patientVisitDetails.each { item ->
                     item.patientVisit = existingPatientVisit
+                    item.episode = lastEpisode
                     item.origin = existingPatientVisit.origin
                     Prescription existingPrescription = Prescription.findWhere(id:  item.prescription.id)
                     if (existingPrescription == null) {
@@ -200,6 +205,7 @@ class RestExternalPatientVisitService {
                 visit = existingPatientVisit
             } else {
                 visit.patientVisitDetails.each { item ->
+                    item.episode = lastEpisode
                     item.pack.origin = visit.origin
                     //  item.episode.origin = visit.origin
                     Prescription existingPrescription = Prescription.findWhere(id:  item.prescription.id)
