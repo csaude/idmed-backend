@@ -270,7 +270,7 @@ class PatientVisitController extends RestfulController {
                 }
             }
             if (patientVisitService.save(visit) && isTransitPatient)
-                saveExternalPatientVisit(isNationalTransitPatient, visit, lastEpisode)
+                saveExternalPatientVisit(isNationalTransitPatient, visit, lastEpisode, objectJSON)
         } catch (ValidationException e) {
             transactionStatus.setRollbackOnly()
             respond visit.errors
@@ -640,16 +640,17 @@ class PatientVisitController extends RestfulController {
         return patientVisit.origin == null || patientVisit?.origin?.isEmpty()
     }
 
-private saveExternalPatientVisit(boolean isNational, PatientVisit patientVisit, Episode lastEpisode) {
+private static saveExternalPatientVisit(boolean isNational, PatientVisit patientVisit, Episode lastEpisode, def objectJSON) {
         ExternalPatientVisit externalPatientVisit = new ExternalPatientVisit()
+        externalPatientVisit.beforeInsert()
         externalPatientVisit.patientId = patientVisit.patient.id
         externalPatientVisit.patientName = patientVisit.patient.firstNames.concat(" ").concat(patientVisit.patient.lastNames)
         externalPatientVisit.patientGender = patientVisit.patient.gender
         externalPatientVisit.patientDateOfBirth = patientVisit.patient.dateOfBirth
         externalPatientVisit.patientCellphone = patientVisit.patient.cellphone
         externalPatientVisit.nid = lastEpisode.patientServiceIdentifier.value
-        externalPatientVisit.jsonObject = patientVisit.toString()
-        externalPatientVisit.syncStatus = 'R'
+        externalPatientVisit.jsonObject = objectJSON as JSON
+
         if(isNational) {
             populateWithActualEpisodeDetails(externalPatientVisit, lastEpisode)
         } else {
@@ -659,18 +660,19 @@ private saveExternalPatientVisit(boolean isNational, PatientVisit patientVisit, 
     }
 
    private static populateWithActualEpisodeDetails(ExternalPatientVisit externalPatientVisit, Episode lastEpisode){
-        externalPatientVisit.sourceProvinceName = lastEpisode.clinic.province.description
-        externalPatientVisit.sourceProvinceId = lastEpisode.clinic.province.id
-        externalPatientVisit.sourceDistrictId = lastEpisode.clinic.district.id
-        externalPatientVisit.sourceDistrictName = lastEpisode.clinic.province.description
-        externalPatientVisit.sourceClinicId = lastEpisode.clinic.id
-        externalPatientVisit.sourceClinicName = lastEpisode.clinic.clinicName
-        externalPatientVisit.targetProvinceId = lastEpisode.referralClinic.province.id
-        externalPatientVisit.targetProvinceName = lastEpisode.referralClinic.province.description
-        externalPatientVisit.targetDistrictId = lastEpisode.referralClinic.district.id
-        externalPatientVisit.targetDistrictName = lastEpisode.referralClinic.district.description
-        externalPatientVisit.targetClinicId = lastEpisode.referralClinic.id
-        externalPatientVisit.targetClinicName = lastEpisode.referralClinic.clinicName
+        externalPatientVisit.sourceProvinceName = lastEpisode?.clinic?.province?.description
+        externalPatientVisit.sourceProvinceId = lastEpisode?.clinic?.province?.id
+        externalPatientVisit.sourceDistrictId = lastEpisode?.clinic?.district?.id
+        externalPatientVisit.sourceDistrictName = lastEpisode?.clinic?.district?.description
+        externalPatientVisit.sourceClinicId = lastEpisode?.clinic?.id
+        externalPatientVisit.sourceClinicName = lastEpisode?.clinic?.clinicName
+        externalPatientVisit.targetProvinceId = lastEpisode?.referralClinic?.province?.id
+        externalPatientVisit.targetProvinceName = lastEpisode?.referralClinic?.province?.description
+        externalPatientVisit.targetDistrictId = lastEpisode?.referralClinic?.district?.id
+        externalPatientVisit.targetDistrictName = lastEpisode?.referralClinic?.district?.description
+        externalPatientVisit.targetClinicId = lastEpisode?.referralClinic?.id
+        externalPatientVisit.targetClinicName = lastEpisode?.referralClinic?.clinicName
+        externalPatientVisit.syncStatus = 'R'
     }
 
   private static  populateWithDefaultEpisodeDetails(ExternalPatientVisit externalPatientVisit){
@@ -686,5 +688,6 @@ private saveExternalPatientVisit(boolean isNational, PatientVisit patientVisit, 
         externalPatientVisit.targetDistrictName = "N/A"
         externalPatientVisit.targetClinicId = "N/A"
         externalPatientVisit.targetClinicName = "N/A"
+        externalPatientVisit.syncStatus = 'N'
     }
 }
