@@ -35,7 +35,7 @@ class RestPatientUpdateService {
 
     static lazyInit = false
 
-    @Scheduled(cron = "0 0 14 * * *")
+    @Scheduled(cron = "0 15 * * * *")
     void schedulerRequestRunning() {
 
          Patient.withTransaction {
@@ -47,7 +47,7 @@ class RestPatientUpdateService {
 
                 try {
                    // RestOpenMRSClient restPost = new RestOpenMRSClient()
-                    String urlPath = "patient/info/updated-data?client_name=eip"
+                    String urlPath = "patient/info/updated-data?client_name=iDMED"
                     def response =  RestOpenMRSClient.getResponseOpenMRSClient(universalProviderUUid, null, urlBase ,urlPath, requestMethod_GET)
 
                     if (response?.entry) {
@@ -75,7 +75,7 @@ class RestPatientUpdateService {
                         }
                     }
 
-                    String commitUrlPath = "patient/info/updated-data/commit?client_name=eip"
+                    String commitUrlPath = "patient/info/updated-data/commit?client_name=iDMED"
                     RestOpenMRSClient.getResponseOpenMRSClient(universalProviderUUid, null, urlBase ,commitUrlPath, requestMethod_POST)
 
                 } catch (Exception e) {
