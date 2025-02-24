@@ -254,7 +254,7 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
                             if (clinicuuid == null || clinicuuid?.trim()?.isEmpty() || clinicuuid.equalsIgnoreCase("null")) {
                                 def lastEpisode = episodeService.getLastWithVisitByIndentifier(patientServiceIdentifier, clinic)
 
-                                if (lastEpisode.referralClinic != null) {
+                                if (lastEpisode?.referralClinic != null) {
                                     dispenseMode = DispenseMode.findByCode('DD_FP')
                                 } else {
                                     def clinisector = ClinicSector.findById(lastEpisode?.clinicSector?.id)

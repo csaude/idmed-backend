@@ -57,7 +57,7 @@ abstract class EpisodeService implements IEpisodeService{
     @Override
     Episode getEpisodeOfReferralByPatientServiceIdentfierAndBelowEpisodeDate(PatientServiceIdentifier patientServiceIdentifier, Date episodeDate) {
        // StartStopReason startStop = StartStopReason.findByCode("REFERIDO_PARA")
-
+        Episode episode = null
         def episodes = Episode.executeQuery("select ep from Episode ep " +
                 "inner join ep.startStopReason stp " +
                 "inner join ep.patientServiceIdentifier psi " +
@@ -65,7 +65,10 @@ abstract class EpisodeService implements IEpisodeService{
                 "inner join ep.clinic c " +
                 "where psi = :patientServiceIdentifier and stp.code = 'REFERIDO_PARA' and ep.episodeDate <= :episodeDate order by ep.episodeDate desc", [patientServiceIdentifier:patientServiceIdentifier, episodeDate:episodeDate])
 
-        return episodes.get(0)
+        if(!episodes?.isEmpty())
+        episode = episodes.first() as Episode
+
+        return episode
     }
 
     @Override
@@ -78,11 +81,15 @@ abstract class EpisodeService implements IEpisodeService{
                 "and exists (select pvd from PatientVisitDetails pvd where pvd.episode = ep ) " +
                 //"and ep.clinic = :clinic" +
                 "order by ep.episodeDate desc", [patientServiceIdentifier: patientServiceIdentifier])
-        Episode episode = episodes.get(0)
-        PatientVisitDetails patientVisitDetails = iPatientVisitDetailsService.getLastVisitByEpisodeId(episode.id)
-        patientVisitDetails.setPrescription(Prescription.findWhere(id:  patientVisitDetails.prescription.id))
-       // episode.setPatientVisitDetails(new HashSet<PatientVisitDetails>())
-       // episode.getPatientVisitDetails().add(patientVisitDetails)
+        Episode episode = null
+        if(!episodes?.isEmpty()){
+            episode = episodes.first() as Episode
+            PatientVisitDetails patientVisitDetails = iPatientVisitDetailsService.getLastVisitByEpisodeId(episode.id)
+            patientVisitDetails.setPrescription(Prescription.findWhere(id:  patientVisitDetails.prescription.id))
+            // episode.setPatientVisitDetails(new HashSet<PatientVisitDetails>())
+            // episode.getPatientVisitDetails().add(patientVisitDetails)
+        }
+
         return episode
     }
 
