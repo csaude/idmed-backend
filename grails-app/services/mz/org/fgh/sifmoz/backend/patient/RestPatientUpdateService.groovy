@@ -40,11 +40,12 @@ class RestPatientUpdateService {
 
          Patient.withTransaction {
              println  " - REST UPDATE PATIENT FROM OPENMRS TO IDMED " + new Date()
-            List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
-            if (!interoperabilityAttributes.isEmpty()) {
+            // List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
+             HealthInformationSystem his = HealthInformationSystem.findByAbbreviation('OpenMRS')
+            if (!his.interoperabilityAttributes.isEmpty()) {
                 println "Iniciando a Rotina de Busca de Pacientes para Actualizacao"
-                String universalProviderUUid = interoperabilityAttributes.find { it.interoperabilityType.code == "UNIVERSAL_PROVIDER_UUID" }.value
-                String urlBase = interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE" }.value
+                String universalProviderUUid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "UNIVERSAL_PROVIDER_UUID" }.value
+                String urlBase = his.interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE" }.value
 
                 try {
                    // RestOpenMRSClient restPost = new RestOpenMRSClient()
