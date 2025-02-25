@@ -28,7 +28,6 @@ class DrugRestService extends SynchronizerTask {
     static lazyInit = false
 
 //    @Scheduled(cron = "0 10 20 * * *")
-//    @Scheduled(fixedDelay = 60000L)
     void execute() {
         /*
         def offset = 0

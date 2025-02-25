@@ -79,8 +79,9 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
     static lazyInit = false
 
 
-    @Scheduled(fixedDelay = 60000L)
+    @Scheduled(cron = "0/5 * * * * *")
     void execute() {
+        println  " - REST DISPENSES FROM PROVINCIAL TO IDMED " + new Date()
         GetDispenseFromProvincialServer()
         SyncDispenseToProvincialServer()
     }

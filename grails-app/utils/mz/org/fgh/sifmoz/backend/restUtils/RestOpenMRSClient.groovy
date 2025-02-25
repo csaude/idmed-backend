@@ -97,6 +97,8 @@ class RestOpenMRSClient {
     static def getResponseOpenMRSClient(String openmrsBase64, String object, String urlBase, String urlPath, String method) {
 
         String restUrl = urlBase.concat(urlPath)
+        BufferedReader input = null
+        HttpURLConnection connection = null
         int code = 200
         try {
             String userCredentials = openmrsBase64
@@ -104,7 +106,7 @@ class RestOpenMRSClient {
             println(restUrl)
             println(basicAuth)
             URL siteURL = new URL(restUrl)
-            HttpURLConnection connection = (HttpURLConnection) siteURL.openConnection()
+            connection = (HttpURLConnection) siteURL.openConnection()
             connection.setRequestProperty("Authorization", basicAuth)
             connection.setRequestMethod(method)
             connection.setRequestProperty("Content-Type", "application/json; utf-8")
@@ -115,7 +117,7 @@ class RestOpenMRSClient {
             code = connection.getResponseCode()
 
             if (code == HttpURLConnection.HTTP_OK || code == HttpURLConnection.HTTP_CREATED) { // success
-                BufferedReader input = new BufferedReader(new InputStreamReader(connection.getInputStream()))
+                input = new BufferedReader(new InputStreamReader(connection.getInputStream()))
                 String inputLine
                 StringBuffer response = new StringBuffer()
                 while ((inputLine = input.readLine()) != null) {
@@ -129,10 +131,22 @@ class RestOpenMRSClient {
                 println("GET request not worked")
                 return null
             }
-            connection.disconnect()
+        } catch (SocketTimeoutException e) {
+            println("Connection timed out: " + e.message)
+        } catch (IOException e) {
+            println("Error in HTTP request: " + e.message)
         } catch (Exception e) {
             e.printStackTrace()
+        }finally {
+            try {
+                if (input != null) input.close()
+            } catch (IOException ignored) {}
+
+            if (connection != null) {
+                connection.disconnect()
+            }
         }
+
         println("Connection Refused")
         return new JSONObject("{\"sessionId\":null,\"authenticated\":null}")
     }

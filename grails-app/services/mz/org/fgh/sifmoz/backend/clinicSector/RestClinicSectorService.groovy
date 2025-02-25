@@ -24,7 +24,7 @@ class RestClinicSectorService extends SynchronizerTask {
 
     static lazyInit = false
 
-    @Scheduled(fixedDelay = 30000L)
+//    @Scheduled(fixedDelay = 30000L)
     void schedulerRequestRunning() {
         ClinicSector.withTransaction {
             if (this.instalationConfig != null &&  !this.isProvincial()) {
