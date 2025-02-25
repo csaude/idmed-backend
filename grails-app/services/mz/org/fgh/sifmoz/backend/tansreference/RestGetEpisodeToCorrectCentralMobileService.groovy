@@ -43,7 +43,7 @@ class RestGetEpisodeToCorrectCentralMobileService extends SynchronizerTask {
 
     static lazyInit = false
 
-    @Scheduled(cron = "0 0/3 * * * *")
+    @Scheduled(fixedDelay = 10800000L)
     void execute() {
         println  " - REST PATIENT EPISODE 2 FROM PROVINCIAL TO IDMED " + new Date()
         if (this.instalationConfig != null && !this.isProvincial()) {

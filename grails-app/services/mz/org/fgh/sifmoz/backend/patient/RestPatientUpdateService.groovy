@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
 import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.District
 import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.Province
@@ -35,7 +36,7 @@ class RestPatientUpdateService {
 
     static lazyInit = false
 
-    //@Scheduled(cron = "0/15 * * * * *")
+    @Scheduled(fixedDelay = 900000L)
     void schedulerRequestRunning() {
 
          Patient.withTransaction {
@@ -43,7 +44,7 @@ class RestPatientUpdateService {
             // List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
              HealthInformationSystem his = HealthInformationSystem.findByAbbreviation('OpenMRS')
             if (!his.interoperabilityAttributes.isEmpty()) {
-                println "Iniciando a Rotina de Busca de Pacientes para Actualizacao"
+             //   println "Iniciando a Rotina de Busca de Pacientes para Actualizacao"
                 String universalProviderUUid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "UNIVERSAL_PROVIDER_UUID" }.value
                 String urlBase = his.interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE" }.value
 
@@ -133,11 +134,16 @@ class RestPatientUpdateService {
             idmedPatient.province = Province.findByDescription(patient.address[0].state)
             idmedPatient.address = patient.address[0].line[0]
             idmedPatient.addressReference = patient.address[0].line[3]
+
+            if(idmedPatient.province == null){
+                Clinic mainClinic = Clinic.findWhere(mainClinic: true)
+                idmedPatient.province = mainClinic.province
+            }
         }
 
         if (patient.telecom?.size() >= 1) {
             idmedPatient.cellphone = patient.telecom[0].value
-            idmedPatient.alternativeCellphone = patient.telecom.size() > 1 ? patient.telecom[1]?.value : null
+            idmedPatient.alternativeCellphone = patient.telecom.size() > 8 ? patient.telecom[1]?.value : null
         }
 
         handleExtensions(idmedPatient, patient.extension)
