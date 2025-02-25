@@ -35,7 +35,7 @@ class RestPatientUpdateService {
 
     static lazyInit = false
 
-    @Scheduled(cron = "0/15 * * * * *")
+    //@Scheduled(cron = "0/15 * * * * *")
     void schedulerRequestRunning() {
 
          Patient.withTransaction {
