@@ -39,10 +39,11 @@ class RestPatientService {
 
         Patient.withTransaction {
             println  " - REST PATIENT FROM IDMED TO OPENMRS " + new Date()
-            List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
-            if (!interoperabilityAttributes.isEmpty()) {
-                String hisLocation = interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_LOCATION_UUID" }.value
-                String identifierTypeIdOpenMrs = interoperabilityAttributes.find { it.interoperabilityType.code == "PATIENT_IDENTIFIER_TYPE_NID_UUID" }.value
+            // List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
+            HealthInformationSystem hisToSync = HealthInformationSystem.findByAbbreviation('OpenMRS')
+            if (!hisToSync.interoperabilityAttributes.isEmpty()) {
+                String hisLocation = hisToSync.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_LOCATION_UUID" }.value
+                String identifierTypeIdOpenMrs = hisToSync.interoperabilityAttributes.find { it.interoperabilityType.code == "PATIENT_IDENTIFIER_TYPE_NID_UUID" }.value
 
                 def patients = Patient.executeQuery("select p from PatientServiceIdentifier psi " +
                         " inner join psi.patient p " +

@@ -220,7 +220,11 @@ class RestPackService {
     boolean isPatientActiveInProgram(Patient patient, Pack pack, PatientVisitDetails patientVisitDetails,PatientServiceIdentifier patientServiceIdentifier, String urlBaseReportingRest, String universalProviderUuid) {
         String urlPath = 'provider?q=' + patient.getHisUuid()
         String openMrsReportingRest = new RestOpenMRSClient().getResponseOpenMRSClient(universalProviderUuid, null, urlBaseReportingRest, urlPath, requestMethod_GET)
-        JSONArray members = new JSONObject(openMrsReportingRest).getJSONArray("members")
+
+        JSONObject resultsReportingRest = new JSONObject(openMrsReportingRest)
+        JSONArray members = new JSONArray()
+        if(resultsReportingRest.containsKey("members"))
+            members = resultsReportingRest.getJSONArray("members")
 
         if (members.length() < 1) {
             saveErrorLog(pack, patientVisitDetails, patient, MessageFormat.format(NID_NOT_ACTIVE_IN_OPENMRS, patientServiceIdentifier.value,patient.hisUuid), null)
