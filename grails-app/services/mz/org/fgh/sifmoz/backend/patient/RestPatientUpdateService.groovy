@@ -35,10 +35,11 @@ class RestPatientUpdateService {
 
     static lazyInit = false
 
-    @Scheduled(cron = "0 15 * * * *")
+    @Scheduled(cron = "0/15 * * * * *")
     void schedulerRequestRunning() {
 
          Patient.withTransaction {
+             println  " - REST UPDATE PATIENT FROM OPENMRS TO IDMED " + new Date()
             List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
             if (!interoperabilityAttributes.isEmpty()) {
                 println "Iniciando a Rotina de Busca de Pacientes para Actualizacao"

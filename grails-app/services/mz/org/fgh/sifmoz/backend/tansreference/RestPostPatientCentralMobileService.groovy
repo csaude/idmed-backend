@@ -50,8 +50,9 @@ class RestPostPatientCentralMobileService extends SynchronizerTask {
             "Nome",
             "NID");
 
-    // @Scheduled(fixedDelay = 60000L)
+    @Scheduled(cron = "0/3 * * * * *")
     void execute() {
+        println  " - REST PATIENT TRANSFERENCE FROM IDMED TO PROVINCIAL " + new Date()
         PatientTransReference.withTransaction {
             if (this.instalationConfig != null && !this.isProvincial()) {
                 Clinic clinicLoged = Clinic.findById(this.getUsOrProvince())

@@ -36,9 +36,9 @@ class RestExternalPatientVisitService {
 
     static lazyInit = false
 
-//    @Scheduled(cron = "0 0 12 * * 1,5")
-    @Scheduled(fixedDelay = 90000L)
+    @Scheduled(cron = "0/30 * * * * *")
     void schedulerRequestRunning() {
+        println  " - REST EXTERNAL PATIENT VISIT FROM PROVINCIAL TO IDMED " + new Date()
         PatientVisit.withTransaction {
             Clinic mainClinic = Clinic.findWhere(mainClinic: true)
 

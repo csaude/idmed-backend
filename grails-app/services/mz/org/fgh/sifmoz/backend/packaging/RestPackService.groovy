@@ -57,9 +57,10 @@ class RestPackService {
     final String GET_LOCATION = "location/";
     static lazyInit = false
 
-    //@Scheduled(fixedDelay = 30000L)
+    @Scheduled(cron = "0/2 * * * * *")
     void schedulerRequestRunning() {
         Pack.withTransaction {
+            println  " - REST DISPENSE FROM IDMED TO OPENMRS - " + new Date()
             List<Pack> packList = Pack.findAllWhere(syncStatus: 'R' as char)
             for (Pack pack : packList) {
                 try {
@@ -188,11 +189,16 @@ class RestPackService {
 
     String fetchNidUuid(Patient patient, Pack pack, PatientVisitDetails patientVisitDetails,PatientServiceIdentifier patientServiceIdentifier,String patientNid, String urlBase, String universalProviderUuid) {
         String urlPath = 'patient?q=' + patientNid
+        JSONArray results = new JSONArray()
+
         String nidRest = new RestOpenMRSClient().getResponseOpenMRSClient(universalProviderUuid, null, urlBase, urlPath, requestMethod_GET)
         if (nidRest == null) {
             saveErrorLog(pack, patientVisitDetails, patient, MessageFormat.format(NID_DOESNT_EXIST_IN_OPENMRS, patientServiceIdentifier.value), null)
         }
-        JSONArray results = new JSONObject(nidRest).getJSONArray("results")
+
+        JSONObject resultsObject = new JSONObject(nidRest)
+        if(resultsObject.containsKey("results"))
+            results = resultsObject.getJSONArray("results")
 
         return results.length() > 0 ? results.getJSONObject(0).getString("uuid") : null
     }
