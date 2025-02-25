@@ -44,7 +44,7 @@ class RestPatientUpdateService {
             // List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
              HealthInformationSystem his = HealthInformationSystem.findByAbbreviation('OpenMRS')
             if (!his.interoperabilityAttributes.isEmpty()) {
-                println "Iniciando a Rotina de Busca de Pacientes para Actualizacao"
+             //   println "Iniciando a Rotina de Busca de Pacientes para Actualizacao"
                 String universalProviderUUid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "UNIVERSAL_PROVIDER_UUID" }.value
                 String urlBase = his.interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE" }.value
 
