@@ -141,7 +141,7 @@ abstract class EpisodeService implements IEpisodeService{
         StartStopReason startStopReason = StartStopReason.findByCode(statusCode)
         patientServiceIdentifiers.each { item ->
             Episode lastEpisode = item.episodes.stream().reduce((prev, next) -> next).orElse(null)
-            if (lastEpisode.startStopReason == startStopReason) {
+            if (!lastEpisode.startStopReason.getId().equalsIgnoreCase(startStopReason.getId())) {
                 Episode closureEpisode = new Episode()
                 closureEpisode.episodeDate = statusDate
                 closureEpisode.episodeType = EpisodeType.findByCode('FIM')
@@ -162,6 +162,7 @@ abstract class EpisodeService implements IEpisodeService{
             }
         }
         }
+
     @Override
     closeEpisodeWhenOpenmrsStatusCodeAbandonAndSuspended(Patient patient, String statusCode,Date statusDate){
         def patientServiceIdentifiers = PatientServiceIdentifier.findAllByPatient(patient)
