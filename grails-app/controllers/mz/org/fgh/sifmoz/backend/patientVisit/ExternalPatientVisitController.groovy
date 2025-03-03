@@ -33,7 +33,6 @@ class ExternalPatientVisitController extends RestfulController {
     }
 
     @Transactional
-
     def save() {
         ExternalPatientVisit externalPatientVisit = new ExternalPatientVisit()
         def objectJSON = request.JSON
