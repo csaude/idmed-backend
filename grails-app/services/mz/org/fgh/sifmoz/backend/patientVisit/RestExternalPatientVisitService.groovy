@@ -89,13 +89,14 @@ class RestExternalPatientVisitService {
         visit.beforeInsert()
         visit.validate()
         visit.id = UUID.fromString(externalPatientVisit.id)
-        visit.origin = externalPatientVisit.targetClinicId
+        visit.origin = externalPatientVisit.sourceClinicId
         visit.clinic = patientServiceIdentifier.clinic
 
         visit.patientVisitDetails.eachWithIndex { item, index ->
             item.beforeInsert()
             item.id = UUID.fromString(objectJSON.patientVisitDetails[index].id)
             item.origin = visit.origin
+            item.episode = lastEpisode
             item.prescription.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.id)
             Prescription prescriptionCheck = Prescription.findWhere(id:  item.prescription.id)
 
