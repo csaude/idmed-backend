@@ -78,7 +78,7 @@ abstract class EpisodeService implements IEpisodeService{
                 "and exists (select pvd from PatientVisitDetails pvd where pvd.episode = ep ) " +
                 //"and ep.clinic = :clinic" +
                 "order by ep.episodeDate desc", [patientServiceIdentifier: patientServiceIdentifier])
-        Episode episode = episodes.get(0)
+        Episode episode = episodes?.first() as Episode
         PatientVisitDetails patientVisitDetails = iPatientVisitDetailsService.getLastVisitByEpisodeId(episode.id)
         patientVisitDetails.setPrescription(Prescription.findWhere(id:  patientVisitDetails.prescription.id))
        // episode.setPatientVisitDetails(new HashSet<PatientVisitDetails>())

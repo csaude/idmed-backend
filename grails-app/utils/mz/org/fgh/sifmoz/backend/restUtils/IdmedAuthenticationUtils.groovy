@@ -1,18 +1,18 @@
 package mz.org.fgh.sifmoz.backend.restUtils
 
-
+import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
+import grails.util.Holders
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
-import groovy.util.logging.Log
-import mz.org.fgh.sifmoz.backend.patientVisit.ExternalPatientVisit
 import mz.org.fgh.sifmoz.backend.provincialServer.ProvincialServer
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.springframework.http.HttpStatus
 
 class IdmedAuthenticationUtils {
-    def grailsApplication
+
+    private final GrailsApplication grailsApplication = Holders.grailsApplication
     private String authToken
     private Date tokenExpiration
     static Logger logger = LogManager.getLogger(IdmedAuthenticationUtils.class)
@@ -24,17 +24,17 @@ class IdmedAuthenticationUtils {
         return authToken && tokenExpiration && tokenExpiration > new Date()
     }
 
-    String getAuthToken() {
+    String getAuthToken(String url) {
         if (!isTokenValid()) {
-            authenticate()
+            authenticate(url)
         }
         return authToken
     }
 
-    private void authenticate() {
-        def backend2Url = grailsApplication.config.datasource.url
+    private void authenticate(String url) {
+        def backend2Url = url
         def credentials = [
-                username: grailsApplication.config.datasource.useraccess,
+                username:grailsApplication.config.dataSource.useraccess,
                 password:grailsApplication.config.dataSource.userpassaccess
         ]
 
@@ -53,7 +53,8 @@ class IdmedAuthenticationUtils {
 
             authToken = result.access_token
             // Set token expiration (adjust based on backend2's token expiration)
-            tokenExpiration = new Date() + 1 // Add 1 hour
+
+            tokenExpiration = new Date(new Date().time + (60 * 60 * 1000)) // Add 1 hour
 
         } catch (Exception e) {
             logger.error("Authentication failed: ${e.message}")
@@ -62,20 +63,20 @@ class IdmedAuthenticationUtils {
     }
 
     @Transactional
-    def syncExternalPatientVisit(ProvincialServer  provincialServer, ExternalPatientVisit externalPatientVisit) {
-        def backend2Url = provincialServer.urlPath
+    def syncExternalPatientVisit(ProvincialServer  provincialServer, JsonBuilder jsonBuilder) {
+        def backend2Url = provincialServer.getUrlPath().contains("https") ?  provincialServer.urlPath : provincialServer.getUrlPath() + provincialServer.getPort()
         try {
             // Get fresh auth token
-            def authToken = getAuthToken()
-            def jsonBuilder = new JsonBuilder(externalPatientVisit)
+            def authToken = getAuthToken(backend2Url)
+
             def connection = new URL("${backend2Url}/api/externalPatientVisit").openConnection()
 
             def responseCode = applyPOSTMethod(connection, jsonBuilder, authToken, HTTP_REQUEST_METHOD_POST)
 
             if (responseCode == HttpStatus.UNAUTHORIZED.value()) {
                 // Token might have expired, force refresh and retry once
-                authenticate()
-                authToken = getAuthToken()
+                authenticate(backend2Url)
+                authToken = getAuthToken(backend2Url)
 
                 // Retry the request with new token
                 connection = new URL("${backend2Url}/api/externalPatientVisit").openConnection()
