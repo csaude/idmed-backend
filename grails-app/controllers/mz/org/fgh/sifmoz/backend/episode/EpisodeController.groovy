@@ -73,7 +73,7 @@ class EpisodeController extends RestfulController {
             episodeService.save(episode)
             if (episode.startStopReason.code.equalsIgnoreCase(StartStopReason.TRANSFERIDO_PARA) ||
                     episode.startStopReason.code.equalsIgnoreCase(StartStopReason.OBITO)) {
-                closePatientServiceIdentifierOfPatientWithTrasnferenceOrObitEpisode(episode)
+                episodeService.closePatientServiceIdentifierOfPatientWithTrasnferenceOrObitEpisode(episode)
             }
             if (episode.startStopReason.code.equalsIgnoreCase("TRANSFERIDO_PARA") ||
                     episode.startStopReason.code.equalsIgnoreCase("VOLTOU_REFERENCIA")) {
@@ -198,36 +198,6 @@ class EpisodeController extends RestfulController {
         return transReference
     }
 
-    public closePatientServiceIdentifierOfPatientWithTrasnferenceOrObitEpisode(Episode episode) {
-        def patientServiceIdentifiers = PatientServiceIdentifier.findAllByPatient(episode.patientServiceIdentifier.patient)
-
-        patientServiceIdentifiers.each { item ->
-            if (item.id == episode.patientServiceIdentifier.id) {
-                item.endDate = episode.episodeDate
-                item.state = 'Inactivo'
-                item.save()
-            } else {
-                Episode closureEpisode = new Episode()
-                closureEpisode.episodeDate = episode.episodeDate
-                closureEpisode.episodeType = EpisodeType.findByCode('FIM')
-                closureEpisode.patientServiceIdentifier = item
-                closureEpisode.clinic = item.clinic
-                closureEpisode.clinicSector = episode.clinicSector
-                closureEpisode.creationDate = new Date()
-                closureEpisode.notes = 'Fechado Devido ao' + episode.startStopReason.code
-                closureEpisode.startStopReason = episode.startStopReason
-                closureEpisode.origin = episode.clinic.uuid
-                closureEpisode.residentInCountry = episode.residentInCountry
-                closureEpisode.beforeInsert()
-                episodeService.save(closureEpisode)
-                item.endDate = episode.episodeDate
-                item.state = 'Inactivo'
-                item.origin = episode.origin
-                item.save(flush: true)
-            }
-
-        }
-    }
 
     def getAllByEpisodeIds() {
         def objectJSON = request.JSON

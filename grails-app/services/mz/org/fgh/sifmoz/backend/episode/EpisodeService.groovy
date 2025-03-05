@@ -6,8 +6,10 @@ import groovy.transform.CompileStatic
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.episodeType.EpisodeType
+import mz.org.fgh.sifmoz.backend.openmrsErrorLog.OpenmrsErrorLog
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
+import mz.org.fgh.sifmoz.backend.patientUpdateOpenMrsErrorLog.PatientUpdateOpenMrsErrorLog
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.IPatientVisitDetailsService
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
@@ -15,6 +17,8 @@ import mz.org.fgh.sifmoz.backend.reports.referralManagement.IReferredPatientsRep
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
 import org.springframework.beans.factory.annotation.Autowired
+
+import java.text.SimpleDateFormat
 
 @Transactional
 @Service(Episode)
@@ -141,20 +145,11 @@ abstract class EpisodeService implements IEpisodeService{
         StartStopReason startStopReason = StartStopReason.findByCode(statusCode)
         patientServiceIdentifiers.each { item ->
             Episode lastEpisode = item.episodes.stream().reduce((prev, next) -> next).orElse(null)
+            if (!isValidStatusDate(patient, statusCode, statusDate, item, lastEpisode)) {
+                return
+            }
             if (!lastEpisode.startStopReason.getId().equalsIgnoreCase(startStopReason.getId())) {
-                Episode closureEpisode = new Episode()
-                closureEpisode.episodeDate = statusDate
-                closureEpisode.episodeType = EpisodeType.findByCode('FIM')
-                closureEpisode.patientServiceIdentifier = item
-                closureEpisode.clinic = item.clinic
-                closureEpisode.clinicSector = lastEpisode.getClinicSector()
-                closureEpisode.creationDate = new Date()
-                closureEpisode.notes = 'Fechado Devido ao ' + startStopReason
-                closureEpisode.startStopReason = startStopReason
-                closureEpisode.origin = lastEpisode.getClinic().getUuid()
-                closureEpisode.residentInCountry = lastEpisode.residentInCountry
-                closureEpisode.beforeInsert()
-                this.save(closureEpisode)
+                createClosureEpisode(lastEpisode,item,statusDate,startStopReason)
                 item.endDate = new Date()
                 item.state = 'Inactivo'
                 item.origin = lastEpisode.getClinic().getUuid()
@@ -169,19 +164,11 @@ abstract class EpisodeService implements IEpisodeService{
      StartStopReason startStopReason = StartStopReason.findByCode(statusCode)
         patientServiceIdentifiers.each { item ->
             Episode lastEpisode =  item.episodes.stream().reduce((prev, next) -> next).orElse(null)
-            if (lastEpisode.startStopReason == startStopReason) {
-                Episode closureEpisode = new Episode()
-                closureEpisode.episodeDate = statusDate
-                closureEpisode.episodeType = EpisodeType.findByCode('FIM')
-                closureEpisode.patientServiceIdentifier = item
-                closureEpisode.clinic = item.clinic
-                closureEpisode.clinicSector = lastEpisode.getClinicSector()
-                closureEpisode.creationDate = new Date()
-                closureEpisode.notes = 'Fechado Devido ao' + startStopReason
-                closureEpisode.startStopReason = startStopReason
-                closureEpisode.origin = lastEpisode.getClinic().getUuid()
-                closureEpisode.beforeInsert()
-                this.save(closureEpisode)
+            if (!isValidStatusDate(patient, statusCode, statusDate, item, lastEpisode)) {
+                return
+            }
+            if (!lastEpisode.startStopReason.getId().equalsIgnoreCase(startStopReason.getId())) {
+                createClosureEpisode(lastEpisode,item,statusDate,startStopReason)
             }
         }
 
@@ -218,4 +205,96 @@ abstract class EpisodeService implements IEpisodeService{
         }
     }
 
+
+    public closePatientServiceIdentifierOfPatientWithTrasnferenceOrObitEpisode(Episode episode) {
+        def patientServiceIdentifiers = PatientServiceIdentifier.findAllByPatient(episode.patientServiceIdentifier.patient)
+
+        patientServiceIdentifiers.each { item ->
+            if (item.id == episode.patientServiceIdentifier.id) {
+                item.endDate = episode.episodeDate
+                item.state = 'Inactivo'
+                item.save()
+            } else {
+                Episode closureEpisode = new Episode()
+                closureEpisode.episodeDate = episode.episodeDate
+                closureEpisode.episodeType = EpisodeType.findByCode('FIM')
+                closureEpisode.patientServiceIdentifier = item
+                closureEpisode.clinic = item.clinic
+                closureEpisode.clinicSector = episode.clinicSector
+                closureEpisode.creationDate = new Date()
+                closureEpisode.notes = 'Fechado Devido ao' + episode.startStopReason.code
+                closureEpisode.startStopReason = episode.startStopReason
+                closureEpisode.origin = episode.clinic.uuid
+                closureEpisode.residentInCountry = episode.residentInCountry
+                closureEpisode.beforeInsert()
+                this.save(closureEpisode)
+                item.endDate = episode.episodeDate
+                item.state = 'Inactivo'
+                item.origin = episode.origin
+                item.save(flush: true)
+            }
+
+        }
+    }
+
+    private boolean isValidStatusDate(
+            Patient patient,
+            String statusCode,
+            Date statusDate,
+            PatientServiceIdentifier item,
+            Episode lastEpisode
+    ) {
+        if (statusDate.before(lastEpisode.episodeDate)) {
+            def errorMsg = "Não é possível criar o episódio de encerramento do tipo {$statusCode}: " +
+                    "A data de status (${new SimpleDateFormat('yyyy-MM-dd').format(statusDate)}) " +
+                    "é anterior à data do último episódio (${new SimpleDateFormat('yyyy-MM-dd').format(lastEpisode.episodeDate)}) no idmed"
+
+            createErrorLog(
+                    patient.id,
+                    errorMsg,
+                    item.value,
+                    item.service?.code
+            )
+
+            return false
+        }
+        return true
+    }
+
+    void createErrorLog(String patientId, String errorDescription, String nid,String clinicalService) {
+        def errorLog = new PatientUpdateOpenMrsErrorLog(
+                patient: patientId,
+                nid: nid,
+                errorDescription: errorDescription,
+                servicoClinico: clinicalService
+        )
+
+        PatientUpdateOpenMrsErrorLog errorLogExists = PatientUpdateOpenMrsErrorLog.findByPatientAndErrorDescription(errorLog.patient,errorLog.errorDescription)
+        if (errorLogExists == null)   {
+            errorLog.beforeInsert()
+            errorLog.save(flush: true)
+        }
+    }
+
+
+    private Episode createClosureEpisode(
+            Episode lastEpisode,
+            PatientServiceIdentifier item,
+            Date statusDate,
+            StartStopReason startStopReason
+    ) {
+        Episode closureEpisode = new Episode()
+        closureEpisode.episodeDate = statusDate
+        closureEpisode.episodeType = EpisodeType.findByCode('FIM')
+        closureEpisode.patientServiceIdentifier = item
+        closureEpisode.clinic = item.clinic
+        closureEpisode.clinicSector = lastEpisode.getClinicSector()
+        closureEpisode.creationDate = new Date()
+        closureEpisode.notes = 'Fechado Devido ao ' + startStopReason
+        closureEpisode.startStopReason = startStopReason
+        closureEpisode.origin = lastEpisode.getClinic().getUuid()
+        closureEpisode.residentInCountry = lastEpisode.residentInCountry
+        closureEpisode.beforeInsert()
+        this.save(closureEpisode)
+    }
 }
