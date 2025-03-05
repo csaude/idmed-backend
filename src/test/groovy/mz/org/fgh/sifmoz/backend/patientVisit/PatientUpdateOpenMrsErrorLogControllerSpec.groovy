@@ -1,6 +1,7 @@
 package mz.org.fgh.sifmoz.backend.patientVisit
 
 import grails.testing.web.controllers.ControllerUnitTest
+import mz.org.fgh.sifmoz.backend.patientUpdateOpenMrsErrorLog.PatientUpdateOpenMrsErrorLogController
 import spock.lang.Specification
 
 class PatientUpdateOpenMrsErrorLogControllerSpec extends Specification implements ControllerUnitTest<PatientUpdateOpenMrsErrorLogController> {
