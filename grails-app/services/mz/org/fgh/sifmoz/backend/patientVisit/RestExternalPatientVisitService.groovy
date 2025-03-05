@@ -22,6 +22,7 @@ import mz.org.fgh.sifmoz.backend.prescription.IPrescriptionService
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.provincialServer.ProvincialServer
 import mz.org.fgh.sifmoz.backend.restUtils.IdmedAuthenticationUtils
+import org.hibernate.criterion.CriteriaSpecification
 import org.springframework.http.HttpStatus
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
@@ -58,6 +59,7 @@ class RestExternalPatientVisitService {
             externalPatientVisitList.each { externalPatientVisit ->
                 PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findWhere(value: externalPatientVisit.nid)
                 Episode lastEpisode = episodeService.getLastWithVisitByIndentifier(patientServiceIdentifier, patientServiceIdentifier?.clinic)
+
                 EpisodeType episodeType = EpisodeType.get(lastEpisode.episodeType.id)
                 Clinic clinic = Clinic.get(lastEpisode.clinic.id)
                 ClinicSector clinicSector = ClinicSector.get(lastEpisode.clinicSector.id)
@@ -87,26 +89,32 @@ class RestExternalPatientVisitService {
         }
 
         visit.beforeInsert()
-        visit.validate()
         visit.id = UUID.fromString(externalPatientVisit.id)
-        visit.origin = externalPatientVisit.targetClinicId
+        visit.origin = externalPatientVisit.sourceClinicId
         visit.clinic = patientServiceIdentifier.clinic
 
         visit.patientVisitDetails.eachWithIndex { item, index ->
             item.beforeInsert()
             item.id = UUID.fromString(objectJSON.patientVisitDetails[index].id)
             item.origin = visit.origin
+            item.clinic = visit.clinic
+            item.episode = lastEpisode
+            item.patientVisit = visit
             item.prescription.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.id)
             Prescription prescriptionCheck = Prescription.findWhere(id:  item.prescription.id)
 
-            if (prescriptionCheck)
+            if (prescriptionCheck){
                 item.prescription.origin = prescriptionCheck.origin
+            }else{
+                item.prescription.origin = visit.origin
+                item.prescription.clinic = visit.clinic
+            }
 
             item.prescription.prescribedDrugs.eachWithIndex { item2, index2 ->
                 item2.beforeInsert()
                 item2.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.prescribedDrugs[index2].id)
                 if (prescriptionCheck) {
-                    item2.origin = prescriptionCheck.origin
+                    item2.origin = visit.origin
                     item2.clinic = prescriptionCheck.clinic
                 } else {
                     item2.origin = visit.origin
@@ -118,7 +126,7 @@ class RestExternalPatientVisitService {
                 item3.beforeInsert()
                 item3.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.prescriptionDetails[index3].id)
                 if (prescriptionCheck) {
-                    item3.origin = prescriptionCheck.origin
+                    item3.origin = visit.origin
                     item3.clinic = prescriptionCheck.clinic
                 } else {
                     item3.origin = visit.origin
@@ -129,6 +137,7 @@ class RestExternalPatientVisitService {
             item.pack.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.id)
             item.episode = lastEpisode
             item.pack.origin = visit.origin
+            item.clinic = visit.clinic
             item.pack.packagedDrugs.eachWithIndex { item4, index4 ->
                 item4.beforeInsert()
                 item4.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.packagedDrugs[index4].id)
@@ -208,11 +217,16 @@ class RestExternalPatientVisitService {
                     item.patientVisit = existingPatientVisit
                     item.episode = lastEpisode
                     item.origin = existingPatientVisit.origin
+                    item.clinic = existingPatientVisit.clinic
                     Prescription existingPrescription = Prescription.findWhere(id:  item.prescription.id)
                     if (existingPrescription == null) {
+                        item.prescription.origin = existingPatientVisit.origin
+                        item.prescription.clinic = existingPatientVisit.clinic
                         incrementPrescriptionSeq(item.prescription, item.episode)
                         prescriptionService.save(item.prescription)
                     }
+                    item.pack.origin = existingPatientVisit.origin
+                    item.pack.clinic = existingPatientVisit.clinic
                     packService.save(item.pack)
                 }
                 existingPatientVisit.vitalSignsScreenings = visit.vitalSignsScreenings
@@ -223,21 +237,26 @@ class RestExternalPatientVisitService {
                 visit = existingPatientVisit
             } else {
                 visit.patientVisitDetails.each { item ->
+                    item.patientVisit = visit
                     item.episode = lastEpisode
                     item.pack.origin = visit.origin
-                    //  item.episode.origin = visit.origin
+                    item.pack.clinic = visit.clinic
+
                     Prescription existingPrescription = Prescription.findWhere(id:  item.prescription.id)
                     if (existingPrescription != null) {
                         item.prescription = existingPrescription
-                        // item.prescription.origin = existingPrescription.origin
+                        //
                     }else{
                         Doctor doctor = Doctor.findWhere(id: '3F2D1A4B-9C6E-4F89-B5D3-8A2E7F1D0CBA')
                         item.prescription.doctor = doctor
+                        item.prescription.origin = visit.origin
+                        item.prescription.clinic = visit.clinic
                     }
                     item.pack.packagedDrugs.each { packagedDrugs ->
                         def clinicalService = item.episode.patientServiceIdentifier.service
                         if (!packagedDrugs.drug.clinical_service_id) {
                             packagedDrugs.origin = item.pack.origin
+                            packagedDrugs.clinic = item.pack.clinic
                             packagedDrugs.drug.clinical_service_id = clinicalService.id
                         }
                     }
@@ -246,11 +265,11 @@ class RestExternalPatientVisitService {
                     packService.save(item.pack)
                 }
             }
+            visit.validate()
             if(patientVisitService.save(visit)){
                 externalPatientVisit.syncStatus = syncStatusUPDATED
                 externalPatientVisitService.save(externalPatientVisit)
             }
-
         } catch (ValidationException e) {
             return
         }
@@ -270,7 +289,7 @@ class RestExternalPatientVisitService {
 
     @Scheduled(fixedDelay = 60000L)
     void dispensesFromUSToProvinceRunning() {
-        println  " - REST EXTERNAL PATIENT VISIT FROM IDMED TO PROVINCIAL" + new Date()
+        println  " - REST EXTERNAL PATIENT VISIT FROM IDMED TO PROVINCIAL " + new Date()
         def uuidProvincial = configProvincialUUID()
         PatientVisit.withTransaction {
             List<ExternalPatientVisit> externalPatientVisitList = ExternalPatientVisit.findAllWhere(sourceProvinceId: uuidProvincial, syncStatus: syncStatusReady)

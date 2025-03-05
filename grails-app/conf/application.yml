@@ -106,7 +106,6 @@ environments:
     dataSource:
       dbCreate: update
       url: '${DB_URL:jdbc:postgresql://10.10.2.30:50502/idmedmp}'
-#      url: '${DB_URL:jdbc:postgresql://10.10.2.30:9876/idmed_maputo}'
   test:
     dataSource:
       dbCreate: update
