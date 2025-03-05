@@ -55,7 +55,7 @@ class RestGetPatientMobileCentralService extends SynchronizerTask {
             "Nome",
             "NID");
 
-    @Scheduled(cron = "0 0/1 * * * *")
+    @Scheduled(fixedDelay = 3600000L)
     void execute() {
         println  " - REST PATIENT FROM PROVINCIAL TO IDMED " + new Date()
         if (this.instalationConfig != null && !this.isProvincial()) {

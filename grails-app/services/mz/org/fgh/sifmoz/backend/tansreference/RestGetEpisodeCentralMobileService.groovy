@@ -46,7 +46,7 @@ class RestGetEpisodeCentralMobileService extends SynchronizerTask {
             "Id Episodio",
             "patientUuid");
 
-    @Scheduled(cron = "0 0/2 * * * *")
+    @Scheduled(fixedDelay = 7200000L)
     void execute() {
         println  " - REST PATIENT EPISODE FROM PROVINCIAL TO IDMED " + new Date()
         if (this.instalationConfig != null && !this.isProvincial()) {

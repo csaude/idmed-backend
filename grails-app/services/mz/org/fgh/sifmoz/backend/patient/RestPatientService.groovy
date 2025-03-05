@@ -34,13 +34,13 @@ class RestPatientService {
 
     static lazyInit = false
 
-    @Scheduled(cron = "1/5 * * * * *")
+    @Scheduled(fixedDelay = 600000L)
     void schedulerRequestRunning() {
 
         Patient.withTransaction {
             println  " - REST PATIENT FROM IDMED TO OPENMRS " + new Date()
             // List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
-            HealthInformationSystem hisToSync = HealthInformationSystem.findByAbbreviation('OpenMRS')
+            HealthInformationSystem hisToSync = HealthInformationSystem.findWhere(abbreviation: 'OpenMRS')
             if (!hisToSync.interoperabilityAttributes.isEmpty()) {
                 String hisLocation = hisToSync.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_LOCATION_UUID" }.value
                 String identifierTypeIdOpenMrs = hisToSync.interoperabilityAttributes.find { it.interoperabilityType.code == "PATIENT_IDENTIFIER_TYPE_NID_UUID" }.value

@@ -50,7 +50,7 @@ class RestPostPatientCentralMobileService extends SynchronizerTask {
             "Nome",
             "NID");
 
-    @Scheduled(cron = "0/3 * * * * *")
+    @Scheduled(fixedDelay = 180000L)
     void execute() {
         println  " - REST PATIENT TRANSFERENCE FROM IDMED TO PROVINCIAL " + new Date()
         PatientTransReference.withTransaction {
