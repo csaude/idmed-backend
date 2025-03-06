@@ -38,13 +38,13 @@ class RestPatientUpdateService {
     static lazyInit = false
 
 
-    @Scheduled(fixedDelay = 900000L
+    @Scheduled(fixedDelay = 900000L)
     void schedulerRequestRunning() {
 
          Patient.withTransaction {
              println  " - REST UPDATE PATIENT FROM OPENMRS TO IDMED " + new Date()
             // List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
-             HealthInformationSystem his = HealthInformationSystem.findByAbbreviation('OpenMRS')
+             HealthInformationSystem his = HealthInformationSystem.findWhere(abbreviation: 'OpenMRS')
             if (!his.interoperabilityAttributes.isEmpty()) {
              //   println "Iniciando a Rotina de Busca de Pacientes para Actualizacao"
                 String universalProviderUUid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "UNIVERSAL_PROVIDER_UUID" }.value
