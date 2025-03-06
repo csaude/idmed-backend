@@ -85,6 +85,8 @@ class BootStrap {
 
         Duration.withTransaction { initDuration() }
 
+        Doctor.withTransaction { initDoctor() }
+
         StartStopReason.withTransaction { initStartStopReason() }
 
         GroupType.withTransaction { initGroupType() }
@@ -425,6 +427,25 @@ class BootStrap {
                 duration.weeks = durationObject.weeks
                 duration.description = durationObject.description
                 duration.save(flush: true, failOnError: true)
+            }
+        }
+    }
+
+    void initDoctor(){
+        def clinic  = Clinic.findAllWhere(mainClinic: true)
+        if(!clinic.isEmpty())
+        for(doctorObject in listDoctor()){
+            if(!Doctor.findWhere(id: doctorObject.id) && clinic){
+                Doctor doctor = new Doctor()
+                doctor.id = doctorObject.id
+                doctor.firstnames = doctorObject.firstnames
+                doctor.lastname = doctorObject.lastname
+                doctor.gender = doctorObject.gender
+                doctor.telephone = doctorObject.telephone
+                doctor.email = doctorObject.telephone
+                doctor.active = true
+                doctor.clinic =  clinic.first()
+                doctor.save(flush: true, failOnError: true)
             }
         }
     }
@@ -854,6 +875,12 @@ class BootStrap {
         usersList.add(new LinkedHashMap(username: 'admin', password: 'admin', fullName: 'admin', contact: 'admin', email: 'admin@gmail.com', openmrsPassword: Utilities.getMd5('admin')))
         usersList.add(new LinkedHashMap(username: 'iDMED', password: 'iDMED123', fullName: 'iDMED', contact: 'iDMED', email: 'iDMED@gmail.com', openmrsPassword: Utilities.getMd5('iDMED123')))
 
+        return usersList
+    }
+
+    List<Object> listDoctor() {
+        List<Object> usersList = new ArrayList<>()
+        usersList.add(new LinkedHashMap(id: '3F2D1A4B-9C6E-4F89-B5D3-8A2E7F1D0CBA', firstnames: 'Provedor', lastname: 'Externo', gender: 'TBD', email: 'provedor.externo@idmed.co.mz', telephone: ''))
         return usersList
     }
 
