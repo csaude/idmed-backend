@@ -7,12 +7,14 @@ import groovy.json.JsonSlurper
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.episode.IEpisodeService
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.identifierType.IdentifierType
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
+import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import org.springframework.validation.BindingResult
 
@@ -26,6 +28,7 @@ import grails.gorm.transactions.Transactional
 class PatientServiceIdentifierController extends RestfulController{
 
     IPatientServiceIdentifierService patientServiceIdentifierService
+    IEpisodeService episodeService
 
     static responseFormats = ['json', 'xml']
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
@@ -91,7 +94,13 @@ class PatientServiceIdentifierController extends RestfulController{
             episode.id = UUID.fromString(objectJSON.episodes[i].id)
             episode.patientServiceIdentifier = patientServiceIdentifier
             episode.origin = patientServiceIdentifier.origin
+            if (episode.startStopReason.code.equalsIgnoreCase(StartStopReason.TRANSFERIDO_PARA) ||
+                    episode.startStopReason.code.equalsIgnoreCase(StartStopReason.OBITO)) {
+                episodeService.closePatientServiceIdentifierOfPatientWithTrasnferenceOrObitEpisode(episode)
+            }
         }
+
+
 
         if (patientServiceIdentifier == null) {
             render status: NOT_FOUND

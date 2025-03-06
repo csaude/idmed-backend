@@ -14,6 +14,7 @@ import mz.org.fgh.sifmoz.backend.interoperabilityAttribute.InteroperabilityAttri
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patientIdentifier.IPatientServiceIdentifierService
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
+import mz.org.fgh.sifmoz.backend.patientUpdateOpenMrsErrorLog.PatientUpdateOpenMrsErrorLog
 import mz.org.fgh.sifmoz.backend.restUtils.RestOpenMRSClient
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import org.grails.web.json.JSONObject
@@ -36,7 +37,8 @@ class RestPatientUpdateService {
 
     static lazyInit = false
 
-    @Scheduled(fixedDelay = 900000L)
+
+    @Scheduled(fixedDelay = 900000L
     void schedulerRequestRunning() {
 
          Patient.withTransaction {
@@ -72,7 +74,11 @@ class RestPatientUpdateService {
                                 def idmedPatient = findPatientToUpdate(uuid, nid)
                                 if (idmedPatient) {
                                     populatePatientDetails(idmedPatient, patient)
-                                    patientService.save(idmedPatient)
+                                    idmedPatient.validate()
+                                    if (!idmedPatient.hasErrors()) {
+                                        patientService.save(idmedPatient)
+                                    }
+
                                 }
                             }
                         }
@@ -143,7 +149,13 @@ class RestPatientUpdateService {
 
         if (patient.telecom?.size() >= 1) {
             idmedPatient.cellphone = patient.telecom[0].value
-            idmedPatient.alternativeCellphone = patient.telecom.size() > 8 ? patient.telecom[1]?.value : null
+           idmedPatient.alternativeCellphone = patient.telecom.size() > 1 ? patient.telecom[1]?.value : null
+            int length = idmedPatient.alternativeCellphone.length()
+            if (length < 9 || length > 12) {
+                String errorMessage =  "O número de telefone alternativo deve ter entre 9 e 12 caracteres'."
+                createErrorLog(idmedPatient.id,errorMessage,idmedPatient.identifiers[0].value,idmedPatient.identifiers[0].service.code)
+                return
+            }
         }
 
         handleExtensions(idmedPatient, patient.extension)
@@ -184,5 +196,20 @@ class RestPatientUpdateService {
         } else {
             episodeService.reopenEpisodeAndServiceWhenPatientActiveInSesp(idmedPatient)
         }
+    }
+
+    void createErrorLog(String patientId, String errorDescription, String nid,String clinicalService) {
+        def errorLog = new PatientUpdateOpenMrsErrorLog(
+                patient: patientId,
+                nid: nid,
+                errorDescription: errorDescription,
+                servicoClinico: clinicalService
+        )
+        PatientUpdateOpenMrsErrorLog errorLogExists = PatientUpdateOpenMrsErrorLog.findByPatientAndErrorDescription(errorLog.patient,errorLog.errorDescription)
+        if (errorLogExists == null)   {
+            errorLog.beforeInsert()
+            errorLog.save(flush: true)
+        }
+
     }
 }

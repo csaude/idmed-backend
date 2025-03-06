@@ -41,4 +41,6 @@ interface IEpisodeService {
     closeEpisodeWhenOpenmrsStatusCodeAbandonAndSuspended(Patient patient, String statusCode,Date statusDate)
 
     reopenEpisodeAndServiceWhenPatientActiveInSesp(Patient patient)
+
+    closePatientServiceIdentifierOfPatientWithTrasnferenceOrObitEpisode(Episode episode)
 }
