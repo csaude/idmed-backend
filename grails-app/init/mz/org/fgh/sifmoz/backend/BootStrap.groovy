@@ -432,7 +432,8 @@ class BootStrap {
     }
 
     void initDoctor(){
-        Clinic clinic  = Clinic.findAllWhere(mainClinic: true)?.first()
+        def clinic  = Clinic.findAllWhere(mainClinic: true)
+        if(!clinic.isEmpty())
         for(doctorObject in listDoctor()){
             if(!Doctor.findWhere(id: doctorObject.id) && clinic){
                 Doctor doctor = new Doctor()
@@ -443,7 +444,7 @@ class BootStrap {
                 doctor.telephone = doctorObject.telephone
                 doctor.email = doctorObject.telephone
                 doctor.active = true
-                doctor.clinic =  clinic
+                doctor.clinic =  clinic.first()
                 doctor.save(flush: true, failOnError: true)
             }
         }
