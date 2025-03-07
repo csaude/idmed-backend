@@ -367,6 +367,9 @@ class PatientController extends RestfulController {
             }
         }
         Patient.withTransaction {
+            patientToDelete.patientTransReference.each {pt ->
+                pt.delete()
+            }
             patientServiceToDelete.each { it5 ->
                 it5.episodes = []
                 it5.delete()
