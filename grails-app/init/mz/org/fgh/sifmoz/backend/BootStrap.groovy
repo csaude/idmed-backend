@@ -659,25 +659,6 @@ class BootStrap {
         }
     }
 
-//    void initDefaultClinic(){
-//
-//        if(Clinic.list().isEmpty()){
-//            Clinic defaultClinic = new Clinic()
-//            defaultClinic.setId('56F128E8-A85E-45B4-AE5C-E91D14ACA906')
-//            defaultClinic.setCode('DC')
-//            defaultClinic.setNotes('Default Clinic')
-//            defaultClinic.setTelephone('0000000000')
-//            defaultClinic.setClinicName('Clínica Padrão')
-//            defaultClinic.setProvince(Province.findByCode('01'))
-//            defaultClinic.setDistrict(District.findByCodeAndProvince('01', Province.findByCode('01')))
-//            defaultClinic.setFacilityType(FacilityType.findByCode('US'))
-//            defaultClinic.setMainClinic(true)
-//            defaultClinic.setActive(true)
-//            defaultClinic.setUuid('56F128E8-A85E-45B4-AE5C-E91D14ACA906')
-//            defaultClinic.save(flush: true, failOnError: true)
-//        }
-//    }
-
     void initClinic() {
         for (clinicObject in listClinic1()) {
             if (!Clinic.findById(clinicObject.uuid)) {
@@ -1032,6 +1013,9 @@ class BootStrap {
         formList.add(new LinkedHashMap(id: 'DB4162F8-A5B3-4656-ABEF-AC977E37A9EF', code: 'Loção', description: 'Loção', 'unit': 'Gota(s)', 'how_to_use': 'Aplicar'))
         formList.add(new LinkedHashMap(id: 'BA8E6254-0F88-43D7-8C39-500756AA7B2F', code: 'Pomada_olhos', description: 'Pomada para os olhos', 'unit': 'Pomada(s)', 'how_to_use': 'Aplicar'))
         formList.add(new LinkedHashMap(id: 'A80409ED-89FC-40AF-BA34-5CD0BA886570', code: 'Creme_Vaginal', description: 'Creme Vaginal', 'unit': 'Creme(s)', 'how_to_use': 'Aplicar'))
+
+        formList.add(new LinkedHashMap(id: 'E8427B78-B4B2-4570-8721-03A60425909D', code: 'Suspensão_Injectável', description: 'Suspensão Injectável', 'unit': 'mL(s)', 'how_to_use': 'Administrar'))
+        formList.add(new LinkedHashMap(id: 'A19B6D0E-4F11-42C9-B720-9C8B617E29F8', code: 'Anel_Vaginal', description: 'Anel_Vaginal', 'unit': 'Anel', 'how_to_use': 'Inserir'))
         return formList
 
     }
@@ -1559,6 +1543,7 @@ class BootStrap {
         therapeuticRegimenList.add(new LinkedHashMap(id: '3116136c-675c-4936-af9b-c8976a624c14', regimen_scheme: 'TTPT - INH300', code: 'TPT - INH300', openmrs_uuid: 'e1d43e52-1d5f-11e0-b929-000c29ad1d07', active: true, description: 'TPT - INH300', clinical_service_id: '6D12193B-7D5D-4665-8FC6-A03855986FBD'))
 
         therapeuticRegimenList.add(new LinkedHashMap(id: '017b6045-2c7c-437c-96c1-8e0867c6b579', regimen_scheme: 'TDF+3TC PrEP', code: 'TDF+3TC PrEP', openmrs_uuid: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', active: true, description: 'TDF+3TC PrEP', clinical_service_id: '165C876C-F850-436F-B0BB-80D519056BC3'))
+        therapeuticRegimenList.add(new LinkedHashMap(id: 'bbcf6efc-be7f-4011-821d-04b4683c327e', regimen_scheme: 'Cabotegravir PrEP', code: 'Cabotegravir PrEP', openmrs_uuid: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', active: false, description: 'Cabotegravir PrEP', clinical_service_id: '165C876C-F850-436F-B0BB-80D519056BC3'))
 
         return therapeuticRegimenList
 
@@ -1649,6 +1634,9 @@ class BootStrap {
         listDrug.add(new LinkedHashMap(id: '6641A2EE-8AAD-4E35-AEDE-A42E3DCBFC7A', form_id: '74C8F060-1EA4-45E9-94DB-2DE6775E6481', default_times: 1, pack_size: 180, name: '[IDV] Indinavir 400mg,', uuid_openmrs: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', fnm_code: '08S26', default_treatment: 1, default_period_treatment: 'Dia', active: false, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: 'A487066D-31F1-43C2-AA40-7720071F8310', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 60, name: '[D4T/3TC] Estavudina 40mg/Lamivudina 150mg ', uuid_openmrs: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', fnm_code: '08S33', default_treatment: 1, default_period_treatment: 'Dia', active: false, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: '0064E589-AB56-4D06-B52C-AFF6D8BDE4D5', form_id: '74C8F060-1EA4-45E9-94DB-2DE6775E6481', default_times: 1, pack_size: 30, name: '[LPV/RTV] Lopinavir 133,3mg/Ritonavir 33,3mg Gelatinosas', uuid_openmrs: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', fnm_code: '08S38', default_treatment: 1, default_period_treatment: 'Dia', active: false, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
+
+        listDrug.add(new LinkedHashMap(id: '04BCD7CD-5770-4140-BAA2-931DC70EA2E9', form_id: 'E8427B78-B4B2-4570-8721-03A60425909D', default_times: 1, pack_size: 3, name: '[CAB-LA] Cabotegravir 600mg/3ml Inj', uuid_openmrs: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', fnm_code: '08S18ZW', default_treatment: 1, default_period_treatment: 'Mês', active: false, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
+        listDrug.add(new LinkedHashMap(id: 'E7C7B604-0C34-48B3-A941-6DF3ADBEA3A8', form_id: 'A19B6D0E-4F11-42C9-B720-9C8B617E29F8', default_times: 1, pack_size: 1, name: '[DPV-VR] Dapivirina anel vaginal 25mg', uuid_openmrs: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', fnm_code: '08S18ZY', default_treatment: 1, default_period_treatment: 'Mês', active: false, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
 
         return listDrug
 
@@ -1935,6 +1923,7 @@ class BootStrap {
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'TDF13', drug_id: '08S39Z'))
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'TDF+3TC PrEP', drug_id: '08S18Z'))
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'PreEP', drug_id: '08S31'))
+        listDrugRegimen.add(new LinkedHashMap(regimen_id: 'Cabotegravir PrEP', drug_id: '08S18ZW'))
 
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'TPT - INH300', drug_id: '12D14'))
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'TPT - INH300', drug_id: '08L03'))
