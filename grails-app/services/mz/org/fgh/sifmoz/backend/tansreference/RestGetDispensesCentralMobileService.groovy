@@ -81,7 +81,7 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
 
     @Scheduled(fixedDelay = 300000L)
     void execute() {
-        println  " - REST DISPENSES FROM PROVINCIAL TO IDMED " + new Date()
+        println " - REST DISPENSES FROM PROVINCIAL TO IDMED " + new Date()
         GetDispenseFromProvincialServer()
         SyncDispenseToProvincialServer()
     }
@@ -254,16 +254,20 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
 
                             if (clinicuuid == null || clinicuuid?.trim()?.isEmpty() || clinicuuid.equalsIgnoreCase("null")) {
                                 def lastEpisode = episodeService.getLastWithVisitByIndentifier(patientServiceIdentifier, clinic)
+                                def patientTransferende = PatientTransReference.findById(patientServiceIdentifier?.id)
 
                                 if (lastEpisode?.referralClinic != null) {
                                     dispenseMode = DispenseMode.findByCode('DD_FP')
+                                } else if (patientTransferende?.patientStatus?.containsIgnoreCase('Faltoso') ||
+                                        patientTransferende?.patientStatus?.containsIgnoreCase('Abandono')) {
+                                    dispenseMode = DispenseMode.findByCode('DC_PS')
                                 } else {
                                     def clinisector = ClinicSector.findById(lastEpisode?.clinicSector?.id)
                                     dispenseMode = getDispenseMode(clinisector)
                                 }
                             } else {
 
-                                if (priviteClinic)
+                                if (priviteClinic && priviteClinic?.id !== clinic?.id)
                                     dispenseMode = DispenseMode.findByCode('DD_FP')
                                 else {
                                     def clinicSector = ClinicSector.findByUuid(clinicuuid)
