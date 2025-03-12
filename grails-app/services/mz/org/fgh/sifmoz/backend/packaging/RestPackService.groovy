@@ -194,7 +194,6 @@ class RestPackService {
         String nidRest = new RestOpenMRSClient().getResponseOpenMRSClient(universalProviderUuid, null, urlBase, urlPath, requestMethod_GET)
         if (nidRest == null) {
             saveErrorLog(pack, patientVisitDetails, patient, MessageFormat.format(NID_DOESNT_EXIST_IN_OPENMRS, patientServiceIdentifier.value), null)
-            return null
         }
 
         JSONObject resultsObject = new JSONObject(nidRest)
@@ -220,13 +219,10 @@ class RestPackService {
 
     boolean isPatientActiveInProgram(Patient patient, Pack pack, PatientVisitDetails patientVisitDetails,PatientServiceIdentifier patientServiceIdentifier, String urlBaseReportingRest, String universalProviderUuid) {
         String urlPath = 'provider?q=' + patient.getHisUuid()
-        JSONObject resultsReportingRest = new JSONObject()
-        JSONArray members = new JSONArray()
         String openMrsReportingRest = new RestOpenMRSClient().getResponseOpenMRSClient(universalProviderUuid, null, urlBaseReportingRest, urlPath, requestMethod_GET)
 
-        if(openMrsReportingRest != null)
-         resultsReportingRest = new JSONObject(openMrsReportingRest)
-
+        JSONObject resultsReportingRest = new JSONObject(openMrsReportingRest)
+        JSONArray members = new JSONArray()
         if(resultsReportingRest.containsKey("members"))
             members = resultsReportingRest.getJSONArray("members")
 

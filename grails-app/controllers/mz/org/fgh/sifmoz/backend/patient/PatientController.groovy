@@ -19,6 +19,7 @@ import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifierService
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.restUtils.RestOpenMRSClient
+import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import org.grails.web.json.JSONObject
 import org.hibernate.SessionFactory
@@ -317,6 +318,24 @@ class PatientController extends RestfulController {
 
         def patientServicesToHold = PatientServiceIdentifier.findAllByPatient(patientToHold)
         def patientServiceToDelete = PatientServiceIdentifier.findAllByPatient(patientToDelete)
+
+          if (patientServiceToDelete.episodes.size() > 0) {
+              def sortedEpisodes = patientServiceToDelete.episodes.sort { a, b ->
+                  b.episodeDate <=> a.episodeDate
+              }
+
+
+              def mostRecentEpisode = sortedEpisodes.size() > 0 ? sortedEpisodes.first() : null
+              if (mostRecentEpisode && mostRecentEpisode.getAt(0).startStopReason.code == StartStopReason.TRANSITO)
+              {
+                  response.status = 400
+                  response.setContentType("text/plain")
+                  response.outputStream << 'Paciente com episódio de trânsito, não pode ser unido'
+                  return
+              }
+          }
+
+
         def resultMap = new HashMap<String, List<PatientServiceIdentifier>>();
         (patientServicesToHold + patientServiceToDelete).eachWithIndex { patientServiceIdentifier, index ->
             resultMap.computeIfAbsent(patientServiceIdentifier.service.code, { k -> new ArrayList<>() }).add(patientServiceIdentifier);
@@ -352,12 +371,6 @@ class PatientController extends RestfulController {
 
 
         def patientVisits = PatientVisit.findAllByPatient(patientToDelete)
-        def patientVisitsPatientToHold = PatientVisit.findAllByPatient(patientToHold)
-        def commonVisits = patientVisits.findAll { visit1 ->
-            patientVisitsPatientToHold.any { visit2 -> visit1.visitDate == visit2.visitDate }
-        }
-        println(commonVisits)
-        if (commonVisits.size() == 0) {
             for (PatientVisit patientVisit : patientVisits) {
                 patientVisit.setPatient(patientToHold)
                 PatientVisit.withTransaction {
@@ -365,7 +378,6 @@ class PatientController extends RestfulController {
                     patientVisit.save()
                 }
             }
-        }
         Patient.withTransaction {
             patientToDelete.patientTransReference.each {pt ->
                 pt.delete()

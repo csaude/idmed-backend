@@ -59,7 +59,7 @@ class ClinicMigrationRecord extends AbstractMigrationRecord {
                 getMigratedRecord().setCode(this.code)
                 getMigratedRecord().setActive(true)
                 getMigratedRecord().setUuid(this.uuid)
-
+                getMigratedRecord().setSyncStatus("S")
                 if (Utilities.listHasElements(logs)) return logs
 
                 getMigratedRecord().validate()
