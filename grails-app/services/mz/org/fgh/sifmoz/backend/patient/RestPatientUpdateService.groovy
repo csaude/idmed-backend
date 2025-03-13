@@ -47,13 +47,13 @@ class RestPatientUpdateService {
              HealthInformationSystem his = HealthInformationSystem.findWhere(abbreviation: 'OpenMRS')
             if (!his.interoperabilityAttributes.isEmpty()) {
              //   println "Iniciando a Rotina de Busca de Pacientes para Actualizacao"
-                String universalProviderUUid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "UNIVERSAL_PROVIDER_UUID" }.value
+                String universalUserProviderUUid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_USER_PROVIDER_UUID" }.value
                 String urlBase = his.interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE" }.value
 
                 try {
                    // RestOpenMRSClient restPost = new RestOpenMRSClient()
                     String urlPath = "patient/info/updated-data?client_name=iDMED"
-                    def response =  RestOpenMRSClient.getResponseOpenMRSClient(universalProviderUUid, null, urlBase ,urlPath, requestMethod_GET)
+                    def response =  RestOpenMRSClient.getResponseOpenMRSClient(universalUserProviderUUid, null, urlBase ,urlPath, requestMethod_GET)
 
                     if (response?.entry) {
                         response.entry.each { patient ->
@@ -85,7 +85,7 @@ class RestPatientUpdateService {
                     }
 
                     String commitUrlPath = "patient/info/updated-data/commit?client_name=iDMED"
-                    RestOpenMRSClient.getResponseOpenMRSClient(universalProviderUUid, null, urlBase ,commitUrlPath, requestMethod_POST)
+                    RestOpenMRSClient.getResponseOpenMRSClient(universalUserProviderUUid, null, urlBase ,commitUrlPath, requestMethod_POST)
 
                 } catch (Exception e) {
                     e.printStackTrace()
