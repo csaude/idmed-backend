@@ -85,7 +85,7 @@ class RestPatientUpdateService {
                     }
 
                     String commitUrlPath = "patient/info/updated-data/commit?client_name=iDMED"
-                    RestOpenMRSClient.getResponseOpenMRSClient(universalProviderUUid, null, urlBase ,commitUrlPath, requestMethod_POST)
+                    RestOpenMRSClient.getResponseOpenMRSClient(universalUserProviderUUid, null, urlBase ,commitUrlPath, requestMethod_POST)
 
                 } catch (Exception e) {
                     e.printStackTrace()
