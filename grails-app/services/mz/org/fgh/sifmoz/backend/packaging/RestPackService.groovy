@@ -218,7 +218,8 @@ class RestPackService {
     }
 
     boolean isPatientActiveInProgram(Patient patient, Pack pack, PatientVisitDetails patientVisitDetails,PatientServiceIdentifier patientServiceIdentifier, String urlBaseReportingRest, String universalProviderUuid) {
-        String urlPath = 'provider?q=' + patient.getHisUuid()
+//        String urlPath = '&provider?q=' + patient.getHisUuid()
+        String urlPath = '?personUuid=' + patient.getHisUuid()
         String openMrsReportingRest = new RestOpenMRSClient().getResponseOpenMRSClient(universalProviderUuid, null, urlBaseReportingRest, urlPath, requestMethod_GET)
 
         JSONObject resultsReportingRest = new JSONObject(openMrsReportingRest)
