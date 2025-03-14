@@ -202,7 +202,7 @@ class RestOpenMRSClient {
         String filaUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "FORM_FILA_UUID" }.value
         String dispenseModeUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "DISPENSE_MODE_CONCEPT_UUID" }.value
         String encounterType = interoperabilityAttributes.find { it.interoperabilityType.code == "FILA_ENCOUNTER_TYPE_CONCEPT_UUID" }.value
-        String providerUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "UNIVERSAL_PROVIDER_UUID" }.value
+        String universalProviderUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "UNIVERSAL_PROVIDER_UUID" }.value
         String regimeUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "FILA_REGIMEN_CONCEPT_UUID" }.value
         String dispensedAmountUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "DISPENSED_AMOUNT_CONCEPT" }.value
         String dosageUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "DOSAGE_CONCEPT_UUID" }.value
@@ -280,7 +280,7 @@ class RestOpenMRSClient {
         }
 
         String buildDispenseMap = "{\"encounterDatetime\": \"" + Utilities.formatToYYYYMMDD(pack.pickupDate) + "\", \"patient\": \"" + patient.hisUuid + "\", \"encounterType\": \"" + encounterType + "\", "
-                .concat("\"location\":\"" + openMRSUuuidLocation + "\", \"form\":\"" + filaUuid + "\", \"encounterProviders\":[{\"provider\":\"" + providerUuid + "\", \"encounterRole\":\"a0b03050-c99b-11e0-9572-0800200c9a66\"}], ")
+                .concat("\"location\":\"" + openMRSUuuidLocation + "\", \"form\":\"" + filaUuid + "\", \"encounterProviders\":[{\"provider\":\"" + universalProviderUuid + "\", \"encounterRole\":\"a0b03050-c99b-11e0-9572-0800200c9a66\"}], ")
                 .concat("\"obs\":[")
                 .concat("{\"person\":\"" + patient.hisUuid + "\",\"obsDatetime\":\"" + Utilities.formatToYYYYMMDD(pack.pickupDate) + "\",\"concept\":\"" + regimeUuid + "\",\"value\":\"" + strRegimenAnswerUuid + "\", \"comment\":\"IDMED\"},")
                 .concat("{\"person\":\"" + patient.hisUuid + "\",\"obsDatetime\":\"" + Utilities.formatToYYYYMMDD(pack.pickupDate) + "\",\"concept\":\"" + dispensedAmountUuid + "\",\"value\":\"" + packSize + "\",\"comment\":\"IDMED\"},")
@@ -302,7 +302,7 @@ class RestOpenMRSClient {
         String filtUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "FORM_FILT_UUID" }.value
         String dispenseModeUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "DISPENSE_MODE_CONCEPT_UUID" }.value
         String encounterType = interoperabilityAttributes.find { it.interoperabilityType.code == "FILT_ENCOUNTER_TYPE_CONCEPT_UUID" }.value
-        String providerUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "UNIVERSAL_PROVIDER_UUID" }.value
+        String universalProviderUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "UNIVERSAL_PROVIDER_UUID" }.value
         String regimeUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "FILT_REGIMEN_CONCEPT_UUID" }.value
         String returnVisitUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "FILT_TPT_PATIENT_TYPE_UUID" }.value
         String tipoDispensaUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "FILT_DISPENSED_TYPE_CONCEPT_UUID" }.value
@@ -359,7 +359,7 @@ class RestOpenMRSClient {
         }
 
         String buildDispenseMap = "{\"encounterDatetime\": \"" + Utilities.formatToYYYYMMDD(pack.pickupDate) + "\", \"patient\": \"" + patient.hisUuid + "\", \"encounterType\": \"" + encounterType + "\", "
-                .concat("\"location\":\"" + openMRSUuuidLocation + "\", \"form\":\"" + filtUuid + "\", \"encounterProviders\":[{\"provider\":\"" + providerUuid + "\", \"encounterRole\":\"a0b03050-c99b-11e0-9572-0800200c9a66\"}], ")
+                .concat("\"location\":\"" + openMRSUuuidLocation + "\", \"form\":\"" + filtUuid + "\", \"encounterProviders\":[{\"provider\":\"" + universalProviderUuid + "\", \"encounterRole\":\"a0b03050-c99b-11e0-9572-0800200c9a66\"}], ")
                 .concat("\"obs\":[")
                 .concat("{\"person\":\"" + patient.hisUuid + "\",\"obsDatetime\":\"" + Utilities.formatToYYYYMMDD(pack.pickupDate) + "\",\"concept\":\"" + regimeUuid + "\",\"value\":\"" + strRegimenAnswerUuid + "\", \"comment\":\"IDMED\"},")
                 .concat("{\"person\":\"" + patient.hisUuid + "\",\"obsDatetime\":\"" + Utilities.formatToYYYYMMDD(pack.pickupDate) + "\",\"concept\":\"" + tipoDispensaUuid + "\",\"value\":\"" + strDispenseType + "\",\"comment\":\"IDMED\"},")
