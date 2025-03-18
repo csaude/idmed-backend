@@ -32,6 +32,10 @@ class PatientUpdateOpenMrsErrorLog  extends BaseEntity{
 
     @Override
     List<Menu> hasMenus() {
-        return null
+        List<Menu> menus = new ArrayList<>()
+        Menu.withTransaction {
+            menus = Menu.findAllByCodeInList(Arrays.asList(patientMenuCode,groupsMenuCode,dashboardMenuCode,reportsMenuCode))
+        }
+        return menus
     }
 }
