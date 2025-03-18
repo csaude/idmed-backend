@@ -150,11 +150,11 @@ class RestPatientUpdateService {
         if (patient.telecom?.size() >= 1) {
             idmedPatient.cellphone = patient.telecom[0].value
            idmedPatient.alternativeCellphone = patient.telecom.size() > 1 ? patient.telecom[1]?.value : null
-            int length = idmedPatient.alternativeCellphone.length()
+            int length = idmedPatient?.alternativeCellphone == null ? 0 : idmedPatient.alternativeCellphone.length()
             if (length < 9 || length > 12) {
                 String errorMessage =  "O número de telefone alternativo deve ter entre 9 e 12 caracteres'."
                 createErrorLog(idmedPatient.id,errorMessage,idmedPatient.identifiers[0].value,idmedPatient.identifiers[0].service.code)
-                return
+              //  return
             }
         }
 
