@@ -76,7 +76,7 @@ class RestPatientUpdateService {
                             if (nid) {
                                 def idmedPatient = findPatientToUpdate(uuid, nid)
                                 if (idmedPatient) {
-                                    populatePatientDetails(idmedPatient, patient)
+                                    populatePatientDetails(idmedPatient, patient, nid)
                                     idmedPatient.validate()
                                     if (!idmedPatient.hasErrors()) {
                                         patientService.save(idmedPatient)
@@ -95,8 +95,7 @@ class RestPatientUpdateService {
                     e.printStackTrace()
                 }
             }
-             }
-
+         }
     }
 
 
@@ -128,7 +127,7 @@ class RestPatientUpdateService {
     }
 
 
-    private void populatePatientDetails(Patient idmedPatient, Map patient) {
+    private void populatePatientDetails(Patient idmedPatient, Map patient, String nid) {
         patient.name.each { name ->
             idmedPatient.firstNames = name.given[0]
             idmedPatient.middleNames = name.given[1]
@@ -157,12 +156,11 @@ class RestPatientUpdateService {
             int length = idmedPatient?.alternativeCellphone == null ? 0 : idmedPatient.alternativeCellphone.length()
             if (length < 9 || length > 12) {
                 String errorMessage =  "O número de telefone alternativo deve ter entre 9 e 12 caracteres'."
-                createErrorLog(idmedPatient.id,errorMessage,idmedPatient.identifiers[0].value,idmedPatient.identifiers[0].service.code)
-              //  return
+                createErrorLog(idmedPatient.id,errorMessage,nid,'TARV')
             }
         }
 
-        handleExtensions(idmedPatient, patient.extension)
+        handleExtensions(idmedPatient, patient.extension as List)
     }
 
 
@@ -214,6 +212,5 @@ class RestPatientUpdateService {
             errorLog.beforeInsert()
             errorLog.save(flush: true)
         }
-
     }
 }
