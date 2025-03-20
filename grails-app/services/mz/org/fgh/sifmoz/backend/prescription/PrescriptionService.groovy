@@ -111,7 +111,7 @@ abstract class PrescriptionService implements IPrescriptionService{
         def prescriptions = Prescription.findAllByIdInList(patientVisitDetails?.prescription?.id,
                 [sort: "prescriptionDate", order: "desc"])
 
-        return prescriptions.get(0)
+        return prescriptions.size() > 0 ?  prescriptions.get(0) : null
     }
 
 }
