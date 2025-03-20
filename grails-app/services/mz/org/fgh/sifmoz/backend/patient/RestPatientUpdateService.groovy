@@ -41,63 +41,64 @@ class RestPatientUpdateService {
     @Scheduled(fixedDelay = 900000L)
     void schedulerRequestRunning() {
 
-         Patient.withTransaction {
-             println  " - REST UPDATE PATIENT FROM OPENMRS TO IDMED " + new Date()
+              Patient.withTransaction {
+            println " - REST UPDATE PATIENT FROM OPENMRS TO IDMED " + new Date()
             // List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
-             HealthInformationSystem his = HealthInformationSystem.findWhere(abbreviation: 'OpenMRS')
+            HealthInformationSystem his = HealthInformationSystem.findWhere(abbreviation: 'OpenMRS')
             if (!his.interoperabilityAttributes.isEmpty()) {
-             //   println "Iniciando a Rotina de Busca de Pacientes para Actualizacao"
-              
-                String userlProviderUUid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_USER_PROVIDER_UUID" }.value
-
+                //   println "Iniciando a Rotina de Busca de Pacientes para Actualizacao"
+                String universalUserProviderUUid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_USER_PROVIDER_UUID" }.value
                 String urlBase = his.interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE" }.value
 
-                try {
-                   // RestOpenMRSClient restPost = new RestOpenMRSClient()
-                    String urlPath = "patient/info/updated-data?client_name=iDMED"
+                boolean hasMoreData = true
+                while (hasMoreData) {
+                    try {
+                        // RestOpenMRSClient restPost = new RestOpenMRSClient()
+                        String urlPath = "patient/info/updated-data?client_name=iDMED"
+                        def response =  RestOpenMRSClient.getResponseOpenMRSClient(universalUserProviderUUid, null, urlBase ,urlPath, requestMethod_GET)
 
-                    def response =  RestOpenMRSClient.getResponseOpenMRSClient(userlProviderUUid, null, urlBase ,urlPath, requestMethod_GET)
+                        if (response?.entry && !response.entry.isEmpty()) {
+                            response.entry.each { patient ->
+                                Map<String, String> identifierMap = extractIdentifiers(patient.identifier)
+                                String nid = identifierMap.entrySet().stream()
+                                        .filter(entry -> entry.getKey().contains("nid-tarv"))
+                                        .map(Map.Entry::getValue)
+                                        .findFirst()
+                                        .orElse(null);
 
-                    if (response?.entry) {
-                        response.entry.each { patient ->
-                            Map<String, String> identifierMap = extractIdentifiers(patient.identifier)
-                            String nid = identifierMap.entrySet().stream()
-                                    .filter(entry -> entry.getKey().contains("nid-tarv"))
-                                    .map(Map.Entry::getValue)
-                                    .findFirst()
-                                    .orElse(null);
+                                String uuid = identifierMap.entrySet().stream()
+                                        .filter(entry -> entry.getKey().contains("patient-uuid"))
+                                        .map(Map.Entry::getValue)
+                                        .findFirst()
+                                        .orElse(null);
 
-                            String uuid = identifierMap.entrySet().stream()
-                                    .filter(entry -> entry.getKey().contains("patient-uuid"))
-                                    .map(Map.Entry::getValue)
-                                    .findFirst()
-                                    .orElse(null);
+                                if (nid) {
+                                    def idmedPatient = findPatientToUpdate(uuid, nid)
+                                    if (idmedPatient) {
+                                        populatePatientDetails(idmedPatient, patient)
+                                        idmedPatient.validate()
+                                        if (!idmedPatient.hasErrors()) {
+                                            patientService.save(idmedPatient)
+                                        }
 
-                            if (nid) {
-                                def idmedPatient = findPatientToUpdate(uuid, nid)
-                                if (idmedPatient) {
-                                    populatePatientDetails(idmedPatient, patient, nid)
-                                    idmedPatient.validate()
-                                    if (!idmedPatient.hasErrors()) {
-                                        patientService.save(idmedPatient)
                                     }
-
                                 }
                             }
+                            String commitUrlPath = "patient/info/updated-data/commit?client_name=iDMED"
+                            RestOpenMRSClient.getResponseOpenMRSClient(universalUserProviderUUid, null, urlBase ,commitUrlPath, requestMethod_POST)
+                            sleep(3000)
+                        } else {
+                            hasMoreData = false
+                            println "No more patient data to process."
                         }
+                    } catch (Exception e) {
+                        e.printStackTrace()
                     }
-
-                    String commitUrlPath = "patient/info/updated-data/commit?client_name=iDMED"
-
-                    RestOpenMRSClient.getResponseOpenMRSClient(userlProviderUUid, null, urlBase ,commitUrlPath, requestMethod_POST)
-
-                } catch (Exception e) {
-                    e.printStackTrace()
                 }
             }
-         }
-    }
 
+        }
+    }
 
 
     private Map<String, String> extractIdentifiers(List<JSONObject> identifiers) {
