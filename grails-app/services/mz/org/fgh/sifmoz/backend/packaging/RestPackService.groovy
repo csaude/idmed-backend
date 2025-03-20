@@ -84,22 +84,22 @@ class RestPackService {
                         pack.providerUuid = providerUuid
                     }
                     String urlBase = his.interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE" }.value
-                    String universalProviderUUid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "UNIVERSAL_PROVIDER_UUID" }.value
+                    String userProviderUUid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_USER_PROVIDER_UUID" }.value
                     String urlBaseReportingRest = his.interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE_REPORTING_REST" }.value
                     String openMRSUuuidLocation = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_LOCATION_UUID" }.value
                     String patientNid = StringUtils.replace(patientServiceIdentifier.value, " ", "%20")
 
-                    String nidUuid = fetchNidUuid( patient,  pack,  patientVisitDetails, patientServiceIdentifier,patientNid, urlBase, universalProviderUUid)
+                    String nidUuid = fetchNidUuid( patient,  pack,  patientVisitDetails, patientServiceIdentifier,patientNid, urlBase, userProviderUUid)
                     if (!isValidNidUuid(patient, pack, patientVisitDetails, nidUuid, patientServiceIdentifier)) return
 
-                    if (!isPatientActiveInProgram(patient, pack, patientVisitDetails,patientServiceIdentifier, urlBaseReportingRest, universalProviderUUid)) return
+                    if (!isPatientActiveInProgram(patient, pack, patientVisitDetails,patientServiceIdentifier, urlBaseReportingRest, userProviderUUid)) return
 
                    // if (!isValidProviderUuid(pack,patientVisitDetails, his, urlBase, universalProviderUUid)) return
 
                     if (!isValidLocationUuid(pack,patientVisitDetails, urlBase, openMRSUuuidLocation)) return
 
                     String convertToJson = restPost.createOpenMRSDispense(pack, patient)
-                    postDispenseData(pack, patient, convertToJson,patientVisitDetails, urlBase, universalProviderUUid, restPost)
+                    postDispenseData(pack, patient, convertToJson,patientVisitDetails, urlBase, userProviderUUid, restPost)
                 } catch (Exception e) {
                     e.printStackTrace()
                 } finally {
@@ -187,11 +187,11 @@ class RestPackService {
         }
     }
 
-    String fetchNidUuid(Patient patient, Pack pack, PatientVisitDetails patientVisitDetails,PatientServiceIdentifier patientServiceIdentifier,String patientNid, String urlBase, String universalProviderUuid) {
+    String fetchNidUuid(Patient patient, Pack pack, PatientVisitDetails patientVisitDetails,PatientServiceIdentifier patientServiceIdentifier,String patientNid, String urlBase, String userProviderUuid) {
         String urlPath = 'patient?q=' + patientNid
         JSONArray results = new JSONArray()
 
-        String nidRest = new RestOpenMRSClient().getResponseOpenMRSClient(universalProviderUuid, null, urlBase, urlPath, requestMethod_GET)
+        String nidRest = new RestOpenMRSClient().getResponseOpenMRSClient(userProviderUuid, null, urlBase, urlPath, requestMethod_GET)
         if (nidRest == null) {
             saveErrorLog(pack, patientVisitDetails, patient, MessageFormat.format(NID_DOESNT_EXIST_IN_OPENMRS, patientServiceIdentifier.value), null)
         }
@@ -217,9 +217,10 @@ class RestPackService {
         return true
     }
 
-    boolean isPatientActiveInProgram(Patient patient, Pack pack, PatientVisitDetails patientVisitDetails,PatientServiceIdentifier patientServiceIdentifier, String urlBaseReportingRest, String universalProviderUuid) {
-        String urlPath = 'provider?q=' + patient.getHisUuid()
-        String openMrsReportingRest = new RestOpenMRSClient().getResponseOpenMRSClient(universalProviderUuid, null, urlBaseReportingRest, urlPath, requestMethod_GET)
+    boolean isPatientActiveInProgram(Patient patient, Pack pack, PatientVisitDetails patientVisitDetails,PatientServiceIdentifier patientServiceIdentifier, String urlBaseReportingRest, String userProviderUuid) {
+//        String urlPath = '&provider?q=' + patient.getHisUuid()
+        String urlPath = '?personUuid=' + patient.getHisUuid()
+        String openMrsReportingRest = new RestOpenMRSClient().getResponseOpenMRSClient(userProviderUuid, null, urlBaseReportingRest, urlPath, requestMethod_GET)
 
         JSONObject resultsReportingRest = new JSONObject(openMrsReportingRest)
         JSONArray members = new JSONArray()

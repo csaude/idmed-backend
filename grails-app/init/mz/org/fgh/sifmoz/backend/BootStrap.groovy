@@ -85,6 +85,8 @@ class BootStrap {
 
         Duration.withTransaction { initDuration() }
 
+        Doctor.withTransaction { initDoctor() }
+
         StartStopReason.withTransaction { initStartStopReason() }
 
         GroupType.withTransaction { initGroupType() }
@@ -425,6 +427,25 @@ class BootStrap {
                 duration.weeks = durationObject.weeks
                 duration.description = durationObject.description
                 duration.save(flush: true, failOnError: true)
+            }
+        }
+    }
+
+    void initDoctor(){
+        def clinic  = Clinic.findAllWhere(mainClinic: true)
+        if(!clinic.isEmpty())
+        for(doctorObject in listDoctor()){
+            if(!Doctor.findWhere(id: doctorObject.id) && clinic){
+                Doctor doctor = new Doctor()
+                doctor.id = doctorObject.id
+                doctor.firstnames = doctorObject.firstnames
+                doctor.lastname = doctorObject.lastname
+                doctor.gender = doctorObject.gender
+                doctor.telephone = doctorObject.telephone
+                doctor.email = doctorObject.telephone
+                doctor.active = true
+                doctor.clinic =  clinic.first()
+                doctor.save(flush: true, failOnError: true)
             }
         }
     }
@@ -857,6 +878,12 @@ class BootStrap {
         return usersList
     }
 
+    List<Object> listDoctor() {
+        List<Object> usersList = new ArrayList<>()
+        usersList.add(new LinkedHashMap(id: '3F2D1A4B-9C6E-4F89-B5D3-8A2E7F1D0CBA', firstnames: 'Provedor', lastname: 'Externo', gender: 'TBD', email: 'provedor.externo@idmed.co.mz', telephone: ''))
+        return usersList
+    }
+
     List<Object> listProvincialServer() {
         List<Object> provincialServerList = new ArrayList<>()
         provincialServerList.add(new LinkedHashMap(id: '59BA4DAD-A32F-4B60-84D9-4A7F7E8C84FC', code: '01', urlPath: 'http://idartniassa.fgh.org.mz:', port: '3001', destination: 'MOBILE', username: 'postgres', password: 'N/A', 'dbname':'N/A'))
@@ -1038,7 +1065,7 @@ class BootStrap {
         formList.add(new LinkedHashMap(id: 'A80409ED-89FC-40AF-BA34-5CD0BA886570', code: 'Creme_Vaginal', description: 'Creme Vaginal', 'unit': 'Creme(s)', 'how_to_use': 'Aplicar'))
 
         formList.add(new LinkedHashMap(id: 'E8427B78-B4B2-4570-8721-03A60425909D', code: 'Suspensão_Injectável', description: 'Suspensão Injectável', 'unit': 'mL(s)', 'how_to_use': 'Administrar'))
-        formList.add(new LinkedHashMap(id: 'A19B6D0E-4F11-42C9-B720-9C8B617E29F8', code: 'Anel_Vaginal', description: 'A19B6D0E-4F11-42C9-B720-9C8B617E29F8', 'unit': 'Anel', 'how_to_use': 'Inserir'))
+        formList.add(new LinkedHashMap(id: 'A19B6D0E-4F11-42C9-B720-9C8B617E29F8', code: 'Anel_Vaginal', description: 'Anel_Vaginal', 'unit': 'Anel', 'how_to_use': 'Inserir'))
         return formList
 
     }
