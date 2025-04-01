@@ -5,7 +5,7 @@ info:
     grailsVersion: '@info.app.grailsVersion@'
 server:
   port:
-    8884
+    '${BACKEND_PORT:8884}'
   compression:
     enabled: on
     min-response-size: 200
