@@ -10,6 +10,7 @@ import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
+import mz.org.fgh.sifmoz.backend.interoperabilityTransation.InteroperabilityTransationService
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
@@ -20,6 +21,7 @@ import mz.org.fgh.sifmoz.backend.patientVisitDetails.IPatientVisitDetailsService
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.prescription.IPrescriptionService
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
+import mz.org.fgh.sifmoz.backend.restUtils.RestOpenMRSClient
 import mz.org.fgh.sifmoz.backend.screening.*
 import mz.org.fgh.sifmoz.backend.stock.Stock
 import mz.org.fgh.sifmoz.backend.stock.StockService
@@ -42,6 +44,9 @@ class PatientVisitController extends RestfulController {
     PregnancyScreeningService pregnancyScreeningService
     StockService stockService
     IPatientVisitDetailsService patientVisitDetailsService
+    InteroperabilityTransationService interoperabilityTransationService
+    RestOpenMRSClient restPost = new RestOpenMRSClient()
+
 
     static responseFormats = ['json', 'xml']
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
@@ -317,6 +322,9 @@ class PatientVisitController extends RestfulController {
             result.remove('tbScreenings')
 
         render result as JSON
+
+        String convertToJson = restPost.createOpenMRSDispense(visit?.patientVisitDetails?.first()?.pack, visit?.patient)
+        interoperabilityTransationService.sendMessageToPOC(convertToJson.toString(), visit?.patientVisitDetails?.first()?.prescription?.id)
     }
 
     @Transactional
