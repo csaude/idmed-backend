@@ -5,6 +5,8 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
+import mz.org.fgh.sifmoz.backend.interoperabilityTransation.InteroperabilityTransationService
+import mz.org.fgh.sifmoz.backend.interoperabilityTransationLog.InteroperabilityTransationLogService
 import mz.org.fgh.sifmoz.backend.openmrsErrorLog.OpenmrsErrorLog
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
@@ -28,6 +30,7 @@ class RestPackService {
 
     RestOpenMRSClient restOpenMRSClient = new RestOpenMRSClient()
     PatientVisitDetailsService patientVisitDetailsService
+    InteroperabilityTransationService interoperabilityTransationService
     final String requestMethod_POST = "POST"
     final String requestMethod_PUT = "PUT"
     final String requestMethod_PATCH = "PATCH"
@@ -93,8 +96,6 @@ class RestPackService {
                     if (!isValidNidUuid(patient, pack, patientVisitDetails, nidUuid, patientServiceIdentifier)) return
 
                     if (!isPatientActiveInProgram(patient, pack, patientVisitDetails,patientServiceIdentifier, urlBaseReportingRest, userProviderUUid)) return
-
-                   // if (!isValidProviderUuid(pack,patientVisitDetails, his, urlBase, universalProviderUUid)) return
 
                     if (!isValidLocationUuid(pack,patientVisitDetails, urlBase, openMRSUuuidLocation)) return
 
