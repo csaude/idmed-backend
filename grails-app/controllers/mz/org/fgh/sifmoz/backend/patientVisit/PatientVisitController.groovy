@@ -47,6 +47,7 @@ class PatientVisitController extends RestfulController {
     InteroperabilityTransationService interoperabilityTransationService
     RestOpenMRSClient restPost = new RestOpenMRSClient()
 
+    static final String ACTIVEMQ_DISPENSE_QUEUE = "dispensation.queue"
 
     static responseFormats = ['json', 'xml']
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
@@ -75,6 +76,9 @@ class PatientVisitController extends RestfulController {
         def isTransitPatient = false
         def isNationalTransitPatient = false
         def lastEpisode = null
+        def poc_pack = null
+        def poc_service = null
+
         if (!objectJSON?.patientVisitDetails?.isEmpty()) {
             def amtPerTimePackaged = objectJSON?.patientVisitDetails[0]?.pack?.packagedDrugs[0]?.amtPerTime + ""
             objectJSON?.patientVisitDetails[0]?.pack?.packagedDrugs[0]?.amtPerTime = amtPerTimePackaged ? Double.parseDouble(amtPerTimePackaged) : 0
@@ -274,8 +278,10 @@ class PatientVisitController extends RestfulController {
                     }
                 }
             }
-            if (patientVisitService.save(visit) && isTransitPatient)
-                saveExternalPatientVisit(isNationalTransitPatient, visit, lastEpisode, objectJSON)
+            if (visit.save(flush: true, failOnError: true)){
+                if(isTransitPatient)
+                    saveExternalPatientVisit(isNationalTransitPatient, visit, lastEpisode, objectJSON)
+            }
         } catch (ValidationException e) {
             transactionStatus.setRollbackOnly()
             respond visit.errors
@@ -323,8 +329,15 @@ class PatientVisitController extends RestfulController {
 
         render result as JSON
 
-        String convertToJson = restPost.createOpenMRSDispense(visit?.patientVisitDetails?.first()?.pack, visit?.patient)
-        interoperabilityTransationService.sendMessageToPOC(convertToJson.toString(), visit?.patientVisitDetails?.first()?.prescription?.id)
+        Thread.sleep(1000)
+        visit.refresh()
+        PatientVisit.withTransaction {
+            PatientVisit patientVisit = PatientVisit.findById(visit.id)
+            String convertToJson = restPost.createPOCDispense(patientVisit)
+            interoperabilityTransationService.sendMessageToPOC(patientVisit?.patientVisitDetails?.first()?.prescription?.id, convertToJson.toString(), ACTIVEMQ_DISPENSE_QUEUE)
+        }
+
+
     }
 
     @Transactional
@@ -664,7 +677,7 @@ private static saveExternalPatientVisit(boolean isNational, PatientVisit patient
         } else {
             populateWithDefaultEpisodeDetails(externalPatientVisit)
         }
-        externalPatientVisit.save()
+        externalPatientVisit.save(flush: true)
     }
 
    private static populateWithActualEpisodeDetails(ExternalPatientVisit externalPatientVisit, Episode lastEpisode){
