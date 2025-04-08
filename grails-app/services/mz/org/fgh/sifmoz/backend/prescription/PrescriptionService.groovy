@@ -208,6 +208,5 @@ abstract class PrescriptionService implements IPrescriptionService {
             pocPrescriptionLog.status = "COMPLETED"
             pocPrescriptionLog.save(flush: true)
         }
-
     }
 }
