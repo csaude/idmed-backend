@@ -1,10 +1,12 @@
 package mz.org.fgh.sifmoz.backend.restUtils
 
+import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.interoperabilityAttribute.InteroperabilityAttribute
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
+import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.prescriptionDetail.PrescriptionDetail
@@ -43,10 +45,10 @@ class RestOpenMRSClient {
 
                 if (clinicalService) {
                     if (clinicalService.isTARV() || clinicalService.isPPE() || clinicalService.isCCR()) {
-                        inputAddPerson = setOpenMRSFILA(interoperabilityAttributes, pack, patient, customizedDosage, obsGroupsJson, dispenseMod, packSize, obsGroups)
+                        inputAddPerson = setOpenMRSFILA(interoperabilityAttributes, pack, patient, pvd, customizedDosage, obsGroupsJson, dispenseMod, packSize, obsGroups)
                     }
                     if (clinicalService.isTPT())
-                        inputAddPerson = setOpenMRSFILT(interoperabilityAttributes, pack, patient)
+                        inputAddPerson = setOpenMRSFILT(interoperabilityAttributes, pack, pvd, patient)
                 } else {
                     logger.error("Paciente " + patient.firstNames + " " + patient.lastNames + " com prescricao sem Regime Terapeutico")
                 }
@@ -54,6 +56,42 @@ class RestOpenMRSClient {
                 e.printStackTrace()
             }
 
+            return inputAddPerson
+        }
+    }
+
+    static String createPOCDispense(PatientVisit visit) {
+
+        String inputAddPerson = "{}"
+        String customizedDosage = ""
+        String obsGroupsJson = null
+        String dispenseMod = ""
+        int packSize = 0
+
+        Patient patient = visit?.patient
+        Pack pack = visit.patientVisitDetails?.first()?.pack
+        PatientVisitDetails patientVisitDetails = PatientVisitDetails.findByPack(pack)
+        Episode episode = visit?.patientVisitDetails?.first()?.episode
+        PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findById(episode?.patientServiceIdentifier?.id)
+        ClinicalService clinicalService = ClinicalService.findById(patientServiceIdentifier?.service?.id)
+
+        Patient.withNewSession {
+            try {
+                List<String> obsGroups = new ArrayList<>()
+                List<InteroperabilityAttribute> interoperabilityAttributes = Patient.get(patient.id).his.interoperabilityAttributes as List<InteroperabilityAttribute>
+
+                if (clinicalService) {
+                    if (clinicalService.isTARV() || clinicalService.isPPE() || clinicalService.isCCR()) {
+                        inputAddPerson = setOpenMRSFILA(interoperabilityAttributes, pack, patient, patientVisitDetails, customizedDosage, obsGroupsJson, dispenseMod, packSize, obsGroups)
+                    }
+                    if (clinicalService.isTPT())
+                        inputAddPerson = setOpenMRSFILT(interoperabilityAttributes, pack, patientVisitDetails, patient)
+                } else {
+                    logger.error("POC - Paciente " + patient.firstNames + " " + patient.lastNames + " com prescricao sem Regime Terapeutico")
+                }
+            } catch (Exception e) {
+                e.printStackTrace()
+            }
             return inputAddPerson
         }
     }
@@ -196,7 +234,7 @@ class RestOpenMRSClient {
     }
 
 
-    static String setOpenMRSFILA(List<InteroperabilityAttribute> interoperabilityAttributes, Pack pack, Patient patient,
+    static String setOpenMRSFILA(List<InteroperabilityAttribute> interoperabilityAttributes, Pack pack, Patient patient, PatientVisitDetails pvd,
                                  String customizedDosage, String obsGroupsJson, String dispenseMod, int packSize, List<String> obsGroups) {
 
         String filaUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "FORM_FILA_UUID" }.value
@@ -209,7 +247,14 @@ class RestOpenMRSClient {
         String returnVisitUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "FILA_NEXT_VISIT_CONCEPT_UUID" }.value
         String openMRSUuuidLocation = interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_LOCATION_UUID" }.value
         PatientVisitDetails pdv = PatientVisitDetails.findByPack(pack)
-        String strRegimenAnswerUuid = PrescriptionDetail.findByPrescription(Prescription.findById(pdv.prescription.id)).therapeuticRegimen.openmrsUuid
+        if(!pdv)
+            pdv = pvd
+
+        PrescriptionDetail prescriptionDetail = PrescriptionDetail.findByPrescription(Prescription.findById(pdv.prescription.id))
+        if(!prescriptionDetail)
+            prescriptionDetail = pdv?.prescription?.prescriptionDetails?.first()
+
+        String strRegimenAnswerUuid = prescriptionDetail?.therapeuticRegimen?.openmrsUuid
 
         obsGroupsJson = ""
 
@@ -297,7 +342,7 @@ class RestOpenMRSClient {
     }
 
 
-    static String setOpenMRSFILT(List<InteroperabilityAttribute> interoperabilityAttributes, Pack pack, Patient patient) {
+    static String setOpenMRSFILT(List<InteroperabilityAttribute> interoperabilityAttributes, Pack pack, PatientVisitDetails pvd, Patient patient) {
         String filtNextApointmentUuid = "b7c246bc-f2b6-49e5-9325-911cdca7a8b3"
         String filtUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "FORM_FILT_UUID" }.value
         String dispenseModeUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "DISPENSE_MODE_CONCEPT_UUID" }.value
@@ -307,11 +352,19 @@ class RestOpenMRSClient {
         String returnVisitUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "FILT_TPT_PATIENT_TYPE_UUID" }.value
         String tipoDispensaUuid = interoperabilityAttributes.find { it.interoperabilityType.code == "FILT_DISPENSED_TYPE_CONCEPT_UUID" }.value
         String openMRSUuuidLocation = interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_LOCATION_UUID" }.value
-        PatientVisitDetails pdv = PatientVisitDetails.findByPack(pack)
-        String strRegimenAnswerUuid = PrescriptionDetail.findByPrescription(Prescription.findById(pdv.prescription.id)).therapeuticRegimen.openmrsUuid
-        String strCodeDispenseType = PrescriptionDetail.findByPrescription(Prescription.findById(pdv.prescription.id)).dispenseType.code
-        PatientVisitDetails patientVisitDetails = PatientVisitDetails.findByPack(pack)
         String strDispenseType = interoperabilityAttributes.find { it.interoperabilityType.code == "MONTHLY_DISPENSED_TYPE_CONCEPT_UUID" }.value
+        PatientVisitDetails patientVisitDetails = PatientVisitDetails.findByPack(pack)
+
+        if(!patientVisitDetails)
+            patientVisitDetails = pvd
+
+        PrescriptionDetail prescriptionDetail = PrescriptionDetail.findByPrescription(Prescription.findById(patientVisitDetails.prescription.id))
+
+        if(!prescriptionDetail)
+            prescriptionDetail = patientVisitDetails?.prescription?.prescriptionDetails?.first()
+
+        String strRegimenAnswerUuid = prescriptionDetail?.therapeuticRegimen?.openmrsUuid
+        String strCodeDispenseType = prescriptionDetail?.dispenseType?.code
 
         boolean packContinue = false
         String nextFollowUp = ""

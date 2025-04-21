@@ -11,17 +11,17 @@ class InteroperabilityTransationLog {
     String stage
     String status
     String errorMessage
-    Date dateCreated
+    Date dateCreated = new Date()
     Date lastUpdated = new Date()
 
     static constraints = {
         messageId nullable: false, maxSize: 255
         queueName nullable: false, maxSize: 255
         sourceName nullable: false, maxSize: 255
-        payloadRequest nullable: false
-        payloadResponse nullable: true
+        payloadRequest nullable: false, maxSize: 65535
+        payloadResponse nullable: true, maxSize: 65535
         status nullable: false, inList: ['COMPLETED', 'FAILED']
-        stage nullable: false, inList: ['RECEIVED', 'PROCESSED', 'SENT']
+        stage nullable: false, inList: ['RECEIVED', 'PROCESSED', 'READY_TO_SEND']
         errorMessage nullable: true
     }
 
