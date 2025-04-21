@@ -7,6 +7,7 @@ import mz.org.fgh.sifmoz.backend.duration.Duration
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
+import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
 
 interface IEpisodeService {
 
@@ -43,4 +44,14 @@ interface IEpisodeService {
     reopenEpisodeAndServiceWhenPatientActiveInSesp(Patient patient)
 
     closePatientServiceIdentifierOfPatientWithTrasnferenceOrObitEpisode(Episode episode)
+
+    createClosureEpisode(
+            Episode lastEpisode,
+            PatientServiceIdentifier item,
+            Date statusDate,
+            StartStopReason startStopReason)
+
+    Episode createMaintenanceEpisode(Episode lastEpisode,
+                                     PatientServiceIdentifier item,
+                                     Date statusDate)
 }

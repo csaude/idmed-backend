@@ -4,6 +4,7 @@ import grails.gorm.services.Service
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
+import mz.org.fgh.sifmoz.backend.pocPrescriptionLog.PocPrescriptionLog
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 
 
@@ -30,4 +31,8 @@ interface IPrescriptionService {
     Map<String ,PatientVisitDetails> getLastPrescriptionsByClinicAndClinicalServiceAndEndDate(Clinic clinic, ClinicalService clinicalService, Date endDate)
 
     Prescription getLastPrescriptionByPatientId(String patientId)
+
+    Prescription getLastPrescriptionWithoutDetailsByPatientIdAndClinicalServiceId(String patientId,String clinicalServiceId)
+
+    List<PocPrescriptionLog> getAllPrescriptionFromPocByPatientId(String patientId)
 }

@@ -6,7 +6,13 @@ import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.dispenseType.DispenseType
+import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
+import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
+import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
+import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
+import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.linhasUsadas.LinhasUsadasReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaRegimenSubReport
 import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaReport
@@ -3802,5 +3808,15 @@ abstract class PackService implements IPackService {
         List<Object[]> result = query.list()
 
         return result
+    }
+
+    List<Pack> getAllPacksByPatientAndEpisode(Patient patient, Episode episode) {
+
+        def patientVisits = PatientVisit.findAllByPatient(patient)
+        def patientVisitDetails = PatientVisitDetails.findAllByPatientVisitInListAndEpisode(patientVisits,episode)
+        def packs = Pack.findAllByIdInList(patientVisitDetails?.pack?.id,
+                [sort: "pickupDate", order: "desc"])
+
+        return packs
     }
 }

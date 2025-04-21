@@ -196,4 +196,13 @@ class PrescriptionController extends RestfulController{
     private static boolean checkHasNotOrigin(Prescription prescription){
         return prescription.origin == null || prescription?.origin?.isEmpty()
     }
+
+    def getLastPrescriptionWithoutDetailsByPatientIdAndClinicalServiceId(String patientId,String clinicalServiceId) {
+        render JSONSerializer.setJsonObjectResponse(prescriptionService.getLastPrescriptionWithoutDetailsByPatientIdAndClinicalServiceId(patientId, clinicalServiceId)) as JSON
+    }
+
+    def getAllPrescriptionFromPocByPatientId(String patientId) {
+        render JSONSerializer.setObjectListJsonResponseLevel3(prescriptionService.getAllPrescriptionFromPocByPatientId(patientId)) as JSON
+
+    }
 }

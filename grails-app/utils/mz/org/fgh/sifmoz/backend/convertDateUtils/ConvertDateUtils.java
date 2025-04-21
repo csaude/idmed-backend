@@ -784,4 +784,11 @@ public class ConvertDateUtils {
         LocalDate localDate = LocalDate.now();
         return  java.sql.Date.valueOf(localDate);
     }
+
+    public static Date addMinutes(Date date, int minutes) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.MINUTE, minutes);
+        return cal.getTime();
+    }
 }
