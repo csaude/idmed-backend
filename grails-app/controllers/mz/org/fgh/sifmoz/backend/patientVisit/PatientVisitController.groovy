@@ -7,14 +7,18 @@ import grails.rest.RestfulController
 import grails.validation.ValidationException
 import groovy.json.JsonSlurper
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
+import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.episode.EpisodeService
+import mz.org.fgh.sifmoz.backend.episode.IEpisodeService
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
 import mz.org.fgh.sifmoz.backend.interoperabilityTransation.InteroperabilityTransationService
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
 import mz.org.fgh.sifmoz.backend.packaging.Pack
+import mz.org.fgh.sifmoz.backend.packaging.PackService
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.IPatientVisitDetailsService
@@ -23,6 +27,7 @@ import mz.org.fgh.sifmoz.backend.prescription.IPrescriptionService
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.restUtils.RestOpenMRSClient
 import mz.org.fgh.sifmoz.backend.screening.*
+import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
 import mz.org.fgh.sifmoz.backend.stock.Stock
 import mz.org.fgh.sifmoz.backend.stock.StockService
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
@@ -45,6 +50,7 @@ class PatientVisitController extends RestfulController {
     StockService stockService
     IPatientVisitDetailsService patientVisitDetailsService
     InteroperabilityTransationService interoperabilityTransationService
+    EpisodeService episodeService
     RestOpenMRSClient restPost = new RestOpenMRSClient()
 
 
@@ -245,6 +251,7 @@ class PatientVisitController extends RestfulController {
             } else {
                 visit.patientVisitDetails.each { item ->
                     item.pack.origin = visit.origin
+
                     //  item.episode.origin = visit.origin
                     Prescription existingPrescription = Prescription.findById(item.prescription.id)
                     if (existingPrescription != null) {
@@ -262,6 +269,11 @@ class PatientVisitController extends RestfulController {
                         item.pack.isreferalsynced = true
 
                     incrementPrescriptionSeq(item.prescription, item.episode)
+                    if (item.prescription.photoContentType !== null) {
+                        byte[] photoBytes = Base64.getDecoder().decode(item.prescription.photoContentType);
+                        item.prescription.photoContentType = item.prescription.photoName.substring(item.prescription.photoName.lastIndexOf('.') + 1)
+                        item.prescription.photo = photoBytes
+                    }
                     prescriptionService.save(item.prescription)
                     packService.save(item.pack)
                     // if(!syncStatus)
@@ -271,6 +283,12 @@ class PatientVisitController extends RestfulController {
                         isTransitPatient = true
                         isNationalTransitPatient = item.episode.isResidentInCountry()
                         lastEpisode = item.episode
+                    }
+                    if(verifyIfNeedToCreateMaintenanceEpisode(item.episode,item.patientVisit.patient)) {
+                        def startStopReasonOther = StartStopReason.findByCode(StartStopReason.OUTRO)
+                        episodeService.createClosureEpisode(item.episode,item.episode.patientServiceIdentifier, ConvertDateUtils.addMinutes(item.prescription.prescriptionDate,2),startStopReasonOther)
+                        def newEpisode = episodeService.createMaintenanceEpisode(item.episode, item.episode.patientServiceIdentifier,ConvertDateUtils.addMinutes(item.prescription.prescriptionDate,3))
+                        item.episode = newEpisode
                     }
                 }
             }
@@ -323,8 +341,11 @@ class PatientVisitController extends RestfulController {
 
         render result as JSON
 
-        String convertToJson = restPost.createOpenMRSDispense(visit?.patientVisitDetails?.first()?.pack, visit?.patient)
-        interoperabilityTransationService.sendMessageToPOC(convertToJson.toString(), visit?.patientVisitDetails?.first()?.prescription?.id)
+        if (visit?.patient?.his !== null) {
+            String convertToJson = restPost.createOpenMRSDispense(visit?.patientVisitDetails?.first()?.pack, visit?.patient)
+            interoperabilityTransationService.sendMessageToPOC(convertToJson.toString(), visit?.patientVisitDetails?.first()?.prescription?.id)
+        }
+
     }
 
     @Transactional
@@ -698,4 +719,10 @@ private static saveExternalPatientVisit(boolean isNational, PatientVisit patient
         externalPatientVisit.targetClinicName = "N/A"
         externalPatientVisit.syncStatus = 'N'
     }
+
+    private boolean  verifyIfNeedToCreateMaintenanceEpisode (Episode episode,Patient patient) {
+       def packs = packService.getAllPacksByPatientAndEpisode(patient,episode)
+        if (episode.startStopReason.code != StartStopReason.MANUNTENCAO && packs.size() >= 1) return true
+    }
+
 }

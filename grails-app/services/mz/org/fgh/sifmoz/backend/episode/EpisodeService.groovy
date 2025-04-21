@@ -277,7 +277,7 @@ abstract class EpisodeService implements IEpisodeService{
     }
 
 
-    private Episode createClosureEpisode(
+Episode createClosureEpisode(
             Episode lastEpisode,
             PatientServiceIdentifier item,
             Date statusDate,
@@ -296,5 +296,25 @@ abstract class EpisodeService implements IEpisodeService{
         closureEpisode.residentInCountry = lastEpisode.residentInCountry
         closureEpisode.beforeInsert()
         this.save(closureEpisode)
+    }
+
+    Episode createMaintenanceEpisode(Episode lastEpisode,
+                                         PatientServiceIdentifier item,
+                                         Date statusDate) {
+      def startStopReason =  StartStopReason.findByCode(StartStopReason.MANUNTENCAO)
+        Episode maintenanceEpisode = new Episode()
+        maintenanceEpisode.episodeDate = statusDate
+        maintenanceEpisode.episodeType = EpisodeType.findByCode('INICIO')
+        maintenanceEpisode.patientServiceIdentifier = item
+        maintenanceEpisode.clinic = item.clinic
+        maintenanceEpisode.clinicSector = lastEpisode.getClinicSector()
+        maintenanceEpisode.creationDate = new Date()
+        maintenanceEpisode.notes = 'Aberto para ' + startStopReason
+        maintenanceEpisode.startStopReason = startStopReason
+        maintenanceEpisode.origin = lastEpisode.getClinic().getUuid()
+        maintenanceEpisode.residentInCountry = lastEpisode.residentInCountry
+        maintenanceEpisode.beforeInsert()
+        this.save(maintenanceEpisode)
+        return maintenanceEpisode
     }
 }

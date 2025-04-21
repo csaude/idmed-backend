@@ -1,6 +1,6 @@
 package mz.org.fgh.sifmoz.backend.prescription
 
-
+import grails.converters.JSON
 import grails.gorm.services.Service
 import grails.gorm.transactions.Transactional
 import groovy.json.JsonSlurper
@@ -117,6 +117,29 @@ abstract class PrescriptionService implements IPrescriptionService {
 
         return prescriptions.size() > 0 ? prescriptions.get(0) : null
     }
+
+
+
+    Prescription getLastPrescriptionWithoutDetailsByPatientIdAndClinicalServiceId(String patientId,String clinicalServiceId) {
+        def patient = Patient.get(patientId)
+        def clinicalService = ClinicalService.get(clinicalServiceId)
+       PocPrescriptionLog pocPrescriptionLog = PocPrescriptionLog.findAllByPatientAndClinicalService(patient,clinicalService, [sort: "prescriptionDate", order: "desc"])?.first()
+
+        return  pocPrescriptionLog.getPrescription()
+    }
+
+    List<Prescription> getAllPrescriptionFromPocByPatientId(String patientId) {
+        def patient = Patient.get(patientId)
+       def pocPrescriptions=  PocPrescriptionLog.findAllByPatient(patient, [sort: "prescriptionDate", order: "desc"])
+
+        def prescriptions = []
+        pocPrescriptions.each { log ->
+            prescriptions << log.prescription
+        }
+        return pocPrescriptions
+
+    }
+
 
     void savePrescriptionFromPOC(def objectJSON, String messageId, Patient patient) {
         try {
