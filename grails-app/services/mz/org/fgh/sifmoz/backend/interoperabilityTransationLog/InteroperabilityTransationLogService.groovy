@@ -10,7 +10,7 @@ class InteroperabilityTransationLogService {
                                             String status, String errorMessage) {
         try {
             InteroperabilityTransationLog interoperabilityTransationLog = InteroperabilityTransationLog.findWhere(messageId: messageId)
-            if (!interoperabilityTransationLog){
+            if (!interoperabilityTransationLog) {
                 interoperabilityTransationLog = new InteroperabilityTransationLog()
                 interoperabilityTransationLog.beforeInsert()
             }
@@ -19,13 +19,12 @@ class InteroperabilityTransationLogService {
             interoperabilityTransationLog.sourceName = sourceName
             interoperabilityTransationLog.payloadRequest = payloadRequest
             interoperabilityTransationLog.payloadResponse = payloadResponse
-            interoperabilityTransationLog.status = stage
+            interoperabilityTransationLog.stage = stage
             interoperabilityTransationLog.status = status
             interoperabilityTransationLog.errorMessage = errorMessage
 //            interoperabilityTransationLog.save(flush: true, failOnError: true)
         } catch (Exception e) {
             e.printStackTrace()
         }
-
     }
 }

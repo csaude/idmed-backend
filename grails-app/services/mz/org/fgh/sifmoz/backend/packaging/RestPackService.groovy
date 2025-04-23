@@ -54,6 +54,8 @@ class RestPackService {
 
     final String INVALID_LOCATION =  " A UNIDADE SANITARIA (UUID) NAO EXISTE OU NAO CONTEM O PADRAO RECOMENDADO";
 
+    static final String ACTIVEMQ_DISPENSE_QUEUE = "dispensation.queue"
+
     //final String GET_PROVIDER = "provider?q=";
     final String GET_PATIENT = "patient?q=";
     final String GET_REPORTING_REST = "?personUuid=";
@@ -91,6 +93,8 @@ class RestPackService {
                     String urlBaseReportingRest = his.interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE_REPORTING_REST" }.value
                     String openMRSUuuidLocation = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_LOCATION_UUID" }.value
                     String patientNid = StringUtils.replace(patientServiceIdentifier.value, " ", "%20")
+//                    String convertToJson = restPost.createOpenMRSDispense(pack, patient)
+//                    interoperabilityTransationService.sendMessageToPOC(patientNid, convertToJson, ACTIVEMQ_DISPENSE_QUEUE)
 
                     String nidUuid = fetchNidUuid( patient,  pack,  patientVisitDetails, patientServiceIdentifier,patientNid, urlBase, userProviderUUid)
                     if (!isValidNidUuid(patient, pack, patientVisitDetails, nidUuid, patientServiceIdentifier)) return
