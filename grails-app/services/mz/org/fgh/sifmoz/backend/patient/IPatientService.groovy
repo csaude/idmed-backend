@@ -38,4 +38,6 @@ interface IPatientService {
 
     List<Patient> getAllPatientsIsAbandonment(int offset, int max)
 
+    Patient savePatientFromPoc(def objectJSON)
+
 }
