@@ -107,7 +107,8 @@ class InteroperabilityTransationService {
             } finally {
                 continue
             }
-
+        }
+    }
     @JmsListener(destination = ACTIVEMQ_PATIENT_SYNC)
     void loadPatientPocMessage(String message) {
         String messageId = UUID.randomUUID().toString()
@@ -126,21 +127,6 @@ class InteroperabilityTransationService {
         } catch (Exception e) {
             println "❌ Erro ao processar mensagem: ${e.message}"
             interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PATIENT_SYNC, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_RECEIVED, ACTIVEMQ_STATUS_FAILED, e.message )
-        }
-    }
-
-
-    void sendMessageToPOC(String message, String messageId) {
-        def objectJSON = new JsonSlurper().parseText(message)
-        try{
-            // Enviar mensagem para a fila existente no ActiveMQ remoto
-            jmsTemplate.convertAndSend(ACTIVEMQ_DISPENSE, message as String)
-            interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION, SOURCEPOC,objectJSON, null, ACTIVEMQ_STAGE_READY_TO_SEND, ACTIVEMQ_STATUS_COMPLETED, null )
-            prescriptionService.updatePOCPrescriptionLog(messageId)
-            println "✅ Pedido ${messageId} enviado para a fila ${ACTIVEMQ_DISPENSE} com status ${ACTIVEMQ_STATUS_COMPLETED}"
-        }catch (Exception e){
-            interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION, SOURCEPOC,objectJSON, null, ACTIVEMQ_STAGE_READY_TO_SEND, ACTIVEMQ_STATUS_COMPLETED, e.message )
-            println "❌ Erro ao processar mensagem: ${e.message}"
         }
     }
 
@@ -169,6 +155,6 @@ class InteroperabilityTransationService {
 
         String jsonMessage = new JsonBuilder(payload).toString()
 
-        jmsTemplate.convertAndSend(ACTIVEMQ_PRESCRIPTION_RESPONSE, jsonMessage)
+        jmsTemplate.convertAndSend(ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE, jsonMessage)
     }
 }
