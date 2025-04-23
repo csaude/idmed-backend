@@ -6,12 +6,20 @@ import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
+import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
+import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.District
+import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.Province
 import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.episodeType.EpisodeType
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
+import mz.org.fgh.sifmoz.backend.identifierType.IdentifierType
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
+import mz.org.fgh.sifmoz.backend.service.ClinicalService
+import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
 import org.hibernate.Session
 import org.hibernate.SessionFactory
@@ -76,7 +84,7 @@ abstract class PatientService implements IPatientService {
         query.setMaxResults(limit)
         List<Patient> patientList = query.list()
 
-      return patientList
+        return patientList
     }
 
     @Override
@@ -112,7 +120,7 @@ abstract class PatientService implements IPatientService {
     }
 
     @Override
-    List getAllPatientsInClinicSector(String clinicSector, int offset , int max) {
+    List getAllPatientsInClinicSector(String clinicSector, int offset, int max) {
         def sql = new Sql(dataSource as DataSource)
 
         def getPatientsSql = '''
@@ -316,4 +324,71 @@ abstract class PatientService implements IPatientService {
 //        List<Object[]> list = query.list()
 //        return list
 //    }
+
+    Patient savePatientFromPoc(def objectJSON) {
+        if (!objectJSON?.empty && objectJSON) {
+            Patient patient = Patient.findWhere(id: objectJSON.patientUuid)
+            if (!patient) {
+                patient = new Patient()
+                patient.addMatchId()
+                patient.addClinic()
+                patient.firstNames = objectJSON.firstName
+                patient.middleNames = objectJSON.middleName
+                patient.lastNames = objectJSON.lastName
+                patient.dateOfBirth = ConvertDateUtils.createDate(objectJSON.birthDate,"yyyy-MM-dd")
+                patient.gender = objectJSON.gender == 'Male' ? 'Masculino' : 'Feminino'
+                patient.province = Province.findByDescription(objectJSON.province)
+                  patient.district = District.findByDescription(objectJSON.district)
+               // patient.postoAdministrativo = ''
+               // patient.bairro = ''
+                patient.cellphone = objectJSON.phoneNumber?.replaceFirst('^\\+', '')
+                patient.alternativeCellphone = objectJSON.phoneNumber?.replaceFirst('^\\+', '')
+                patient.id = objectJSON.patientUuid
+                patient.hisUuid = objectJSON.patientUuid
+                patient.hisLocation = objectJSON.locationUuid
+                patient.hisLocationName = objectJSON.locationName
+                patient.his = HealthInformationSystem.findByAbbreviation('OpenMRS')
+                patient.hisSyncStatus = 'N'
+                patient.save(flush: true)
+
+                objectJSON?.clinicalHistory?.each { clinicalHistory ->
+                    def psi = createPatientServiceIdentifier(patient,clinicalHistory)
+                    createEpisode(psi,clinicalHistory)
+                }
+                return patient
+            }
+        }
+    }
+
+
+    PatientServiceIdentifier createPatientServiceIdentifier(Patient patient , def clinicalHistory) {
+        PatientServiceIdentifier psi = new PatientServiceIdentifier()
+        psi.beforeInsert()
+        psi.value = clinicalHistory.nid
+        psi.startDate = ConvertDateUtils.createDate(clinicalHistory.admissionDate,"yyyy-MM-dd")
+        psi.prefered = true
+        psi.service = ClinicalService.get(clinicalHistory.serviceCode)
+        psi.identifierType =  ClinicalService.get(clinicalHistory.serviceCode).identifierType
+        psi.patient = patient
+        psi.state = 'Activo'
+        psi.origin = psi.clinic
+        psi.save(flush: true)
+        return psi
+    }
+
+    void createEpisode(PatientServiceIdentifier psi , def clinicalHistory) {
+        Episode episode = new Episode()
+        episode.beforeInsert()
+        episode.episodeDate =  ConvertDateUtils.createDate(clinicalHistory.admissionDate,"yyyy-MM-dd")
+        episode.startStopReason = StartStopReason.findByCode(clinicalHistory.programStatus)
+        episode.episodeType = EpisodeType.findByCode('INICIO')
+        episode.clinicSector = ClinicSector.get(clinicalHistory.clinicalSector)
+        episode.origin = episode.clinic
+        episode.patientServiceIdentifier = psi
+        episode.isAbandonmentDC = false
+        episode.residentInCountry = true
+        episode.notes = clinicalHistory.programStatus
+        episode.validate()
+        episode.save(flush: true)
+    }
 }

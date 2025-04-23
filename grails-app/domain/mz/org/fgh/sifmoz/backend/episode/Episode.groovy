@@ -52,6 +52,9 @@ class Episode extends BaseEntity {
         if (!clinic) {
             clinic = Clinic.findByMainClinic(true)
         }
+        if (!creationDate) {
+            creationDate = new Date()
+        }
     }
 
     @Override

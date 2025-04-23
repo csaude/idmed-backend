@@ -68,7 +68,7 @@ class Patient extends BaseEntity implements Auditable{
         })
         middleNames nullable: true
         cellphone(nullable: true )
-        alternativeCellphone(nullable: true, maxSize: 12, minSize: 9)
+        alternativeCellphone(nullable: true, maxSize: 13, minSize: 9)
         address nullable: true, maxSize: 750
         addressReference nullable: true, maxSize: 750
         province nullable: false
@@ -90,18 +90,36 @@ class Patient extends BaseEntity implements Auditable{
         if (!id) {
             id = UUID.randomUUID()
         }
-//        if (!clinic) {
-//            clinic = Clinic.findByMainClinic(true)
-//        }
-//        if (matchId == null) {
-//            def  patient =  findAll( [sort: ['matchId': 'desc']])
-//            if (patient.size() == 0) {
-//                matchId = 1
-//            } else {
-//                matchId = patient.get(0).matchId + 1
-//            }
-//
-//        }
+        if (!clinic) {
+           clinic = Clinic.findByMainClinic(true)
+        }
+        if (matchId == null) {
+            def  patient =  findAll( [sort: ['matchId': 'desc']])
+           if (patient.size() == 0) {
+                matchId = 1
+            } else {
+             matchId = patient.get(0).matchId + 1
+          }
+
+        }
+    }
+
+    def addMatchId ( ) {
+        if (matchId == null) {
+            def  patient =  findAll( [sort: ['matchId': 'desc']])
+            if (patient.size() == 0) {
+                matchId = 1
+            } else {
+                matchId = patient.get(0).matchId + 1
+            }
+
+        }
+    }
+
+    def addClinic ( ) {
+        if (!clinic) {
+            clinic = Clinic.findByMainClinic(true)
+        }
     }
     @Override
     List<Menu> hasMenus() {
