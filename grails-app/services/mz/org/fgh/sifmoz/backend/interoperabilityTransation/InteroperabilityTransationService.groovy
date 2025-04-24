@@ -78,10 +78,12 @@ class InteroperabilityTransationService {
 //                    sendMessageToPOC(messageId, "A prescricao do paciente ${patient.firstNames} ${patient.lastNames} criado com sucesso", ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE)
                 } else {
                     interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION_QUEUE, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_RECEIVED, ACTIVEMQ_STATUS_FAILED, ACTIVEMQ_ERROR_MESSAGE_PATIENT_NOT_FOUND)
+                    sendPrescriptionQueueResponse(messageId, ACTIVEMQ_STATUS_FAILED,messageId,ACTIVEMQ_ERROR_MESSAGE_PATIENT_NOT_FOUND)
                 }
             } catch (Exception e) {
                 println "❌ Erro ao processar mensagem: ${e.message}"
                 interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION_QUEUE, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_RECEIVED, ACTIVEMQ_STATUS_FAILED, e.message)
+                sendPrescriptionQueueResponse(messageId, ACTIVEMQ_STATUS_FAILED,messageId,e.message)
             }
         }
     }
@@ -154,7 +156,7 @@ class InteroperabilityTransationService {
                 prescriptionUuid: uuid,
                 remoteId       : remoteId,
                 status         : status,
-                errorMessage   : status == "ERROR" ? errorMessage : ""
+                errorMessage   : status == "FAILED" ? errorMessage : ""
         ]
 
         String jsonMessage = new JsonBuilder(payload).toString()

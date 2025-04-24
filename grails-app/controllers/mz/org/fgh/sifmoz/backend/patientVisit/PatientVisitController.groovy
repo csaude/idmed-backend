@@ -347,16 +347,15 @@ class PatientVisitController extends RestfulController {
 
         render result as JSON
 
-        if (visit?.patient?.his !== null) {
-            String convertToJson = restPost.createOpenMRSDispense(visit?.patientVisitDetails?.first()?.pack, visit?.patient)
-            interoperabilityTransationService.sendMessageToPOC(convertToJson.toString(), visit?.patientVisitDetails?.first()?.prescription?.id)
-        }
         Thread.sleep(1000)
         visit.refresh()
-        PatientVisit.withTransaction {
-            PatientVisit patientVisit = PatientVisit.findById(visit.id)
-            String convertToJson = restPost.createPOCDispense(patientVisit)
-            interoperabilityTransationService.sendMessageToPOC(patientVisit?.patientVisitDetails?.first()?.prescription?.id, convertToJson.toString(), ACTIVEMQ_DISPENSE_QUEUE)
+
+        if (visit?.patient?.his !== null) {
+            PatientVisit.withTransaction {
+                PatientVisit patientVisit = PatientVisit.findById(visit.id)
+                String convertToJson = restPost.createPOCDispense(patientVisit)
+                interoperabilityTransationService.sendMessageToPOC(patientVisit?.patientVisitDetails?.first()?.prescription?.id, convertToJson.toString(), ACTIVEMQ_DISPENSE_QUEUE)
+            }
         }
 
     }
