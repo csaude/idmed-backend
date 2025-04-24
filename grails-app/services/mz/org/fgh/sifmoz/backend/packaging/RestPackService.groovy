@@ -101,7 +101,7 @@ class RestPackService {
 
                     if (!isPatientActiveInProgram(patient, pack, patientVisitDetails,patientServiceIdentifier, urlBaseReportingRest, userProviderUUid)) return
 
-                    if (!isValidLocationUuid(pack,patientVisitDetails, urlBase, openMRSUuuidLocation)) return
+                    if (!isValidLocationUuid(pack,patientVisitDetails, urlBase, openMRSUuuidLocation, userProviderUUid)) return
 
                     String convertToJson = restPost.createOpenMRSDispense(pack, patient)
                     postDispenseData(pack, patient, convertToJson,patientVisitDetails, urlBase, userProviderUUid, restPost)
@@ -252,9 +252,9 @@ class RestPackService {
     }
      */
 
-    boolean isValidLocationUuid(Pack pack,PatientVisitDetails patientVisitDetails, String urlBase, String openMRSUuuidLocation) {
+    boolean isValidLocationUuid(Pack pack,PatientVisitDetails patientVisitDetails, String urlBase, String openMRSUuuidLocation, String userProviderUUid) {
         String urlPath = GET_LOCATION  + openMRSUuuidLocation
-        String response = new RestOpenMRSClient().getResponseOpenMRSClient(pack.providerUuid, null, urlBase, urlPath, requestMethod_GET)
+        String response = new RestOpenMRSClient().getResponseOpenMRSClient(userProviderUUid, null, urlBase, urlPath, requestMethod_GET)
         if (response.length() < 50) {
             saveErrorLog(pack, patientVisitDetails, patientVisitDetails.patientVisit.patient, INVALID_LOCATION, null)
             return false
