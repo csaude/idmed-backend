@@ -5,13 +5,20 @@ import grails.gorm.services.Service
 import grails.gorm.transactions.Transactional
 import groovy.json.JsonSlurper
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
+import mz.org.fgh.sifmoz.backend.dispenseType.DispenseType
+import mz.org.fgh.sifmoz.backend.doctor.Doctor
+import mz.org.fgh.sifmoz.backend.drug.Drug
+import mz.org.fgh.sifmoz.backend.form.Form
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
+import mz.org.fgh.sifmoz.backend.duration.Duration
 import mz.org.fgh.sifmoz.backend.pocPrescriptionLog.PocPrescriptionLog
 import mz.org.fgh.sifmoz.backend.prescriptionDetail.PrescriptionDetail
 import mz.org.fgh.sifmoz.backend.prescriptionDrug.PrescribedDrug
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
+import mz.org.fgh.sifmoz.backend.therapeuticLine.TherapeuticLine
+import mz.org.fgh.sifmoz.backend.therapeuticRegimen.TherapeuticRegimen
 import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -153,9 +160,10 @@ abstract class PrescriptionService implements IPrescriptionService {
                 prescription.expiryDate = objectJSON.expiryDate
                 prescription.current = objectJSON.current
                 prescription.notes = objectJSON.notes
-                prescription.patientType = objectJSON.patientType
-                prescription.doctor = objectJSON.doctor
-                prescription.duration = objectJSON.duration
+                prescription.patientType = objectJSON.changeRegimenLine == 'Não' ?  'N/A' :  objectJSON.changeRegimenLine
+                prescription.doctor = Doctor.findByFirstnames('Generic')
+                prescription.duration = Duration.findById(objectJSON.duration)
+                prescription.patientStatus = objectJSON.patientStatus
                 prescription.origin = prescription?.clinic?.id
 
                 addPrescriptionDetails(prescription, objectJSON)
@@ -178,11 +186,11 @@ abstract class PrescriptionService implements IPrescriptionService {
         }
 //      prescriptionDetail.reasonForUpdate
 //      prescriptionDetail.reasonForUpdateDesc
-        prescriptionDetail.therapeuticLine = objectJSON.therapeuticLine
-        prescriptionDetail.therapeuticRegimen = objectJSON.therapeuticRegimen
-        prescriptionDetail.dispenseType = objectJSON.dispenseType
+        prescriptionDetail.therapeuticLine =   TherapeuticLine.findById(objectJSON.therapeuticLine)
+        prescriptionDetail.therapeuticRegimen =  TherapeuticRegimen.findById(objectJSON.therapeuticRegimen)
+        prescriptionDetail.dispenseType =  DispenseType.findById(objectJSON.dispenseType)
         prescriptionDetail.prescription = prescription
-        prescriptionDetail.spetialPrescriptionMotive = objectJSON.spetialPrescriptionMotive
+       // prescriptionDetail.spetialPrescriptionMotive = objectJSON.spetialPrescriptionMotive
         prescriptionDetail.origin = prescription.origin
         prescription.addToPrescriptionDetails(prescriptionDetail)
 
@@ -198,8 +206,8 @@ abstract class PrescriptionService implements IPrescriptionService {
         prescribedDrug.amtPerTime = objectJSON.amtPerTime
         prescribedDrug.timesPerDay = objectJSON.timesPerDay
         prescribedDrug.prescribedQty = objectJSON.prescribedQty
-        prescribedDrug.form = objectJSON.form
-        prescribedDrug.drug = objectJSON.drug
+        prescribedDrug.form = objectJSON.durationUnit
+        prescribedDrug.drug =   Drug.findByUuidOpenmrs(objectJSON.drug)
         prescribedDrug.prescription = prescription
         prescribedDrug.origin = prescription.origin
         prescription.addToPrescribedDrugs(prescribedDrug)
