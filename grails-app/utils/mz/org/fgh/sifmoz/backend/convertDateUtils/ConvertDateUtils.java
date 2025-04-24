@@ -5,10 +5,7 @@ import org.apache.commons.lang3.time.DateUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.Period;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.util.*;
@@ -25,6 +22,7 @@ public class ConvertDateUtils {
     public static final String DDMM_DATE_FORMAT ="dd-MM-yyyy";
     public static final String MMDD_DATE_FORMAT="MM-dd-yyyy";
     public static final String DATE_TIME_FORMAT="dd-MM-yyyy HH:mm:ss";
+    public static final String DATE_TIME_FORMAT_WITH_TIMEZONE="yyyy-MM-dd'T'HH:mm:ss.SSSZ";
 
 
     public static int getDayOfMonth(Date date){
@@ -790,5 +788,12 @@ public class ConvertDateUtils {
         cal.setTime(date);
         cal.add(Calendar.MINUTE, minutes);
         return cal.getTime();
+    }
+
+    public static Date convertDateTimeZoneToDate(String dateTimeStr){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT_WITH_TIMEZONE);
+        OffsetDateTime offsetDateTime = OffsetDateTime.parse(dateTimeStr, formatter);
+
+        return Date.from(offsetDateTime.toInstant());
     }
 }

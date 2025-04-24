@@ -1,14 +1,12 @@
 package mz.org.fgh.sifmoz.backend.prescription
 
-import grails.converters.JSON
 import grails.gorm.services.Service
 import grails.gorm.transactions.Transactional
-import groovy.json.JsonSlurper
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
+import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
 import mz.org.fgh.sifmoz.backend.dispenseType.DispenseType
 import mz.org.fgh.sifmoz.backend.doctor.Doctor
 import mz.org.fgh.sifmoz.backend.drug.Drug
-import mz.org.fgh.sifmoz.backend.form.Form
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
@@ -125,8 +123,6 @@ abstract class PrescriptionService implements IPrescriptionService {
         return prescriptions.size() > 0 ? prescriptions.get(0) : null
     }
 
-
-
     Prescription getLastPrescriptionWithoutDetailsByPatientIdAndClinicalServiceId(String patientId,String clinicalServiceId) {
         def patient = Patient.get(patientId)
         def clinicalService = ClinicalService.get(clinicalServiceId)
@@ -151,17 +147,18 @@ abstract class PrescriptionService implements IPrescriptionService {
     void savePrescriptionFromPOC(def objectJSON, String messageId, Patient patient) {
         try {
             Prescription prescription = Prescription.findWhere(id: messageId)
-            if (!objectJSON?.empty && !objectJSON) {
+            if (objectJSON) {
                 if (!prescription) {
                     prescription = new Prescription()
                     prescription.beforeInsert()
                 }
-                prescription.prescriptionDate = objectJSON.prescriptionDate
-                prescription.expiryDate = objectJSON.expiryDate
-                prescription.current = objectJSON.current
+                prescription.id = messageId
+                prescription.prescriptionDate = ConvertDateUtils.convertDateTimeZoneToDate(objectJSON.prescriptionDate)
+//                prescription.expiryDate = objectJSON.expiryDate
+                prescription.current = true
                 prescription.notes = objectJSON.notes
                 prescription.patientType = objectJSON.changeRegimenLine == 'Não' ?  'N/A' :  objectJSON.changeRegimenLine
-                prescription.doctor = Doctor.findByFirstnames('Generic')
+                prescription.doctor = Doctor.findByFirstnamesOrFirstnames('Generic', 'Provedor')
                 prescription.duration = Duration.findById(objectJSON.duration)
                 prescription.patientStatus = objectJSON.patientStatus
                 prescription.origin = prescription?.clinic?.id
@@ -179,7 +176,7 @@ abstract class PrescriptionService implements IPrescriptionService {
     }
 
     void addPrescriptionDetails(Prescription prescription, def objectJSON) {
-        PrescriptionDetail prescriptionDetail = PrescriptionDetail.findWhere(prescription: prescription)
+        PrescriptionDetail prescriptionDetail = Prescription.findWhere(id: prescription?.id) ? PrescriptionDetail.findWhere(prescription: prescription) : null
         if(!prescriptionDetail){
             prescriptionDetail = new PrescriptionDetail()
             prescriptionDetail.beforeInsert()
@@ -197,21 +194,29 @@ abstract class PrescriptionService implements IPrescriptionService {
     }
 
     void addPrescribedDrugs(Prescription prescription, def objectJSON) {
-        PrescribedDrug prescribedDrug = PrescribedDrug.findWhere(prescription: prescription)
-        if(!prescribedDrug){
-            prescribedDrug = new PrescribedDrug()
-            prescribedDrug.beforeInsert()
+
+        for (objectPrescribedDrug in objectJSON?.prescribedDrugs) {
+            def drug = Drug.findByUuidOpenmrs(objectPrescribedDrug.drug)
+
+            if(!drug)
+                drug = Drug.findWhere(name: objectPrescribedDrug.drugName)
+
+            PrescribedDrug prescribedDrug = Prescription.findWhere(id: prescription?.id) ? PrescribedDrug.findWhere(prescription: prescription, drug: drug, prescribedQty: objectPrescribedDrug.prescribedQty) : null
+
+            if(!prescribedDrug){
+                prescribedDrug = new PrescribedDrug()
+                prescribedDrug.beforeInsert()
+            }
+
+            prescribedDrug.amtPerTime = objectPrescribedDrug.amtPerTime
+            prescribedDrug.timesPerDay = objectPrescribedDrug.timesPerDay
+            prescribedDrug.prescribedQty = objectPrescribedDrug.prescribedQty
+            prescribedDrug.form = objectPrescribedDrug.durationUnit
+            prescribedDrug.drug = drug
+            prescribedDrug.prescription = prescription
+            prescribedDrug.origin = prescription.origin
+            prescription.addToPrescribedDrugs(prescribedDrug)
         }
-
-        prescribedDrug.amtPerTime = objectJSON.amtPerTime
-        prescribedDrug.timesPerDay = objectJSON.timesPerDay
-        prescribedDrug.prescribedQty = objectJSON.prescribedQty
-        prescribedDrug.form = objectJSON.durationUnit
-        prescribedDrug.drug =   Drug.findByUuidOpenmrs(objectJSON.drug)
-        prescribedDrug.prescription = prescription
-        prescribedDrug.origin = prescription.origin
-        prescription.addToPrescribedDrugs(prescribedDrug)
-
     }
 
     void savePOCPrescriptionLog(Prescription prescription, def objectJSON, patient) {
@@ -223,7 +228,7 @@ abstract class PrescriptionService implements IPrescriptionService {
         }
         pocPrescriptionLog.messageId = prescription.id
         pocPrescriptionLog.prescriptionDate = prescription.prescriptionDate
-        pocPrescriptionLog.clinicalService = objectJSON.clinicalService
+        pocPrescriptionLog.clinicalService = ClinicalService.findWhere(id: objectJSON.clinicalService)
         pocPrescriptionLog.patient = patient
         pocPrescriptionLog.nid = objectJSON.nid
         pocPrescriptionLog.prescription = prescription

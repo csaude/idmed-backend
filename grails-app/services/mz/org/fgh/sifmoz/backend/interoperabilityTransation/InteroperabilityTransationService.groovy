@@ -41,7 +41,11 @@ class InteroperabilityTransationService {
 
     @JmsListener(destination = ACTIVEMQ_PRESCRIPTION_QUEUE)
     void loadPOCMessage(String message) {
-        String messageId = UUID.randomUUID().toString()
+        def objectJSON = new JsonSlurper().parseText(message)
+        String messageId = objectJSON.prescriptionUuid
+        if(!UUID.fromString(messageId).toString().equals(messageId))
+            messageId = UUID.randomUUID().toString()
+
         println "🔹 Mensagem recebida: ${messageId}"
         loadMessageFromPOCToiDMED(messageId, message)
     }
@@ -64,14 +68,14 @@ class InteroperabilityTransationService {
         if (isJson(message)) {
             try {
                 def objectJSON = new JsonSlurper().parseText(message)
-
-                Patient patient = Patient.findWhere(hisUuid: objectJSON.patient_uuid)
+                Patient patient = Patient.findWhere(hisUuid: objectJSON.patientUuid)
                 if (patient) {
                     interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION_QUEUE, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_RECEIVED, ACTIVEMQ_STATUS_COMPLETED, null)
                     prescriptionService.savePrescriptionFromPOC(objectJSON, messageId, patient)
                     Thread.sleep(1000)
                     interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION_QUEUE, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_PROCESSED, ACTIVEMQ_STATUS_COMPLETED, null)
-                    sendMessageToPOC(messageId, "A prescricao do paciente ${patient.firstNames} ${patient.lastNames} criado com sucesso", ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE)
+                    sendPrescriptionQueueResponse(messageId, ACTIVEMQ_STATUS_COMPLETED,messageId,ACTIVEMQ_STATUS_FAILED)
+//                    sendMessageToPOC(messageId, "A prescricao do paciente ${patient.firstNames} ${patient.lastNames} criado com sucesso", ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE)
                 } else {
                     interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION_QUEUE, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_RECEIVED, ACTIVEMQ_STATUS_FAILED, ACTIVEMQ_ERROR_MESSAGE_PATIENT_NOT_FOUND)
                 }
