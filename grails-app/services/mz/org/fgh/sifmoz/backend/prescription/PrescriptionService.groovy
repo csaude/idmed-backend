@@ -163,6 +163,7 @@ abstract class PrescriptionService implements IPrescriptionService {
                 prescription.patientType = objectJSON.changeRegimenLine == 'Não' ?  'N/A' :  objectJSON.changeRegimenLine
                 prescription.doctor = Doctor.findByFirstnames('Generic')
                 prescription.duration = Duration.findById(objectJSON.duration)
+                prescription.patientStatus = objectJSON.patientStatus
                 prescription.origin = prescription?.clinic?.id
 
                 addPrescriptionDetails(prescription, objectJSON)
@@ -189,7 +190,7 @@ abstract class PrescriptionService implements IPrescriptionService {
         prescriptionDetail.therapeuticRegimen =  TherapeuticRegimen.findById(objectJSON.therapeuticRegimen)
         prescriptionDetail.dispenseType =  DispenseType.findById(objectJSON.dispenseType)
         prescriptionDetail.prescription = prescription
-        prescriptionDetail.spetialPrescriptionMotive = objectJSON.spetialPrescriptionMotive
+       // prescriptionDetail.spetialPrescriptionMotive = objectJSON.spetialPrescriptionMotive
         prescriptionDetail.origin = prescription.origin
         prescription.addToPrescriptionDetails(prescriptionDetail)
 
