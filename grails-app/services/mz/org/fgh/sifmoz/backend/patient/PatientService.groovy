@@ -335,7 +335,7 @@ abstract class PatientService implements IPatientService {
                 patient.firstNames = objectJSON.firstName
                 patient.middleNames = objectJSON.middleName
                 patient.lastNames = objectJSON.lastName
-                patient.dateOfBirth = ConvertDateUtils.createDate(objectJSON.birthDate,"yyyy-MM-dd")
+                patient.dateOfBirth = objectJSON.birthdateEstimated == false ? ConvertDateUtils.createDate(objectJSON.birthDate,"yyyy-MM-dd") : ConvertDateUtils.getDateFromDayAndMonthAndYear(1,1,objectJSON.birthDate)
                 patient.gender = objectJSON.gender == 'Male' ? 'Masculino' : 'Feminino'
                 patient.province = Province.findByDescription(objectJSON.province)
                   patient.district = District.findByDescription(objectJSON.district)
