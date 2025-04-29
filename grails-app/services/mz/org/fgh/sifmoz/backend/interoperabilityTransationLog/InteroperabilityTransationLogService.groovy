@@ -22,7 +22,7 @@ class InteroperabilityTransationLogService {
             interoperabilityTransationLog.stage = stage
             interoperabilityTransationLog.status = status
             interoperabilityTransationLog.errorMessage = errorMessage
-//            interoperabilityTransationLog.save(flush: true, failOnError: true)
+            interoperabilityTransationLog.save(flush: true, failOnError: true)
         } catch (Exception e) {
             e.printStackTrace()
         }

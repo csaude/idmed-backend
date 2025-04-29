@@ -335,10 +335,10 @@ abstract class PatientService implements IPatientService {
                 patient.firstNames = objectJSON.firstName
                 patient.middleNames = objectJSON.middleName
                 patient.lastNames = objectJSON.lastName
-                patient.dateOfBirth = objectJSON.birthdateEstimated == false ? ConvertDateUtils.createDate(objectJSON.birthDate,"yyyy-MM-dd") : ConvertDateUtils.getDateFromDayAndMonthAndYear(1,1,objectJSON.birthDate)
+                patient.dateOfBirth = objectJSON.birthdateEstimated == false ? ConvertDateUtils.createDate(objectJSON.birthDate,"yyyy-MM-dd") : ConvertDateUtils.getDateFromDayAndMonthAndYear(1,1,Integer.parseInt(objectJSON.birthDate))
                 patient.gender = objectJSON.gender == 'Male' ? 'Masculino' : 'Feminino'
-                patient.province = Province.findByDescription(objectJSON.province)
-                  patient.district = District.findByDescription(objectJSON.district)
+                patient.province = Province.findByDescription(objectJSON.province) == null ? patient.clinic.province : Province.findByDescription(objectJSON.province)
+                patient.district = District.findByDescription(objectJSON.district) == null ? patient.clinic.district : District.findByDescription(objectJSON.district)
                // patient.postoAdministrativo = ''
                // patient.bairro = ''
                 patient.cellphone = objectJSON.phoneNumber?.replaceFirst('^\\+', '')
@@ -350,7 +350,8 @@ abstract class PatientService implements IPatientService {
                 patient.his = HealthInformationSystem.findByAbbreviation('OpenMRS')
                 patient.hisSyncStatus = 'N'
                 patient.save(flush: true)
-
+             //   Thread.sleep(2000)
+            //    patient.refresh()
                 objectJSON?.clinicalHistory?.each { clinicalHistory ->
                     def psi = createPatientServiceIdentifier(patient,clinicalHistory)
                     createEpisode(psi,clinicalHistory)
@@ -389,6 +390,8 @@ abstract class PatientService implements IPatientService {
         episode.residentInCountry = true
         episode.notes = clinicalHistory.programStatus
         episode.validate()
-        episode.save(flush: true)
+       episode.save(flush: true)
+      //  psi.episodes.addAll(episode)
+     //   psi.save(flush: true)
     }
 }
