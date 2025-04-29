@@ -66,8 +66,8 @@ class InteroperabilityTransationService {
 
     void loadMessageFromPOCToiDMED(def messageId, def message) {
         if (isJson(message)) {
+            def objectJSON = new JsonSlurper().parseText(message)
             try {
-                def objectJSON = new JsonSlurper().parseText(message)
                 Patient patient = Patient.findWhere(hisUuid: objectJSON.patientUuid)
                 if (patient) {
                     interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION_QUEUE, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_RECEIVED, ACTIVEMQ_STATUS_COMPLETED, null)
