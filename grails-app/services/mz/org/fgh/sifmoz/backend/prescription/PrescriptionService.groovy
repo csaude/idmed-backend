@@ -183,7 +183,7 @@ abstract class PrescriptionService implements IPrescriptionService {
         }
 //      prescriptionDetail.reasonForUpdate
 //      prescriptionDetail.reasonForUpdateDesc
-        prescriptionDetail.therapeuticLine =   TherapeuticLine.findById(objectJSON.therapeuticLine)
+        prescriptionDetail.therapeuticLine =   TherapeuticLine.findByUuid(objectJSON.therapeuticLine)
         prescriptionDetail.therapeuticRegimen =  TherapeuticRegimen.findByOpenmrsUuid(objectJSON.therapeuticRegimen)
         prescriptionDetail.dispenseType =  DispenseType.findById(objectJSON.dispenseType)
         prescriptionDetail.prescription = prescription
