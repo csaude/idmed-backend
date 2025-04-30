@@ -121,7 +121,7 @@ class InteroperabilityTransationService {
     
     @JmsListener(destination = ACTIVEMQ_PATIENT_SYNC)
     void loadPatientPocMessage(String message) {
-        String messageId = UUID.randomUUID().toString()
+        String messageId = objectJSON.encounterUuid
         def objectJSON = new JsonSlurper().parseText(message)
         try {
             println "🔹 Mensagem recebida: ${message}"
