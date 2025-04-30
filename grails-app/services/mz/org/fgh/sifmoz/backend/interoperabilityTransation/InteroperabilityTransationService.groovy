@@ -32,7 +32,9 @@ class InteroperabilityTransationService {
     static final String ACTIVEMQ_STAGE_READY_TO_SEND = "READY_TO_SEND"
 
     static final String ACTIVEMQ_STATUS_FAILED = "FAILED"
+    static final String ACTIVEMQ_STATUS_ERROR = "ERROR"
     static final String ACTIVEMQ_STATUS_COMPLETED = "COMPLETED"
+    static final String ACTIVEMQ_STATUS_SUCCESS = "SUCCESS"
 
     static final String ACTIVEMQ_ERROR_MESSAGE_PATIENT_NOT_FOUND = "PACIENTE NAO EXISTE NO IDMED"
 
@@ -49,7 +51,7 @@ class InteroperabilityTransationService {
         if(!UUID.fromString(messageId).toString().equals(messageId))
             messageId = UUID.randomUUID().toString()
 
-        println "🔹 Mensagem recebida: ${messageId}"
+        println "🔹 Mensagem recebida: ${message}"
         loadMessageFromPOCToiDMED(messageId, message)
     }
 
@@ -77,16 +79,15 @@ class InteroperabilityTransationService {
                     prescriptionService.savePrescriptionFromPOC(objectJSON, messageId, patient)
                     Thread.sleep(1000)
                     interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION_QUEUE, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_PROCESSED, ACTIVEMQ_STATUS_COMPLETED, null)
-                    sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_COMPLETED,messageId,ACTIVEMQ_STATUS_FAILED,ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE)
-//                    sendMessageToPOC(messageId, "A prescricao do paciente ${patient.firstNames} ${patient.lastNames} criado com sucesso", ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE)
+                    sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_SUCCESS,messageId,null,ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE)
                 } else {
                     interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION_QUEUE, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_RECEIVED, ACTIVEMQ_STATUS_FAILED, ACTIVEMQ_ERROR_MESSAGE_PATIENT_NOT_FOUND)
-                    sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_FAILED,messageId,ACTIVEMQ_ERROR_MESSAGE_PATIENT_NOT_FOUND,ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE)
+                    sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_ERROR,messageId,ACTIVEMQ_ERROR_MESSAGE_PATIENT_NOT_FOUND,ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE)
                 }
             } catch (Exception e) {
                 println "❌ Erro ao processar mensagem: ${e.message}"
                 interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION_QUEUE, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_RECEIVED, ACTIVEMQ_STATUS_FAILED, e.message)
-                sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_FAILED,messageId,e.message,ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE)
+                sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_ERROR,messageId,e.message,ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE)
             }
         }
     }
@@ -131,15 +132,15 @@ class InteroperabilityTransationService {
                 patientService.savePatientFromPoc(objectJSON)
                 Thread.sleep(1000)
                 interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PATIENT_SYNC, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_PROCESSED, ACTIVEMQ_STATUS_COMPLETED, null )
-                sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_COMPLETED,messageId,ACTIVEMQ_STATUS_FAILED,ACTIVEMQ_PATIENT_RESPONSE_SYNC)
+                sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_SUCCESS,messageId,null,ACTIVEMQ_PATIENT_RESPONSE_SYNC)
             }else{
                 interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PATIENT_SYNC, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_RECEIVED, ACTIVEMQ_STATUS_FAILED, ACTIVEMQ_ERROR_MESSAGE_PATIENT_ALREADY_EXISTS )
-                sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_COMPLETED,messageId,ACTIVEMQ_STATUS_FAILED,ACTIVEMQ_PATIENT_RESPONSE_SYNC)
+                sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_ERROR,messageId,ACTIVEMQ_ERROR_MESSAGE_PATIENT_ALREADY_EXISTS,ACTIVEMQ_PATIENT_RESPONSE_SYNC)
             }
         } catch (Exception e) {
             println "❌ Erro ao processar mensagem: ${e.message}"
             interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PATIENT_SYNC, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_RECEIVED, ACTIVEMQ_STATUS_FAILED, e.message )
-            sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_COMPLETED,messageId, e.message,ACTIVEMQ_PATIENT_RESPONSE_SYNC)
+            sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_ERROR,messageId, e.message,ACTIVEMQ_PATIENT_RESPONSE_SYNC)
         }
     }
 
@@ -162,7 +163,7 @@ class InteroperabilityTransationService {
         def payload = [
                 remoteId     : remoteId,
                 status       : status,
-                errorMessage : status == "FAILED" ? errorMessage : ""
+                errorMessage : status == "ERROR" ? errorMessage : ""
         ]
 
         if (ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE == queue) {
