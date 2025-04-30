@@ -7,10 +7,10 @@ import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
 import mz.org.fgh.sifmoz.backend.dispenseType.DispenseType
 import mz.org.fgh.sifmoz.backend.doctor.Doctor
 import mz.org.fgh.sifmoz.backend.drug.Drug
+import mz.org.fgh.sifmoz.backend.duration.Duration
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
-import mz.org.fgh.sifmoz.backend.duration.Duration
 import mz.org.fgh.sifmoz.backend.pocPrescriptionLog.PocPrescriptionLog
 import mz.org.fgh.sifmoz.backend.prescriptionDetail.PrescriptionDetail
 import mz.org.fgh.sifmoz.backend.prescriptionDrug.PrescribedDrug
@@ -123,17 +123,17 @@ abstract class PrescriptionService implements IPrescriptionService {
         return prescriptions.size() > 0 ? prescriptions.get(0) : null
     }
 
-    Prescription getLastPrescriptionWithoutDetailsByPatientIdAndClinicalServiceId(String patientId,String clinicalServiceId) {
+    Prescription getLastPrescriptionWithoutDetailsByPatientIdAndClinicalServiceId(String patientId, String clinicalServiceId) {
         def patient = Patient.get(patientId)
         def clinicalService = ClinicalService.get(clinicalServiceId)
-       PocPrescriptionLog pocPrescriptionLog = PocPrescriptionLog.findAllByPatientAndClinicalService(patient,clinicalService, [sort: "prescriptionDate", order: "desc"])?.first()
+        PocPrescriptionLog pocPrescriptionLog = PocPrescriptionLog.findAllByPatientAndClinicalService(patient, clinicalService, [sort: "prescriptionDate", order: "desc"])?.first()
 
-        return  pocPrescriptionLog.getPrescription()
+        return pocPrescriptionLog.getPrescription()
     }
 
     List<Prescription> getAllPrescriptionFromPocByPatientId(String patientId) {
         def patient = Patient.get(patientId)
-       def pocPrescriptions=  PocPrescriptionLog.findAllByPatient(patient, [sort: "prescriptionDate", order: "desc"])
+        def pocPrescriptions = PocPrescriptionLog.findAllByPatient(patient, [sort: "prescriptionDate", order: "desc"])
 
         def prescriptions = []
         pocPrescriptions.each { log ->
@@ -144,8 +144,7 @@ abstract class PrescriptionService implements IPrescriptionService {
     }
 
 
-    void savePrescriptionFromPOC(def objectJSON, String messageId, Patient patient) {
-        try {
+    def savePrescriptionFromPOC(def objectJSON, String messageId, Patient patient) {
             Prescription prescription = Prescription.findWhere(id: messageId)
             if (objectJSON) {
                 if (!prescription) {
@@ -154,10 +153,9 @@ abstract class PrescriptionService implements IPrescriptionService {
                 }
                 prescription.id = messageId
                 prescription.prescriptionDate = ConvertDateUtils.convertDateTimeZoneToDate(objectJSON.prescriptionDate)
-//                prescription.expiryDate = objectJSON.expiryDate
                 prescription.current = true
                 prescription.notes = objectJSON.notes
-                prescription.patientType = objectJSON.changeRegimenLine == 'Não' ?  'N/A' :  objectJSON.changeRegimenLine
+                prescription.patientType = objectJSON.changeRegimenLine == 'Não' ? 'N/A' : objectJSON.changeRegimenLine
                 prescription.doctor = Doctor.findByFirstnamesOrFirstnames('Generic', 'Provedor')
                 prescription.duration = Duration.findById(objectJSON.duration)
                 prescription.patientStatus = objectJSON.patientStatus
@@ -165,29 +163,25 @@ abstract class PrescriptionService implements IPrescriptionService {
 
                 addPrescriptionDetails(prescription, objectJSON)
                 addPrescribedDrugs(prescription, objectJSON)
-
-                if(prescription.save(flush: true))
+                prescription.validate()
+                if (prescription.save(flush: true, failOnError: true))
                     savePOCPrescriptionLog(prescription, objectJSON, patient)
             }
-        } catch (Exception e) {
-            e.printStackTrace()
-        }
-
     }
 
     void addPrescriptionDetails(Prescription prescription, def objectJSON) {
         PrescriptionDetail prescriptionDetail = Prescription.findWhere(id: prescription?.id) ? PrescriptionDetail.findWhere(prescription: prescription) : null
-        if(!prescriptionDetail){
+        if (!prescriptionDetail) {
             prescriptionDetail = new PrescriptionDetail()
             prescriptionDetail.beforeInsert()
         }
 //      prescriptionDetail.reasonForUpdate
 //      prescriptionDetail.reasonForUpdateDesc
-        prescriptionDetail.therapeuticLine =   TherapeuticLine.findByUuid(objectJSON.therapeuticLine)
-        prescriptionDetail.therapeuticRegimen =  TherapeuticRegimen.findByOpenmrsUuid(objectJSON.therapeuticRegimen)
-        prescriptionDetail.dispenseType =  DispenseType.findById(objectJSON.dispenseType)
+        prescriptionDetail.therapeuticLine = TherapeuticLine.findByUuid(objectJSON.therapeuticLine)
+        prescriptionDetail.therapeuticRegimen = TherapeuticRegimen.findByOpenmrsUuid(objectJSON.therapeuticRegimen)
+        prescriptionDetail.dispenseType = DispenseType.findById(objectJSON.dispenseType)
         prescriptionDetail.prescription = prescription
-       // prescriptionDetail.spetialPrescriptionMotive = objectJSON.spetialPrescriptionMotive
+        // prescriptionDetail.spetialPrescriptionMotive = objectJSON.spetialPrescriptionMotive
         prescriptionDetail.origin = prescription.origin
         prescription.addToPrescriptionDetails(prescriptionDetail)
 
@@ -198,12 +192,12 @@ abstract class PrescriptionService implements IPrescriptionService {
         for (objectPrescribedDrug in objectJSON?.prescribedDrugs) {
             def drug = Drug.findByUuidOpenmrs(objectPrescribedDrug.drug)
 
-            if(!drug)
+            if (!drug)
                 drug = Drug.findWhere(name: objectPrescribedDrug.drugName)
 
             PrescribedDrug prescribedDrug = Prescription.findWhere(id: prescription?.id) ? PrescribedDrug.findWhere(prescription: prescription, drug: drug, prescribedQty: objectPrescribedDrug.prescribedQty) : null
 
-            if(!prescribedDrug){
+            if (!prescribedDrug) {
                 prescribedDrug = new PrescribedDrug()
                 prescribedDrug.beforeInsert()
             }
@@ -222,7 +216,7 @@ abstract class PrescriptionService implements IPrescriptionService {
     void savePOCPrescriptionLog(Prescription prescription, def objectJSON, patient) {
         PocPrescriptionLog pocPrescriptionLog = PocPrescriptionLog.findWhere(prescription: prescription)
 
-        if(!pocPrescriptionLog){
+        if (!pocPrescriptionLog) {
             pocPrescriptionLog = new PocPrescriptionLog()
             pocPrescriptionLog.beforeInsert()
         }
@@ -240,7 +234,7 @@ abstract class PrescriptionService implements IPrescriptionService {
     void updatePOCPrescriptionLog(String messageId) {
         PocPrescriptionLog pocPrescriptionLog = PocPrescriptionLog.findWhere(messageId: messageId)
 
-        if(pocPrescriptionLog) {
+        if (pocPrescriptionLog) {
             pocPrescriptionLog.status = "COMPLETED"
             pocPrescriptionLog.save(flush: true)
         }

@@ -7,6 +7,7 @@ import mz.org.fgh.sifmoz.backend.interoperabilityTransationLog.InteroperabilityT
 import mz.org.fgh.sifmoz.backend.interoperabilityTransationLog.InteroperabilityTransationLogService
 import mz.org.fgh.sifmoz.backend.patient.IPatientService
 import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.prescription.PrescriptionService
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.jms.core.JmsTemplate
@@ -122,8 +123,9 @@ class InteroperabilityTransationService {
     
     @JmsListener(destination = ACTIVEMQ_PATIENT_SYNC)
     void loadPatientPocMessage(String message) {
-        String messageId = objectJSON.encounterUuid
         def objectJSON = new JsonSlurper().parseText(message)
+        String messageId = objectJSON.encounterUuid
+
         try {
             println "🔹 Mensagem recebida: ${message}"
             Patient patient = Patient.findWhere(hisUuid: objectJSON.patientUuid)
