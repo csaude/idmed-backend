@@ -3338,6 +3338,7 @@ abstract class PackService implements IPackService {
                 prc.patient_status,
                 ssr.code,
                 cr.code as clinicsector,
+                lastPack.clinic_name,
                 pack2.provider_uuid
                 from 
                 (
@@ -3345,7 +3346,8 @@ abstract class PackService implements IPackService {
                  max(pk.pickup_date) pickupdate,
                  max(pk.id) packid,
                  pat.date_of_birth,
-                 cs.code service_code
+                 cs.code service_code,
+                 crc.clinic_name
                  from patient_visit_details pvd
                  inner join pack pk on pk.id = pvd.pack_id
                  inner join episode ep on ep.id = pvd.episode_id
@@ -3355,12 +3357,13 @@ abstract class PackService implements IPackService {
                  inner join start_stop_reason ssr on ssr.id = ep.start_stop_reason_id
                  inner join clinical_service cs ON cs.id = psi.service_id
                  inner join clinic c on c.id = ep.clinic_id
+                 left join clinic crc on crc.id = pk.origin
                  where
                 (Date(pk.pickup_date) BETWEEN :startDate AND :endDate)
                 AND (cs.code = :serviceCode)
                 AND c.id = :clinicId
                 AND ssr.code in ('NOVO_PACIENTE','INICIO_CCR','TRANSFERIDO_DE','REINICIO_TRATAMETO','MANUNTENCAO','OUTRO','VOLTOU_REFERENCIA', 'REFERIDO_DC','TRANSITO','INICIO_MATERNIDADE')
-                group by 1,4,5
+                group by 1,4,5,6
                 ORDER BY 1 asc
                 ) lastPack
                 inner join pack pack2 ON pack2.id = lastPack.packid
@@ -3458,6 +3461,7 @@ abstract class PackService implements IPackService {
                 prc.patient_status,
                 ssr.code,
                 cr.code as clinicsector,
+                lastPack.clinic_name,
                 pack2.provider_uuid
                 from 
                 (
@@ -3465,7 +3469,8 @@ abstract class PackService implements IPackService {
                  max(pk.pickup_date) pickupdate,
                  max(pk.id) packid,
                  pat.date_of_birth,
-                 cs.code service_code
+                 cs.code service_code,
+                 crc.clinic_name
                  from patient_visit_details pvd
                  inner join pack pk on pk.id = pvd.pack_id
                  inner join episode ep on ep.id = pvd.episode_id
@@ -3475,12 +3480,13 @@ abstract class PackService implements IPackService {
                  inner join start_stop_reason ssr on ssr.id = ep.start_stop_reason_id
                  inner join clinical_service cs ON cs.id = psi.service_id
                  inner join clinic c on c.id = ep.clinic_id
+                 left join clinic crc on crc.id = pk.origin
                  where
                 (Date(pk.pickup_date) BETWEEN :startDate AND :endDate)
                 AND cs.code = :serviceCode
                 AND c.id = :clinicId
                 AND ssr.code in ('NOVO_PACIENTE','INICIO_CCR','TRANSFERIDO_DE','REINICIO_TRATAMETO','MANUNTENCAO','OUTRO','VOLTOU_REFERENCIA', 'REFERIDO_DC','TRANSITO','INICIO_MATERNIDADE')
-                group by 1,4,5
+                group by 1,4,5,6
                 ORDER BY 1 asc
                 ) lastPack
                 inner join pack pack2 ON pack2.id = lastPack.packid
