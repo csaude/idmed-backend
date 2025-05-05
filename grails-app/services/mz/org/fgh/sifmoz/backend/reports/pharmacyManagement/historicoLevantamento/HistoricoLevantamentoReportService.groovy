@@ -136,8 +136,8 @@ abstract class HistoricoLevantamentoReportService implements IHistoricoLevantame
         item[8] == null? historicoLevantamentoReport.setDispenseType("") : historicoLevantamentoReport.setDispenseType(item[8].toString())
         item[9] == null? historicoLevantamentoReport.setDispenseMode("") : historicoLevantamentoReport.setDispenseMode(item[9].toString())
         item[15] == null? historicoLevantamentoReport.setClinicsector("") : historicoLevantamentoReport.setClinicsector(item[15].toString())
-        item[16] == null? historicoLevantamentoReport.setIdmeduser("") : historicoLevantamentoReport.setIdmeduser(extractUserName(item[16].toString()))
-
+        item[16] == null? historicoLevantamentoReport.setDispenseOrigin("") : historicoLevantamentoReport.setDispenseOrigin(item[16].toString())
+        item[17] == null? historicoLevantamentoReport.setIdmeduser("") : historicoLevantamentoReport.setIdmeduser(extractUserName(item[17].toString()))
 
         // set pickUpDate
         if (item[10] != null) {
