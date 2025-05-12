@@ -77,9 +77,9 @@ class RestPackService {
                     PatientServiceIdentifier patientServiceIdentifier = episode?.patientServiceIdentifier
                     ClinicalService clinicalService = patientServiceIdentifier?.service
 
-                    if (patient.his == null || clinicalService?.code?.equals('PREP')) {
+                    if (patient.his == null || clinicalService?.code?.equals('PREP') || episode?.startStopReason?.code?.equals("TRANSITO")) {
                         pack.setSyncStatus('N' as char)
-                        pack.save()
+                        pack.save(flush: true)
                         return
                     }
 
@@ -185,9 +185,9 @@ class RestPackService {
 
     def deleteErrorLog(PatientVisitDetails patientVisitDetails) {
         List<OpenmrsErrorLog> patientVisitDetailsinLog = OpenmrsErrorLog.findAllWhere(patientVisitDetails:patientVisitDetails.id)
-        patientVisitDetailsinLog.each {it ->
+        patientVisitDetailsinLog.each { it ->
             if (it) {
-                it.delete()
+                it.delete(flush: true)
             }
         }
     }
@@ -199,6 +199,7 @@ class RestPackService {
         String nidRest = new RestOpenMRSClient().getResponseOpenMRSClient(userProviderUuid, null, urlBase, urlPath, requestMethod_GET)
         if (nidRest == null) {
             saveErrorLog(pack, patientVisitDetails, patient, MessageFormat.format(NID_DOESNT_EXIST_IN_OPENMRS, patientServiceIdentifier.value), null)
+            return
         }
 
         JSONObject resultsObject = new JSONObject(nidRest)
