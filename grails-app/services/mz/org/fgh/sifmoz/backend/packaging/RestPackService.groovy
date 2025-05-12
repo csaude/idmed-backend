@@ -199,6 +199,7 @@ class RestPackService {
         String nidRest = new RestOpenMRSClient().getResponseOpenMRSClient(userProviderUuid, null, urlBase, urlPath, requestMethod_GET)
         if (nidRest == null) {
             saveErrorLog(pack, patientVisitDetails, patient, MessageFormat.format(NID_DOESNT_EXIST_IN_OPENMRS, patientServiceIdentifier.value), null)
+            return
         }
 
         JSONObject resultsObject = new JSONObject(nidRest)
