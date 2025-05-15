@@ -291,7 +291,7 @@ class PatientVisitController extends RestfulController {
                     if(verifyIfNeedToCreateMaintenanceEpisode(item.episode,item.patientVisit.patient)) {
                         def startStopReasonOther = StartStopReason.findByCode(StartStopReason.OUTRO)
                         episodeService.createClosureEpisode(item.episode,item.episode.patientServiceIdentifier, ConvertDateUtils.addMinutes(item.prescription.prescriptionDate,2),startStopReasonOther)
-                        def newEpisode = episodeService.createMaintenanceEpisode(item.episode, item.episode.patientServiceIdentifier,ConvertDateUtils.addMinutes(item.prescription.prescriptionDate,3))
+                        def newEpisode = episodeService.createMaintenanceEpisode(item.episode, item.episode.patientServiceIdentifier,item.episode.clinicSector,ConvertDateUtils.addMinutes(item.prescription.prescriptionDate,3))
                         item.episode = newEpisode
                     }
                 }

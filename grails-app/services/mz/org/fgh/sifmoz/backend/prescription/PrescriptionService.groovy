@@ -3,18 +3,31 @@ package mz.org.fgh.sifmoz.backend.prescription
 import grails.gorm.services.Service
 import grails.gorm.transactions.Transactional
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
+import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
+import mz.org.fgh.sifmoz.backend.dispenseMode.DispenseMode
 import mz.org.fgh.sifmoz.backend.dispenseType.DispenseType
 import mz.org.fgh.sifmoz.backend.doctor.Doctor
 import mz.org.fgh.sifmoz.backend.drug.Drug
+import mz.org.fgh.sifmoz.backend.episode.Episode
+import mz.org.fgh.sifmoz.backend.episode.EpisodeService
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
+import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
+import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
+import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.duration.Duration
 import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.pocPrescriptionLog.PocPrescriptionLog
 import mz.org.fgh.sifmoz.backend.prescriptionDetail.PrescriptionDetail
 import mz.org.fgh.sifmoz.backend.prescriptionDrug.PrescribedDrug
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
+import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
+import mz.org.fgh.sifmoz.backend.stock.IStockService
+import mz.org.fgh.sifmoz.backend.stock.Stock
+import mz.org.fgh.sifmoz.backend.stock.StockService
 import mz.org.fgh.sifmoz.backend.therapeuticLine.TherapeuticLine
 import mz.org.fgh.sifmoz.backend.therapeuticRegimen.TherapeuticRegimen
 import org.hibernate.Session
@@ -27,6 +40,10 @@ abstract class PrescriptionService implements IPrescriptionService {
 
     @Autowired
     SessionFactory sessionFactory
+
+    EpisodeService episodeService
+
+    StockService stockService
 
     @Override
     List<Prescription> getAllLastPrescriptionOfClinic(String clinicId, int offset, int max) {
@@ -164,10 +181,16 @@ abstract class PrescriptionService implements IPrescriptionService {
                 addPrescriptionDetails(prescription, objectJSON)
                 addPrescribedDrugs(prescription, objectJSON)
                 prescription.validate()
-                if (prescription.save(flush: true, failOnError: true))
-                    savePOCPrescriptionLog(prescription, objectJSON, patient)
+
+                if(prescription.save(flush: true))
+                    if (objectJSON.sectorUuid != null && objectJSON.type == 'DispensaParagemUnica') {
+                        processSinglePickupPack(prescription, patient, objectJSON)
+                        deletePocPrescriptionLog(patient)
+                    } else savePOCPrescriptionLog(prescription, objectJSON, patient)
+
             }
-    }
+        }
+
 
     void addPrescriptionDetails(Prescription prescription, def objectJSON) {
         PrescriptionDetail prescriptionDetail = Prescription.findWhere(id: prescription?.id) ? PrescriptionDetail.findWhere(prescription: prescription) : null
@@ -238,5 +261,135 @@ abstract class PrescriptionService implements IPrescriptionService {
             pocPrescriptionLog.status = "COMPLETED"
             pocPrescriptionLog.save(flush: true)
         }
+    }
+
+
+
+
+    private void processSinglePickupPack(Prescription prescription, Patient patient, def objectJSON) {
+        def clinicalService = ClinicalService.findById(objectJSON.clinicalService)
+        def lastEpisode = episodeService.getLastEpisodeByIdentifier(patient, clinicalService.code)
+        def clinicSector = ClinicSector.findByUuid(objectJSON.sectorUuid)
+
+        if (!lastEpisode.clinicSector?.uuid?.equalsIgnoreCase(clinicSector.uuid)) {
+            def identifier = PatientServiceIdentifier.findWhere(value: objectJSON.nid, service: clinicalService)
+            def prescriptionDate = ConvertDateUtils.convertDateTimeZoneToDate(objectJSON.prescriptionDate)
+
+            episodeService.createClosureEpisode(
+                    lastEpisode,
+                    identifier,
+                    ConvertDateUtils.subtractMinutes(prescription.prescriptionDate, 5),
+                    StartStopReason.findWhere(code: StartStopReason.REFERIDO_SECTOR_CLINICO)
+            )
+
+            lastEpisode = episodeService.createMaintenanceEpisode(
+                    lastEpisode,
+                    identifier,
+                    clinicSector,
+                    ConvertDateUtils.subtractMinutes(prescription.prescriptionDate, 3)
+            )
+        }
+
+        def pack = createPack(prescription,patient, objectJSON)
+        pack.save(flush: true)
+
+        def patientVisit = createPatientVisit(prescription, patient, objectJSON.prescriptionDate, pack, lastEpisode)
+        patientVisit.save(flush: true)
+    }
+
+    private Pack createPack(Prescription prescription,Patient patient, def objectJSON) {
+        def his = HealthInformationSystem.get(patient.his?.id)
+        def providerUuid = his.interoperabilityAttributes.find {
+            it.interoperabilityType.code == "OPENMRS_USER_PROVIDER_UUID"
+        }?.value
+
+        def prescriptionDate =  ConvertDateUtils.addMinutes(prescription.prescriptionDate, 5)
+        Pack pack = new Pack()
+
+        pack.origin = prescription?.clinic?.id
+        pack.clinic  = prescription?.clinic
+        pack.syncStatus = 'R'
+        pack.providerUuid =  providerUuid
+        pack.dispenseMode =  DispenseMode.findWhere(code:'US_FP_HN')
+        pack.packDate = prescriptionDate
+        pack.pickupDate = prescriptionDate
+        pack.dateReceived =  prescriptionDate
+        pack.nextPickUpDate = ConvertDateUtils.addWeeks(prescriptionDate, prescription.duration.weeks)
+        pack.weeksSupply = prescription.duration.weeks
+        pack.beforeInsert()
+        addPackagedDrugs(pack, objectJSON)
+
+
+        return pack
+    }
+
+    void addPackagedDrugs(Pack pack, def objectJSON) {
+
+        for (objectPrescribedDrug in objectJSON?.prescribedDrugs) {
+            def drug = Drug.findByUuidOpenmrs(objectPrescribedDrug.drug)
+
+            if(!drug)
+                drug = Drug.findWhere(name: objectPrescribedDrug.drugName)
+
+            PackagedDrug packagedDrug = Pack.findWhere(id: pack?.id) ? PackagedDrug.findWhere(pack: pack, drug: drug, quantitySupplied: objectPrescribedDrug.prescribedQty) : null
+
+            if(!packagedDrug){
+                packagedDrug = new PackagedDrug()
+                packagedDrug.beforeInsert()
+            }
+
+            def qtySupplied =  Math.ceil((7 * pack.weeksSupply* objectPrescribedDrug.amtPerTime * objectPrescribedDrug.timesPerDay) / drug.packSize) as int
+
+
+            packagedDrug.amtPerTime = objectPrescribedDrug.amtPerTime
+            packagedDrug.timesPerDay = objectPrescribedDrug.timesPerDay
+            packagedDrug.quantitySupplied =  qtySupplied
+            packagedDrug.form = objectPrescribedDrug.durationUnit
+            packagedDrug.drug = drug
+            packagedDrug.pack = pack
+            packagedDrug.origin = pack.origin
+
+            PackagedDrugStock packagedDrugStock = new PackagedDrugStock()
+            packagedDrugStock.beforeInsert()
+            packagedDrugStock.drug = drug
+            packagedDrugStock.stock = stockService.getValidStockByDrugToPocDispense(drug)?.first()
+            packagedDrugStock.quantitySupplied = qtySupplied
+
+
+            packagedDrug.addToPackagedDrugStocks(packagedDrugStock)
+            pack.addToPackagedDrugs(packagedDrug)
+        }
+
+    }
+
+    private PatientVisit createPatientVisit(Prescription prescription, Patient patient, String prescriptionDateRaw, Pack pack, Episode episode) {
+
+
+        PatientVisit patientVisit = new PatientVisit()
+        patientVisit.patient = patient
+        patientVisit.clinic = prescription?.clinic
+        patientVisit.origin = prescription?.clinic?.id
+        patientVisit.visitDate =  ConvertDateUtils.addMinutes(prescription.prescriptionDate, 5)
+        patientVisit.beforeInsert()
+
+
+        PatientVisitDetails pvd = new PatientVisitDetails()
+        pvd.pack = pack
+        pvd.prescription = prescription
+        pvd.episode = episode
+        pvd.patientVisit = patientVisit
+        pvd.beforeInsert()
+        patientVisit.addToPatientVisitDetails(pvd)
+
+
+        return patientVisit
+    }
+
+     void deletePocPrescriptionLog(Patient patient) {
+
+         List<PocPrescriptionLog> pocPrescriptionLog = PocPrescriptionLog.findAllByPatient(patient)
+         pocPrescriptionLog.each {it ->
+             it.delete()
+         }
     }
 }

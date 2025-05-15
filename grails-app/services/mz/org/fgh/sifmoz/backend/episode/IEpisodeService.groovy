@@ -53,5 +53,6 @@ interface IEpisodeService {
 
     Episode createMaintenanceEpisode(Episode lastEpisode,
                                      PatientServiceIdentifier item,
+                                     Clinic clinicSector,
                                      Date statusDate)
 }

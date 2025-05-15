@@ -550,5 +550,13 @@ abstract class StockService implements IStockService {
     Stock getStockByBatchNumberAndClinic(String batchNumber, String clinicId) {
         return Stock.findByBatchNumberAndClinic(batchNumber, Clinic.findById(clinicId))
 }
+
+    List<Stock> getValidStockByDrugToPocDispense(Drug drug) {
+        List<Stock> list = Stock.executeQuery("select  s from Stock  s " +
+                " where  s.expireDate > current_timestamp()  AND s.drug = :drug order by s.expireDate asc",
+                [drug: drug ]);
+
+        return list;
+    }
 }
 
