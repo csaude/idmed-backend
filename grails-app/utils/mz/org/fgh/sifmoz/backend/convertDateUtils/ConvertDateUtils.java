@@ -790,6 +790,21 @@ public class ConvertDateUtils {
         return cal.getTime();
     }
 
+    public static Date subtractMinutes(Date date, int minutes) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.MINUTE, -minutes); // just use negative value
+        return cal.getTime();
+    }
+
+    public static Date addWeeks(Date date, int weeks) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.WEEK_OF_YEAR, weeks); // Add weeks
+        return cal.getTime();
+    }
+
+
     public static Date convertDateTimeZoneToDate(String dateTimeStr){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMAT_WITH_TIMEZONE);
         OffsetDateTime offsetDateTime = OffsetDateTime.parse(dateTimeStr, formatter);

@@ -300,6 +300,7 @@ Episode createClosureEpisode(
 
     Episode createMaintenanceEpisode(Episode lastEpisode,
                                          PatientServiceIdentifier item,
+                                        Clinic clinicSector,
                                          Date statusDate) {
       def startStopReason =  StartStopReason.findByCode(StartStopReason.MANUNTENCAO)
         Episode maintenanceEpisode = new Episode()
@@ -307,7 +308,7 @@ Episode createClosureEpisode(
         maintenanceEpisode.episodeType = EpisodeType.findByCode('INICIO')
         maintenanceEpisode.patientServiceIdentifier = item
         maintenanceEpisode.clinic = item.clinic
-        maintenanceEpisode.clinicSector = lastEpisode.getClinicSector()
+        maintenanceEpisode.clinicSector = clinicSector
         maintenanceEpisode.creationDate = new Date()
         maintenanceEpisode.notes = 'Aberto para ' + startStopReason
         maintenanceEpisode.startStopReason = startStopReason
