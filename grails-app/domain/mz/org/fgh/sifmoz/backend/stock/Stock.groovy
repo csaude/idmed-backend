@@ -11,7 +11,7 @@ import mz.org.fgh.sifmoz.backend.stockadjustment.StockAdjustment
 import mz.org.fgh.sifmoz.backend.stockcenter.StockCenter
 import mz.org.fgh.sifmoz.backend.stockentrance.StockEntrance
 
-class Stock extends BaseEntity implements Auditable{
+class Stock extends BaseEntity {
     String id
     Date expireDate
     boolean modified
