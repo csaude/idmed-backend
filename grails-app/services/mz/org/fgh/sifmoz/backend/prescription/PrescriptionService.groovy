@@ -348,7 +348,7 @@ abstract class PrescriptionService implements IPrescriptionService {
             packagedDrug.drug = drug
             packagedDrug.pack = pack
             packagedDrug.origin = pack.origin
-
+            packagedDrug.toContinue = true
             PackagedDrugStock packagedDrugStock = new PackagedDrugStock()
             packagedDrugStock.beforeInsert()
             packagedDrugStock.drug = drug
