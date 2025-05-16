@@ -12,6 +12,7 @@ import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.episode.EpisodeService
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
+import mz.org.fgh.sifmoz.backend.interoperabilityTransation.InteroperabilityTransationService
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrugStock
 import mz.org.fgh.sifmoz.backend.packaging.Pack
@@ -23,6 +24,7 @@ import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.pocPrescriptionLog.PocPrescriptionLog
 import mz.org.fgh.sifmoz.backend.prescriptionDetail.PrescriptionDetail
 import mz.org.fgh.sifmoz.backend.prescriptionDrug.PrescribedDrug
+import mz.org.fgh.sifmoz.backend.restUtils.RestOpenMRSClient
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
 import mz.org.fgh.sifmoz.backend.stock.IStockService
@@ -44,6 +46,14 @@ abstract class PrescriptionService implements IPrescriptionService {
     EpisodeService episodeService
 
     StockService stockService
+
+    @Lazy
+    InteroperabilityTransationService interoperabilityTransationService
+
+    RestOpenMRSClient restPost = new RestOpenMRSClient()
+
+    static final String ACTIVEMQ_DISPENSE_QUEUE = "dispensation.queue"
+
 
     @Override
     List<Prescription> getAllLastPrescriptionOfClinic(String clinicId, int offset, int max) {
@@ -161,7 +171,7 @@ abstract class PrescriptionService implements IPrescriptionService {
     }
 
 
-    def savePrescriptionFromPOC(def objectJSON, String messageId, Patient patient) {
+    PatientVisit savePrescriptionFromPOC(def objectJSON, String messageId, Patient patient) {
             Prescription prescription = Prescription.findWhere(id: messageId)
             if (objectJSON) {
                 if (!prescription) {
@@ -184,8 +194,9 @@ abstract class PrescriptionService implements IPrescriptionService {
 
                 if(prescription.save(flush: true))
                     if (objectJSON.sectorUuid != null && objectJSON.type == 'DispensaParagemUnica') {
-                        processSinglePickupPack(prescription, patient, objectJSON)
+                       PatientVisit patientVisit =  processSinglePickupPack(prescription, patient, objectJSON)
                         deletePocPrescriptionLog(patient)
+                       return patientVisit
                     } else savePOCPrescriptionLog(prescription, objectJSON, patient)
 
             }
@@ -266,7 +277,7 @@ abstract class PrescriptionService implements IPrescriptionService {
 
 
 
-    private void processSinglePickupPack(Prescription prescription, Patient patient, def objectJSON) {
+    private PatientVisit processSinglePickupPack(Prescription prescription, Patient patient, def objectJSON) {
         def clinicalService = ClinicalService.findById(objectJSON.clinicalService)
         def lastEpisode = episodeService.getLastEpisodeByIdentifier(patient, clinicalService.code)
         def clinicSector = ClinicSector.findByUuid(objectJSON.sectorUuid)
@@ -295,6 +306,7 @@ abstract class PrescriptionService implements IPrescriptionService {
 
         def patientVisit = createPatientVisit(prescription, patient, objectJSON.prescriptionDate, pack, lastEpisode)
         patientVisit.save(flush: true)
+        return patientVisit
     }
 
     private Pack createPack(Prescription prescription,Patient patient, def objectJSON) {
@@ -348,7 +360,7 @@ abstract class PrescriptionService implements IPrescriptionService {
             packagedDrug.drug = drug
             packagedDrug.pack = pack
             packagedDrug.origin = pack.origin
-
+            packagedDrug.toContinue = true
             PackagedDrugStock packagedDrugStock = new PackagedDrugStock()
             packagedDrugStock.beforeInsert()
             packagedDrugStock.drug = drug
