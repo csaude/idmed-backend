@@ -7,8 +7,10 @@ import mz.org.fgh.sifmoz.backend.interoperabilityTransationLog.InteroperabilityT
 import mz.org.fgh.sifmoz.backend.interoperabilityTransationLog.InteroperabilityTransationLogService
 import mz.org.fgh.sifmoz.backend.patient.IPatientService
 import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.prescription.PrescriptionService
+import mz.org.fgh.sifmoz.backend.restUtils.RestOpenMRSClient
 import org.springframework.jms.annotation.JmsListener
 import org.springframework.jms.core.JmsTemplate
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -45,6 +47,8 @@ class InteroperabilityTransationService {
 
     static lazyInit = false
 
+    RestOpenMRSClient restPost = new RestOpenMRSClient()
+
     @JmsListener(destination = ACTIVEMQ_PRESCRIPTION_QUEUE)
     void loadPOCMessage(String message) {
         def objectJSON = new JsonSlurper().parseText(message)
@@ -77,10 +81,16 @@ class InteroperabilityTransationService {
                 Patient patient = Patient.findWhere(hisUuid: objectJSON.patientUuid)
                 if (patient) {
                     interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION_QUEUE, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_RECEIVED, ACTIVEMQ_STATUS_COMPLETED, null)
-                    prescriptionService.savePrescriptionFromPOC(objectJSON, messageId, patient)
+                    PatientVisit patientVisit = prescriptionService.savePrescriptionFromPOC(objectJSON, messageId, patient)
                     Thread.sleep(1000)
                     interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION_QUEUE, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_PROCESSED, ACTIVEMQ_STATUS_COMPLETED, null)
                     sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_SUCCESS,messageId,null,ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE)
+                    if (patientVisit != null) {
+                        PatientVisit patientVisit1 = PatientVisit.findById(patientVisit.id)
+                        String convertToJson = restPost.createPOCDispense(patientVisit1)
+                        sendMessageToPOC(patientVisit?.patientVisitDetails?.first()?.prescription?.id, convertToJson.toString(), ACTIVEMQ_DISPENSE_QUEUE)
+                    }
+
                 } else {
                     interoperabilityTransationLogService.saveInteroperabilityTransactionLog(messageId, ACTIVEMQ_PRESCRIPTION_QUEUE, SOURCEPOC, objectJSON, null, ACTIVEMQ_STAGE_RECEIVED, ACTIVEMQ_STATUS_FAILED, ACTIVEMQ_ERROR_MESSAGE_PATIENT_NOT_FOUND)
                     sendPocQueueResponse(messageId, ACTIVEMQ_STATUS_ERROR,messageId,ACTIVEMQ_ERROR_MESSAGE_PATIENT_NOT_FOUND,ACTIVEMQ_PRESCRIPTION_RESPONSE_QUEUE)
