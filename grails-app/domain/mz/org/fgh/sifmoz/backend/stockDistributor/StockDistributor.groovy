@@ -1,12 +1,13 @@
 package mz.org.fgh.sifmoz.backend.stockDistributor
 
+import grails.plugins.orm.auditable.Auditable
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drugDistributor.DrugDistributor
 import mz.org.fgh.sifmoz.backend.protection.Menu
 import mz.org.fgh.sifmoz.backend.stockDistributorBatch.StockDistributorBatch
 
-class StockDistributor extends BaseEntity {
+class StockDistributor extends BaseEntity implements Auditable{
     String id
     String orderNumber
     Date creationDate = new Date()

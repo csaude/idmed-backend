@@ -1,12 +1,13 @@
 package mz.org.fgh.sifmoz.backend.stockadjustment
 
+import grails.plugins.orm.auditable.Auditable
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.stock.Stock
 import mz.org.fgh.sifmoz.backend.stockinventory.Inventory
 import mz.org.fgh.sifmoz.backend.stockoperation.StockOperationType
 
-abstract class StockAdjustment extends BaseEntity {
+abstract class StockAdjustment extends BaseEntity implements Auditable{
     String id
     Date captureDate
     String notes
