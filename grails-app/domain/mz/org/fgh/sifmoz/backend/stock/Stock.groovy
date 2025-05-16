@@ -1,5 +1,6 @@
 package mz.org.fgh.sifmoz.backend.stock
 
+import grails.plugins.orm.auditable.Auditable
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
@@ -10,7 +11,7 @@ import mz.org.fgh.sifmoz.backend.stockadjustment.StockAdjustment
 import mz.org.fgh.sifmoz.backend.stockcenter.StockCenter
 import mz.org.fgh.sifmoz.backend.stockentrance.StockEntrance
 
-class Stock extends BaseEntity {
+class Stock extends BaseEntity implements Auditable{
     String id
     Date expireDate
     boolean modified
