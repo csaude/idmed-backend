@@ -1,6 +1,7 @@
 package mz.org.fgh.sifmoz.backend.uiSection
 
 import grails.testing.gorm.DomainUnitTest
+import mz.org.fgh.sifmoz.backend.protection.UiSection
 import spock.lang.Specification
 
 class UiSectionSpec extends Specification implements DomainUnitTest<UiSection> {
