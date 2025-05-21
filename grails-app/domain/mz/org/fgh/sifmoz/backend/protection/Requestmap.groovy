@@ -1,5 +1,6 @@
 package mz.org.fgh.sifmoz.backend.protection
 
+import mz.org.fgh.sifmoz.backend.utilities.IRoleMenu
 import org.springframework.http.HttpMethod
 
 import groovy.transform.EqualsAndHashCode
@@ -9,8 +10,10 @@ import grails.compiler.GrailsCompileStatic
 @GrailsCompileStatic
 @EqualsAndHashCode(includes=['configAttribute', 'httpMethod', 'url'])
 @ToString(includes=['configAttribute', 'httpMethod', 'url'], cache=true, includeNames=true, includePackage=false)
-class Requestmap implements Serializable {
+class Requestmap implements Serializable, IRoleMenu {
 
+	public static final String  administrationMenuCode = "06";
+	public static final String  homeMenuCode = "08";
 	private static final long serialVersionUID = 1
 
 	String configAttribute
@@ -26,5 +29,14 @@ class Requestmap implements Serializable {
 	static mapping = {
 		cache true
 		datasource 'ALL'
+	}
+
+	@Override
+	List<Menu> hasMenus() {
+		List<Menu> menus = new ArrayList<>()
+		Menu.withTransaction {
+			menus = Menu.findAllByCodeInList(Arrays.asList(administrationMenuCode,homeMenuCode))
+		}
+		return menus
 	}
 }
