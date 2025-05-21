@@ -35,7 +35,7 @@ class StockDistributor extends BaseEntity {
     List<Menu> hasMenus() {
         List<Menu> menus = new ArrayList<>()
         Menu.withTransaction {
-            menus = Menu.findAllByCodeInList(Arrays.asList(patientMenuCode, groupsMenuCode, dashboardMenuCode, stockMenuCode, homeMenuCode))
+            menus = Menu.findAllByCodeInList(Arrays.asList(stockMenuCode,homeMenuCode))
         }
         return menus
     }
