@@ -134,6 +134,7 @@ class UrlMappings {
      //   post "/api/printer/print"(controller: "printer", action: "print")
         get "/api/prescription/lastPrescriptionFromPoc/$patientId/$clinicalServiceId(.$format)?"(controller:'prescription', action:'getLastPrescriptionWithoutDetailsByPatientIdAndClinicalServiceId')
         get "/api/prescription/getAllPrescriptionFromPoc/$patientId(.$format)?"(controller:'prescription', action:'getAllPrescriptionFromPocByPatientId')
+        get "/api/requestmap/getUserPermissions(.$format)?"(controller:'requestmap', action:'getUserPermissions')
         "/"(view:"/login/auth")
         "500"(view: '/error')
         "404"(view: '/notFound')

@@ -32,7 +32,7 @@ class StockLevel extends BaseEntity {
     List<Menu> hasMenus() {
         List<Menu> menus = new ArrayList<>()
         Menu.withTransaction {
-            menus = Menu.findAllByCodeInList(Arrays.asList(stockMenuCode))
+            menus = Menu.findAllByCodeInList(Arrays.asList(stockMenuCode,homeMenuCode))
         }
         return menus
     }
