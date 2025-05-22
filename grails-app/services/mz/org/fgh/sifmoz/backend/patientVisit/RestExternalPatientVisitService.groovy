@@ -296,19 +296,24 @@ class RestExternalPatientVisitService {
 
             externalPatientVisitList.each { externalPatientVisit ->
                 try {
-                    if (!uuidProvincial.equalsIgnoreCase(externalPatientVisit.targetProvinceId)) {
-                        Province province = Province.findWhere(id: externalPatientVisit.targetProvinceId)
-                        ProvincialServer provincialServer = ProvincialServer.findWhere(code: province.code, destination: "IDMED")
+                    if(externalPatientVisit?.targetProvinceId){
+                        if (!uuidProvincial.equalsIgnoreCase(externalPatientVisit.targetProvinceId)) {
+                            Province province = Province.findWhere(id: externalPatientVisit.targetProvinceId)
+                            ProvincialServer provincialServer = ProvincialServer.findWhere(code: province.code, destination: "IDMED")
 
-                        def jsonBuilder = new JsonBuilder(externalPatientVisit.properties as Map)
+                            def jsonBuilder = new JsonBuilder(externalPatientVisit.properties as Map)
 
-                        // Envia a visita do paciente para o respectivo Servidor provincial
-                        def resultRequest = authenticationIdmedUtils.syncExternalPatientVisit(provincialServer, jsonBuilder)
+                            // Envia a visita do paciente para o respectivo Servidor provincial
+                            def resultRequest = authenticationIdmedUtils.syncExternalPatientVisit(provincialServer, jsonBuilder)
 
-                        if (resultRequest == HttpStatus.CREATED.value() || resultRequest == HttpStatus.CONFLICT.value()) {
-                            externalPatientVisit.syncStatus = 'S'.toCharacter()
-                            externalPatientVisit.save(flush: true)
+                            if (resultRequest == HttpStatus.CREATED.value() || resultRequest == HttpStatus.CONFLICT.value()) {
+                                externalPatientVisit.syncStatus = 'S'.toCharacter()
+                                externalPatientVisit.save(flush: true)
+                            }
                         }
+                    }else{
+                        externalPatientVisit.syncStatus = 'U'.toCharacter()
+                        externalPatientVisit.save(flush: true)
                     }
                 } catch (Exception e) {
                     log.error("Failed to sync external patient visit: ${externalPatientVisit.id}", e)
