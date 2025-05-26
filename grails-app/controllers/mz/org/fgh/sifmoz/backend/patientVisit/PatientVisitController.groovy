@@ -594,7 +594,7 @@ class PatientVisitController extends RestfulController {
                     while (quantityControl > 0) {
                         PackagedDrugStock packagedDrugStock = new PackagedDrugStock()
                         packagedDrugStock.beforeInsert()
-                        Stock stock = Stock.get(getFirstExpiredBatchFromDrug(pcDrugs.drug, pack.pickupDate))
+                        Stock stock = Stock.get(getFirstExpiredBatchFromDrug(pcDrugs.drug, pack))
 
                         if (stock) {
                             packagedDrugStock.stock = stock
@@ -617,6 +617,8 @@ class PatientVisitController extends RestfulController {
 
                             stock.packagedDrugs = []
                             stock.save(flush: true)
+                        } else {
+                            break
                         }
                         pcDrugs.packagedDrugStocks.add(packagedDrugStock)
                     }
@@ -637,11 +639,11 @@ class PatientVisitController extends RestfulController {
         return new JsonSlurper().parseText(jsonString)
     }
 
-    private static String getFirstExpiredBatchFromDrug(Drug drug, Date pickUpdate) {
+    private static String getFirstExpiredBatchFromDrug(Drug drug, Pack pack) {
 
         def stockList = Stock.
                 findAllByDrugAndExpireDateGreaterThanEqualsAndExpireDateGreaterThanAndStockMovimentGreaterThan(drug,
-                        Utilities.addDaysInDate(pickUpdate, drug.packSize),
+                        Utilities.addDaysInDate(pack.pickupDate, ConvertDateUtils.getDaysBetween(pack.pickupDate,pack.nextPickUpDate).intValue()),
                         new Date(), 0,
                         [sort: "expireDate", order: "asc"])
         if (!stockList.isEmpty())

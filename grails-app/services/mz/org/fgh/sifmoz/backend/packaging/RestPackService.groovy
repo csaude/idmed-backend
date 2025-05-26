@@ -10,6 +10,7 @@ import mz.org.fgh.sifmoz.backend.interoperabilityTransationLog.InteroperabilityT
 import mz.org.fgh.sifmoz.backend.openmrsErrorLog.OpenmrsErrorLog
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
+import mz.org.fgh.sifmoz.backend.patientUpdateOpenMrsErrorLog.PatientUpdateOpenMrsErrorLog
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetailsService
@@ -101,7 +102,7 @@ class RestPackService {
 
                     if (!isPatientActiveInProgram(patient, pack, patientVisitDetails,patientServiceIdentifier, urlBaseReportingRest, userProviderUUid)) return
 
-                    if (!isValidLocationUuid(pack,patientVisitDetails, urlBase, openMRSUuuidLocation, userProviderUUid)) return
+                    if (!isValidLocationUuid(pack,patientVisitDetails, urlBase, openMRSUuuidLocation)) return
 
                     String convertToJson = restPost.createOpenMRSDispense(pack, patient)
                     postDispenseData(pack, patient, convertToJson,patientVisitDetails, urlBase, userProviderUUid, restPost)
@@ -198,24 +199,26 @@ class RestPackService {
 
         String nidRest = new RestOpenMRSClient().getResponseOpenMRSClient(userProviderUuid, null, urlBase, urlPath, requestMethod_GET)
         if (nidRest == null) {
-            saveErrorLog(pack, patientVisitDetails, patient, MessageFormat.format(NID_DOESNT_EXIST_IN_OPENMRS, patientServiceIdentifier.value), null)
-            return
+            // saveErrorLog(pack, patientVisitDetails, patient, MessageFormat.format(NID_DOESNT_EXIST_IN_OPENMRS, patientServiceIdentifier.value), null)
+            createErrorLog(patient.id,MessageFormat.format(NID_DOESNT_EXIST_IN_OPENMRS, patientServiceIdentifier.value), patientServiceIdentifier.value, patientServiceIdentifier.service.id)
+             // return
         }
 
-        JSONObject resultsObject = new JSONObject(nidRest)
-        if(resultsObject.containsKey("results"))
-            results = resultsObject.getJSONArray("results")
-
+        if (nidRest != null) {
+            JSONObject resultsObject = new JSONObject(nidRest)
+            if(resultsObject.containsKey("results"))
+                results = resultsObject.getJSONArray("results")
+        }
         return results.length() > 0 ? results.getJSONObject(0).getString("uuid") : null
     }
 
     boolean isValidNidUuid(Patient patient, Pack pack, PatientVisitDetails patientVisitDetails, String nidUuid, PatientServiceIdentifier patientServiceIdentifier) {
         if (nidUuid == null) {
-            saveErrorLog(pack, patientVisitDetails, patient, MessageFormat.format(NID_DOESNT_EXIST_IN_OPENMRS, patientServiceIdentifier.value), null)
-            return false
+            createErrorLog(patient.id,MessageFormat.format(NID_DOESNT_EXIST_IN_OPENMRS, patientServiceIdentifier.value), patientServiceIdentifier.value, patientServiceIdentifier.service.id)
+            //   return false
         }
 
-        if (!patient.getHisUuid().equals(nidUuid)) {
+        if (nidUuid !== null && !patient.getHisUuid().equals(nidUuid)) {
             saveErrorLog(pack, patientVisitDetails, patient, MessageFormat.format(NID_DIFFERENT_IN_OPENMRS, patientServiceIdentifier.value,patient.hisUuid), null)
             return false
         }
@@ -253,9 +256,9 @@ class RestPackService {
     }
      */
 
-    boolean isValidLocationUuid(Pack pack,PatientVisitDetails patientVisitDetails, String urlBase, String openMRSUuuidLocation, String userProviderUUid) {
+    boolean isValidLocationUuid(Pack pack,PatientVisitDetails patientVisitDetails, String urlBase, String openMRSUuuidLocation) {
         String urlPath = GET_LOCATION  + openMRSUuuidLocation
-        String response = new RestOpenMRSClient().getResponseOpenMRSClient(userProviderUUid, null, urlBase, urlPath, requestMethod_GET)
+        String response = new RestOpenMRSClient().getResponseOpenMRSClient(pack.providerUuid, null, urlBase, urlPath, requestMethod_GET)
         if (response.length() < 50) {
             saveErrorLog(pack, patientVisitDetails, patientVisitDetails.patientVisit.patient, INVALID_LOCATION, null)
             return false
@@ -272,6 +275,20 @@ class RestPackService {
             deleteErrorLog(patientVisitDetails)
         } else {
             saveErrorLog(pack, patientVisitDetails, patient, responsePost, convertToJson)
+        }
+    }
+
+    void createErrorLog(String patientId, String errorDescription, String nid,String clinicalService) {
+        def errorLog = new PatientUpdateOpenMrsErrorLog(
+                patient: patientId,
+                nid: nid,
+                errorDescription: errorDescription,
+                servicoClinico: clinicalService
+        )
+        PatientUpdateOpenMrsErrorLog errorLogExists = PatientUpdateOpenMrsErrorLog.findWhere(patient:patientId,errorDescription: errorLog.errorDescription)
+        if (errorLogExists == null)   {
+            errorLog.beforeInsert()
+            errorLog.save(flush: true)
         }
     }
 }
