@@ -56,6 +56,7 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              from stock s 
              inner join stock_entrance se on se.id = s.entrance_id 
              where se.date_received < :startDate
+             and s.expire_date >= :startDate
              and s.drug_id = dr.id 
              and s.clinic_id = :clinic
              ) as a,
@@ -68,6 +69,7 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              inner join stock_operation_type sot on sot.id = sa.operation_id
              where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' 
              and s.drug_id = dr.id 
+             and s.expire_date >= :startDate
              and (rf.date < :startDate) 
              and rf.clinic_id = :clinic
              ) as b,
@@ -80,6 +82,7 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              inner join stock_operation_type sot on sot.id = sa.operation_id
              where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'
              and s.drug_id = dr.id 
+             and s.expire_date >= :startDate
              and (i.end_date < :startDate) 
              and i.clinic_id = :clinic
              ) as c,
@@ -88,7 +91,10 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              COALESCE(sum(ceil(pd.quantity_supplied)),0)::integer as s 
              from packaged_drug pd 
              inner join pack pk on pk.id = pd.pack_id 
+             inner join packaged_drug_stock pds ON pds.packaged_drug_id = pd.id          
+             inner join stock s on s.id = pds.stock_id 
              where pk.pickup_date < :startDate 
+             and s.expire_date >= :startDate
              and pd.drug_id = dr.id 
              and pk.clinic_id = :clinic
              ) as d,
@@ -100,6 +106,7 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              inner join refered_stock_moviment rf on rf.id = sa.reference_id
              inner join stock_operation_type sot on sot.id = sa.operation_id
              where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockReferenceAdjustment' 
+             and s.expire_date >= :startDate
              and s.drug_id = dr.id 
              and (rf.date < :startDate) 
              and rf.clinic_id = :clinic
@@ -112,6 +119,7 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              inner join inventory i on i.id = sa.inventory_id
              inner join stock_operation_type sot on sot.id = sa.operation_id
              where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.InventoryStockAdjustment'
+             and s.expire_date >= :startDate
              and s.drug_id = dr.id 
              and (i.end_date < :startDate) 
              and i.clinic_id = :clinic
@@ -124,6 +132,7 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              inner join destroyed_stock rf on rf.id = sa.destruction_id
              inner join stock_operation_type sot on sot.id = sa.operation_id
              where sa.class = 'mz.org.fgh.sifmoz.backend.stockadjustment.StockDestructionAdjustment' 
+             and s.expire_date >= :startDate
              and s.drug_id = dr.id 
              and (rf.date < :startDate) 
              and rf.clinic_id = :clinic
@@ -135,6 +144,7 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              inner join stock_entrance se on se.id = s.entrance_id 
              where se.date_received >= :startDate 
              and se.date_received <= :endDate 
+             and s.expire_date >= :startDate
              and s.drug_id = dr.id 
              and s.clinic_id = :clinic
              ) as h,
@@ -143,8 +153,11 @@ abstract class MmiaStockSubReportService implements IMmiaStockSubReportService {
              COALESCE(sum(ceil(pd.quantity_supplied)),0) as s 
              from packaged_drug pd 
              inner join pack pk on pk.id = pd.pack_id 
+             inner join packaged_drug_stock pds ON pds.packaged_drug_id = pd.id            
+             inner join stock s on s.id = pds.stock_id 
              where pk.pickup_Date >= :startDate 
              and pk.pickup_Date <= :endDate
+             and s.expire_date >= :startDate
              and pd.drug_id = dr.id 
              and pk.clinic_id = :clinic
              ) as i,
