@@ -4,6 +4,7 @@ import grails.gorm.services.Service
 import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
+import mz.org.fgh.sifmoz.backend.convertDateUtils.ConvertDateUtils
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
@@ -50,11 +51,20 @@ abstract class StockService implements IStockService {
         int lostDays = (int) ((weeks / 4) * 2)
         int daysToAdd = (weeks * 7 ) + lostDays
 
+        /*
         List<Stock> list = Stock.executeQuery("select  s from Stock  s " +
                 " where s.expireDate > :prescriptionDate  AND " +
                 " s.stockMoviment > 0  AND s.drug = :drug AND s.clinic =:clinic ",
                 [drug: drug, prescriptionDate:  Utilities.addDaysInDate(dateToCompare, daysToAdd),clinic: clinic])
+/*
 
+         */
+        def list = Stock.
+                findAllByDrugAndClinicAndExpireDateGreaterThanEqualsAndExpireDateGreaterThanAndStockMovimentGreaterThan(drug,
+                        clinic,
+                        Utilities.addDaysInDate(dateToCompare, daysToAdd),
+                        new Date(), 0,
+                        [sort: "expireDate", order: "asc"])
         if (list.size() > 0) {
             int qtyInStock = 0
             for (Stock stock in list) {
