@@ -1,5 +1,6 @@
 package mz.org.fgh.sifmoz.backend.stock
 
+import grails.plugins.orm.auditable.Auditable
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
