@@ -20,10 +20,10 @@ server:
       - image/jpeg # JPEG images
       - image/gif # GIF images
 spring:
-  activemq:
-    broker-url: '${MQ_URL:tcp://10.10.2.74:61616}'
-    user: '${MQ_USER:artemis}'
-    password: '${MQ_PASS:artemis}'
+#  activemq:
+#    broker-url: '${MQ_URL:tcp://10.10.2.74:61616}'
+#    user: '${MQ_USER:artemis}'
+#    password: '${MQ_PASS:artemis}'
   jms:
     listener:
       acknowledge-mode: auto
@@ -89,7 +89,7 @@ grails:
     auditLog :
       auditDomainClassName: 'mz.org.fgh.sifmoz.backend.auditTrail.AuditTrail'
       verbose: false
-      verboseEvents: [AuditEventType.UPDATE, AuditEventType.INSERT]
+      verboseEvents: [AuditEventType.UPDATE, AuditEventType.INSERT, AuditEventType.DELETE]
       failOnError: true
       excluded: ['version', 'lastUpdated', 'lastUpdatedBy']
       mask: ['password']
