@@ -1,6 +1,8 @@
 package mz.org.fgh.sifmoz.backend.drug
 
+import grails.core.GrailsApplication
 import grails.gorm.transactions.Transactional
+import grails.util.Holders
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
@@ -15,12 +17,13 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 
-@CompileStatic
+//@CompileStatic
 @Slf4j
 class DrugRestService extends SynchronizerTask {
 
     RestProvincialServerMobileClient restProvincialServerClient = new RestProvincialServerMobileClient()
     private static final NAME = "GetDrugFromProvincialServer"
+    private final GrailsApplication grailsApplication = Holders.grailsApplication
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger("RestGetDrugFromProvicnialServer");
@@ -28,7 +31,7 @@ class DrugRestService extends SynchronizerTask {
     static lazyInit = false
 
 //    @Scheduled(cron = "0 10 20 * * *")
-//    @Scheduled(fixedDelay = 60000L)
+    @Scheduled(fixedDelay = 30000L)
     void execute() {
         /*
         def offset = 0
@@ -105,7 +108,11 @@ class DrugRestService extends SynchronizerTask {
                     //  provincialServer = ProvincialServer.findWhere(destination: "METADATA", code: '99')
                     def regimeList = new ArrayList()
                     String urlPath = "/api/product?offset=" + offset + "&max=100"
-                    provincialServer = ProvincialServer.findWhere(destination: "METADATA", code: "99")
+                    provincialServer = ProvincialServer.findWhere(destination: "METADATA", code: "13")
+
+                    provincialServer.username = grailsApplication.config.dataSource.useraccess
+                    provincialServer.password = grailsApplication.config.dataSource.userpassaccess
+
                     def response = restProvincialServerClient.getRequestProvincialServerClient(provincialServer, urlPath) as JSONArray
                     int i = 0
                     drugList = response
@@ -135,7 +142,7 @@ class DrugRestService extends SynchronizerTask {
                                                 regimeExist.description = regimeTerapeutico.getAt("description")
                                                 regimeExist.openmrsUuid = regimeTerapeutico.getAt("uuidOpenmrs")
 //                                                regimeExist.clinicalService = regimeTerapeutico.getAt("areaCode").equals("TB") ? ClinicalService.findWhere(code: "TB") : ClinicalService.findWhere(code: "TARV")
-                                                regimeExist.beforeInsert()
+//                                                regimeExist.beforeInsert()
                                             }
                                             regimeExist.addToDrugs(drugExist)
                                             regimeExist.save(flush: true)
@@ -165,7 +172,7 @@ class DrugRestService extends SynchronizerTask {
             drugExist.packSize = drugObject.getAt("unitsPerPack") as int
             drugExist.name = drugObject.getAt("fullDescription")
             drugExist.defaultTreatment = 1.0 as double
-            drugExist.defaultTimes = 1 as int
+            drugExist.defaultTimes = 0 int
             drugExist.defaultPeriodTreatment = regimeTerapeutico.getAt("areaCode").equals("TB") ? "" : "Dia"
             drugExist.fnmCode = drugObject.getAt("fnm")
             drugExist.uuidOpenmrs = drugObject.getAt("uuidOpenmrs")
@@ -173,7 +180,7 @@ class DrugRestService extends SynchronizerTask {
 //            drugExist.clinicalService = regimeTerapeutico.getAt("areaCode").equals("TB") ? ClinicalService.findWhere(code: "TB") : ClinicalService.findWhere(code: "TARV")
             drugExist.form = findOrSave(drugObject.getAt("pharmaceuticFormDescription") as String)
             drugExist.active = true
-            drugExist.beforeInsert()
+//            drugExist.beforeInsert()
             drugExist.validate()
             drugExist.save(flush: true)
         } catch (Exception e) {
@@ -198,6 +205,8 @@ class DrugRestService extends SynchronizerTask {
             form.beforeInsert()
             form.code = serachParam
             form.description = formDescription
+            form.unit = '-'
+            form.howToUse = '-'
             form.save()
         }
 
