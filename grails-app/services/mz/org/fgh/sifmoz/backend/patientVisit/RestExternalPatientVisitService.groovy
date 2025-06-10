@@ -37,6 +37,7 @@ class RestExternalPatientVisitService {
     final char syncStatusReady = 'R'.toCharacter()
     final char syncStatusUPDATED = 'U'.toCharacter()
     final char syncStatusSent = "S".toCharacter()
+    final char syncStatusNotApplicable = "N".toCharacter()
 
     IdmedAuthenticationUtils authenticationIdmedUtils = new IdmedAuthenticationUtils()
     IPatientVisitService patientVisitService
@@ -137,6 +138,7 @@ class RestExternalPatientVisitService {
             item.pack.id = UUID.fromString(objectJSON.patientVisitDetails[index].pack.id)
             item.episode = lastEpisode
             item.pack.origin = visit.origin
+            item.pack.syncStatus = syncStatusNotApplicable
             item.clinic = visit.clinic
             item.pack.packagedDrugs.eachWithIndex { item4, index4 ->
                 item4.beforeInsert()
@@ -226,6 +228,7 @@ class RestExternalPatientVisitService {
                         prescriptionService.save(item.prescription)
                     }
                     item.pack.origin = existingPatientVisit.origin
+                    item.pack.syncStatus = syncStatusNotApplicable
                     item.pack.clinic = existingPatientVisit.clinic
                     packService.save(item.pack)
                 }
@@ -241,6 +244,7 @@ class RestExternalPatientVisitService {
                     item.episode = lastEpisode
                     item.pack.origin = visit.origin
                     item.pack.clinic = visit.clinic
+                    item.pack.syncStatus = syncStatusNotApplicable
 
                     Prescription existingPrescription = Prescription.findWhere(id:  item.prescription.id)
                     if (existingPrescription != null) {
