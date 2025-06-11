@@ -24,7 +24,7 @@ class Role implements Serializable, IRoleMenu  {
 	boolean active
 
 
-	static hasMany = [menus: Menu]
+	static hasMany = [menus: Menu, uiSections:UiSection]
 
 	Role(String authority,String name,String description, boolean active){
 		this()
@@ -33,6 +33,7 @@ class Role implements Serializable, IRoleMenu  {
 		this.description = description
 		this.active = active
 		this.menus = new HashSet<>()
+		this.uiSections = new HashSet<>()
 	}
 
 	static constraints = {
@@ -44,7 +45,7 @@ class Role implements Serializable, IRoleMenu  {
 	static mapping = {
 		cache true
 		menus joinTable: [name:"role_menu", key:"roles_id", column:"menus_id"]
-		datasource 'ALL'
+		uiSections joinTable: [name:"role_ui_sections", key:"roles_id", column:"ui_section_id"]
 	}
 
 	@Override
