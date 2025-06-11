@@ -288,11 +288,15 @@ abstract class PatientService implements IPatientService {
         return list
     }
 
-    List<Patient> getAllPatientsIsAbandonment(int offset, int max, String clinic_id) {
+    List<Patient> getAllPatientsIsAbandonment(int offset, int max, String clinicId) {
 
-        def params = [max: max, offset: offset, clinic: clinic_id]
+        def params = [max: max, offset: offset, clinic: clinicId]
         def sql = new Sql(dataSource as DataSource)
         List<Patient> patients = new ArrayList<>()
+
+        if(clinicId.empty){
+            return patients
+        }
 
         def query =
                 """
@@ -301,7 +305,7 @@ abstract class PatientService implements IPatientService {
                       SELECT MAX(e.episode_date) lastEpisodeDate, psi.id patient_service_identifier_id, psi.patient_id
                       FROM episode e
                       inner join patient_service_identifier psi on psi.id = e.patient_service_identifier_id
-                      where e.clinic_id = :clinic
+                      where e.clinic_id =:clinic
                       group by 2,3
                     )lastEpisode
                     where ep.is_abandonmentdc = true 
@@ -313,7 +317,8 @@ abstract class PatientService implements IPatientService {
         def list = sql.rows(query, params)
 
         if (Utilities.listHasElements(list as ArrayList<?>)) {
-            patients = Patient.findAllByIdInList(list)
+           def patientIds = list.getAt('patient_id')
+            patients = Patient.findAllByIdInList(patientIds)
         }
 
         return patients

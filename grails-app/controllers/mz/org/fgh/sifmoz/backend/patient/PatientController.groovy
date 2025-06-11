@@ -377,8 +377,9 @@ class PatientController extends RestfulController {
         render status: NO_CONTENT
     }
 
-    def getAllPatientsIsAbandonment(int offset, int max, String clinic_id) {
-        render JSONSerializer.setObjectListJsonResponse(patientService.getAllPatientsIsAbandonment(offset, max, clinic_id)) as JSON
+    def getAllPatientsIsAbandonment( int offset, int max) {
+        def clinicId = request?.parameterMap?.getAt('clinicId')?.first()
+        render JSONSerializer.setObjectListJsonResponse(patientService.getAllPatientsIsAbandonment(offset, max, clinicId)) as JSON
     }
 
     private static Patient configPatientOrigin(Patient patient) {

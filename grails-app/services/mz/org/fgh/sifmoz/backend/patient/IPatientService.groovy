@@ -36,6 +36,6 @@ interface IPatientService {
 
     List findPossibleDuplicatePatients()
 
-    List<Patient> getAllPatientsIsAbandonment(int offset, int max, String clinic_id)
+    List<Patient> getAllPatientsIsAbandonment(int offset, int max, String clinicId)
 
 }
