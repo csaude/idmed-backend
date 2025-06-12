@@ -31,27 +31,16 @@ class DrugRestService extends SynchronizerTask {
     static lazyInit = false
 
 //    @Scheduled(cron = "0 10 20 * * *")
-    @Scheduled(fixedDelay = 30000L)
+    @Scheduled(fixedDelay = 86400000L)
     void execute() {
-        /*
-        def offset = 0
-        def count = loadDrugsFromProvincial(offset).size()
-
-        if (count > 0) {
-            offset = offset + 100
-            loadDrugsFromProvincial(offset)
-        }
-         */
         def offset = 0
         def count
 
         while (true) {
             count = loadDrugsFromProvincial(offset).size()
-
             if (count > 0) {
                 offset = offset + 100
                 print(offset)
-
             } else {
                 break // Exit the loop when count becomes zero
             }
@@ -87,9 +76,8 @@ class DrugRestService extends SynchronizerTask {
                                 drugExist.fnmCode = drugObject.getAt(("fnmCode"))
                                 drugExist.uuidOpenmrs = drugObject.getAt(("uuidOpenmrs"))
                                 drugExist.clinical_service_id = drugObject.getAt("clinicalService").getAt("id")
-//                                drugExist.clinicalService = ClinicalService.get(drugObject.getAt("clinicalService").getAt("id") as String)
                                 drugExist.form = Form.get(drugObject.getAt("form").getAt("id") as String)
-                                drugExist.active = drugObject.getAt(("active"))
+                                drugExist.active = drugExist.uuidOpenmrs ? drugObject.getAt(("active")) : false
                                 drugExist.save()
                             }
                             if (drugExist)
@@ -105,7 +93,6 @@ class DrugRestService extends SynchronizerTask {
                     LOGGER.info("Termino do carregamento de Medicamentos no Servidor Provincial")
 
                 } else {
-                    //  provincialServer = ProvincialServer.findWhere(destination: "METADATA", code: '99')
                     def regimeList = new ArrayList()
                     String urlPath = "/api/product?offset=" + offset + "&max=100"
                     provincialServer = ProvincialServer.findWhere(destination: "METADATA", code: "13")
@@ -131,18 +118,15 @@ class DrugRestService extends SynchronizerTask {
                                                 println(i++)
                                                 drugExist = saveDrug(drugExist, drugObject, regimeTerapeutico)
                                             }
-                                            // drugList.add(drugExist)
                                             def regimeExist = TherapeuticRegimen.findWhere(code: regimeTerapeutico.getAt("code"))
                                             if (!regimeExist) {
                                                 regimeExist = new TherapeuticRegimen()
                                                 regimeExist.id = regimeTerapeutico.getAt("id")
                                                 regimeExist.regimenScheme = regimeTerapeutico.getAt("description")
-                                                regimeExist.active = regimeTerapeutico.getAt("status").equals("Activo")
+                                                regimeExist.openmrsUuid = regimeTerapeutico.getAt("uuidOpenmrs")
+                                                regimeExist.active = regimeExist.openmrsUuid ? regimeTerapeutico.getAt("status").equals("Activo") : false
                                                 regimeExist.code = regimeTerapeutico.getAt("code")
                                                 regimeExist.description = regimeTerapeutico.getAt("description")
-                                                regimeExist.openmrsUuid = regimeTerapeutico.getAt("uuidOpenmrs")
-//                                                regimeExist.clinicalService = regimeTerapeutico.getAt("areaCode").equals("TB") ? ClinicalService.findWhere(code: "TB") : ClinicalService.findWhere(code: "TARV")
-//                                                regimeExist.beforeInsert()
                                             }
                                             regimeExist.addToDrugs(drugExist)
                                             regimeExist.save(flush: true)
@@ -172,15 +156,13 @@ class DrugRestService extends SynchronizerTask {
             drugExist.packSize = drugObject.getAt("unitsPerPack") as int
             drugExist.name = drugObject.getAt("fullDescription")
             drugExist.defaultTreatment = 1.0 as double
-            drugExist.defaultTimes = 0 int
+            drugExist.defaultTimes = 1
             drugExist.defaultPeriodTreatment = regimeTerapeutico.getAt("areaCode").equals("TB") ? "" : "Dia"
             drugExist.fnmCode = drugObject.getAt("fnm")
             drugExist.uuidOpenmrs = drugObject.getAt("uuidOpenmrs")
             drugExist.clinical_service_id = regimeTerapeutico.getAt("areaCode").equals("TB") ? ClinicalService.findWhere(code: "TB").id : ClinicalService.findWhere(code: "TARV").id
-//            drugExist.clinicalService = regimeTerapeutico.getAt("areaCode").equals("TB") ? ClinicalService.findWhere(code: "TB") : ClinicalService.findWhere(code: "TARV")
             drugExist.form = findOrSave(drugObject.getAt("pharmaceuticFormDescription") as String)
-            drugExist.active = true
-//            drugExist.beforeInsert()
+            drugExist.active = drugExist.uuidOpenmrs ? true : false
             drugExist.validate()
             drugExist.save(flush: true)
         } catch (Exception e) {
@@ -201,7 +183,6 @@ class DrugRestService extends SynchronizerTask {
 
         def form = forms.size() == 0 ? new Form() : forms.get(0)
         if (form.id == null) {
-            // form = new Form()
             form.beforeInsert()
             form.code = serachParam
             form.description = formDescription
