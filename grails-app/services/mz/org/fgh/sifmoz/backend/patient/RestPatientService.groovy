@@ -1,22 +1,13 @@
 package mz.org.fgh.sifmoz.backend.patient
 
-import com.google.gson.JsonObject
-import groovy.transform.CompileStatic
+
 import groovy.util.logging.Slf4j
-import mz.org.fgh.sifmoz.backend.clinic.Clinic
-import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
-import mz.org.fgh.sifmoz.backend.interoperabilityAttribute.InteroperabilityAttribute
-import mz.org.fgh.sifmoz.backend.openmrsErrorLog.OpenmrsErrorLog
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patientIdentifier.IPatientServiceIdentifierService
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
-import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
-import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetailsService
 import mz.org.fgh.sifmoz.backend.restUtils.RestOpenMRSClient
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
-import org.apache.commons.lang.StringUtils
-import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
@@ -38,7 +29,7 @@ class RestPatientService {
     void schedulerRequestRunning() {
 
         Patient.withTransaction {
-            println  " - REST PATIENT FROM IDMED TO OPENMRS " + new Date()
+            println " - REST PATIENT FROM IDMED TO OPENMRS " + new Date()
             // List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
             HealthInformationSystem hisToSync = HealthInformationSystem.findWhere(abbreviation: 'OpenMRS')
             if (!hisToSync.interoperabilityAttributes.isEmpty()) {
@@ -70,16 +61,18 @@ class RestPatientService {
                         String convertToJson = restPost.createOpenMRSPatient(patient, psiList.get(0), identifierTypeIdOpenMrs)
                         JSONObject responsePost = (JSONObject) restOpenMRSClient.getPatientResponseOpenMRSClient(patient.hisProvider, convertToJson, urlBase, "patient", requestMethod_POST)
                         if (responsePost != null) {
-                            String patientUuid = String.valueOf(responsePost.get("uuid"));
-                            patient.setHisSyncStatus('S' as char)
-                            patient.setHisUuid(patientUuid)
-                            patient.save()
-                            def packs = (List<Pack>) Pack.executeQuery("select pck from PatientVisitDetails pvd  " +
-                                    " inner join pvd.patientVisit pv " +
-                                    " inner join pvd.pack pck where pv.patient = :patient", [patient: patient])
-                            for (Pack pack in packs) {
-                                pack.setSyncStatus('R' as char)
-                                pack.save()
+                            if (responsePost.getAt('authenticated') != null) {
+                                String patientUuid = String.valueOf(responsePost.get("uuid"))
+                                patient.setHisSyncStatus('S' as char)
+                                patient.setHisUuid(patientUuid)
+                                patient.save()
+                                def packs = (List<Pack>) Pack.executeQuery("select pck from PatientVisitDetails pvd  " +
+                                        " inner join pvd.patientVisit pv " +
+                                        " inner join pvd.pack pck where pv.patient = :patient", [patient: patient])
+                                for (Pack pack in packs) {
+                                    pack.setSyncStatus('R' as char)
+                                    pack.save()
+                                }
                             }
                         } else {
                             continue

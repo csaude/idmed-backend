@@ -111,7 +111,7 @@ environments:
   development:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://localhost:9876/pebane
+      url: jdbc:postgresql://localhost:9876/malhangalene
   test:
     dataSource:
       dbCreate: update
