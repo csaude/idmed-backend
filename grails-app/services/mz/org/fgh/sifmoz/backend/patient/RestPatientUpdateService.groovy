@@ -38,7 +38,7 @@ class RestPatientUpdateService {
     static lazyInit = false
 
 
-    @Scheduled(fixedDelay = 900000L)
+    @Scheduled(fixedDelay = 130000L)
     void schedulerRequestRunning() {
 
               Patient.withTransaction {
