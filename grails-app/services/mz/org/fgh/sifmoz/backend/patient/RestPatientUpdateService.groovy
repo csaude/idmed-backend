@@ -38,10 +38,10 @@ class RestPatientUpdateService {
     static lazyInit = false
 
 
-    @Scheduled(fixedDelay = 130000L)
+    @Scheduled(fixedDelay = 300000L)
     void schedulerRequestRunning() {
 
-              Patient.withTransaction {
+        Patient.withTransaction {
             println " - REST UPDATE PATIENT FROM OPENMRS TO IDMED " + new Date()
             // List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
             HealthInformationSystem his = HealthInformationSystem.findWhere(abbreviation: 'OpenMRS')
@@ -75,7 +75,7 @@ class RestPatientUpdateService {
                                 if (nid) {
                                     def idmedPatient = findPatientToUpdate(uuid, nid)
                                     if (idmedPatient) {
-                                        populatePatientDetails(idmedPatient, patient)
+                                        populatePatientDetails(idmedPatient, patient, nid)
                                         idmedPatient.validate()
                                         if (!idmedPatient.hasErrors()) {
                                             patientService.save(idmedPatient)

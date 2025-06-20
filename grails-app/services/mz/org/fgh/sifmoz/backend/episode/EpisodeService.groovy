@@ -148,11 +148,11 @@ abstract class EpisodeService implements IEpisodeService{
             if (!isValidStatusDate(patient, statusCode, statusDate, item, lastEpisode)) {
                 return
             }
-            if (!lastEpisode.startStopReason.getId().equalsIgnoreCase(startStopReason.getId())) {
+            if (!lastEpisode?.startStopReason?.getId()?.equalsIgnoreCase(startStopReason?.getId())) {
                 createClosureEpisode(lastEpisode,item,statusDate,startStopReason)
                 item.endDate = new Date()
                 item.state = 'Inactivo'
-                item.origin = lastEpisode.getClinic().getUuid()
+                item.origin = item.clinic.uuid//lastEpisode.getClinic().getUuid()
                 item.save(flush: true)
             }
         }
@@ -167,7 +167,7 @@ abstract class EpisodeService implements IEpisodeService{
             if (!isValidStatusDate(patient, statusCode, statusDate, item, lastEpisode)) {
                 return
             }
-            if (!lastEpisode.startStopReason.getId().equalsIgnoreCase(startStopReason.getId())) {
+            if (!lastEpisode?.startStopReason?.getId()?.equalsIgnoreCase(startStopReason?.getId())) {
                 createClosureEpisode(lastEpisode,item,statusDate,startStopReason)
             }
         }
@@ -182,24 +182,24 @@ abstract class EpisodeService implements IEpisodeService{
 
         patientServiceIdentifiers.each { item ->
             Episode lastEpisode =  item.episodes.stream().reduce((prev, next) -> next).orElse(null)
-            if (startStopReasonList.contains(lastEpisode.startStopReason.getCode())) {
+            if (startStopReasonList.contains(lastEpisode?.startStopReason?.getCode())) {
                 Episode openingEpisode = new Episode()
                 openingEpisode.episodeDate = new Date()
                 openingEpisode.episodeType = EpisodeType.findByCode('INICIO')
                 openingEpisode.patientServiceIdentifier = item
                 openingEpisode.clinic = item.clinic
-                openingEpisode.clinicSector = lastEpisode.getClinicSector()
+                openingEpisode.clinicSector = lastEpisode?.getClinicSector() != null ? ClinicSector.get(lastEpisode?.getClinicSector()?.id) : ClinicSector.findByCodeLike('%NORMAL%')
                 openingEpisode.creationDate = new Date()
                 openingEpisode.notes = 'Aberto Devido a Reabertura no SESP'
                 openingEpisode.startStopReason = StartStopReason.findByCode(StartStopReason.MANUNTENCAO)
-                openingEpisode.origin = lastEpisode.getClinic().getUuid()
+                openingEpisode.origin = item.clinic.uuid //lastEpisode.getClinic().getUuid()
                 openingEpisode.beforeInsert()
                 this.save(openingEpisode)
             }
-            if (stopPatientService.contains(lastEpisode.startStopReason.getCode())) {
+            if (stopPatientService.contains(lastEpisode?.startStopReason?.getCode())) {
                 item.reopenDate = new Date()
                 item.state = 'Activo'
-                item.origin = lastEpisode.getClinic().getUuid()
+                item.origin = item.clinic.uuid //lastEpisode.getClinic().getUuid()
                 item.save(flush: true)
             }
         }
@@ -244,7 +244,8 @@ abstract class EpisodeService implements IEpisodeService{
             PatientServiceIdentifier item,
             Episode lastEpisode
     ) {
-        if (statusDate.before(lastEpisode.episodeDate)) {
+        if(lastEpisode?.episodeDate)
+        if (statusDate.before(lastEpisode?.episodeDate)) {
             def errorMsg = "Não é possível criar o episódio de encerramento do tipo {$statusCode}: " +
                     "A data de status (${new SimpleDateFormat('yyyy-MM-dd').format(statusDate)}) " +
                     "é anterior à data do último episódio (${new SimpleDateFormat('yyyy-MM-dd').format(lastEpisode.episodeDate)}) no idmed"
@@ -288,12 +289,12 @@ Episode createClosureEpisode(
         closureEpisode.episodeType = EpisodeType.findByCode('FIM')
         closureEpisode.patientServiceIdentifier = item
         closureEpisode.clinic = item.clinic
-        closureEpisode.clinicSector = lastEpisode.getClinicSector()
+        closureEpisode.clinicSector = lastEpisode?.getClinicSector() != null ? ClinicSector.get(lastEpisode?.getClinicSector()?.id) : ClinicSector.findByCodeLike('%NORMAL%')
         closureEpisode.creationDate = new Date()
         closureEpisode.notes = 'Fechado Devido ao ' + startStopReason
         closureEpisode.startStopReason = startStopReason
-        closureEpisode.origin = lastEpisode.getClinic().getUuid()
-        closureEpisode.residentInCountry = lastEpisode.residentInCountry
+        closureEpisode.origin = item.clinic.uuid
+        closureEpisode.residentInCountry = lastEpisode?.residentInCountry
         closureEpisode.beforeInsert()
         this.save(closureEpisode)
     }
@@ -312,7 +313,7 @@ Episode createClosureEpisode(
         maintenanceEpisode.creationDate = new Date()
         maintenanceEpisode.notes = 'Aberto para ' + startStopReason
         maintenanceEpisode.startStopReason = startStopReason
-        maintenanceEpisode.origin = lastEpisode.getClinic().getUuid()
+        maintenanceEpisode.origin = item.clinic.uuid //lastEpisode.getClinic().getUuid()
         maintenanceEpisode.residentInCountry = lastEpisode.residentInCountry
         maintenanceEpisode.beforeInsert()
         this.save(maintenanceEpisode)
