@@ -289,6 +289,7 @@ class BootStrap {
             new Requestmap(url: url, configAttribute: 'permitAll').save(flush: true, failOnError: false);
 
         }
+        initAddReportsToRolesFix()
     }
 
     void initUserManagement() {
@@ -3007,5 +3008,32 @@ class BootStrap {
                 uiSection.save(flush: true, failOnError: true)
             }
         }
+    }
+
+    void initAddReportsToRolesFix() {
+        def nonAdminRoles = Role.executeQuery("""
+            SELECT DISTINCT r.authority
+            FROM Role r
+            JOIN r.menus m
+            WHERE r.active = true AND r.authority != 'ROLE_ADMIN'
+            AND m.code = '05' AND m.description = 'Relatorios'
+        """)
+
+        // Join into a string
+       // def rolesToAppend = nonAdminRoles.join(',')
+        def httpMethods = [HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE]
+
+
+        def matchingRequestMaps = Requestmap.findAllByUrlIlikeAndHttpMethodInList('%Report%', httpMethods)
+
+            matchingRequestMaps.each { rm ->
+                def currentRoles = rm.configAttribute?.split(',')?.toList() ?: []
+                def allRoles = (currentRoles + nonAdminRoles).unique()
+                rm.configAttribute = allRoles.join(',')
+                rm.save(flush: true, failOnError: true)
+            }
+
+
+
     }
     }

@@ -6,7 +6,7 @@ import mz.org.fgh.sifmoz.backend.protection.Menu
 class InventoryReportResponse  extends BaseEntity{
     String id
     String drugName
-    List<InventoryReportTemp> adjustments
+    List<InventoryReport> adjustments
     Long totalAdjustedValue
     Long totalBalance
 

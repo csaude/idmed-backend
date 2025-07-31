@@ -194,10 +194,11 @@ class PackController extends RestfulController {
         def patient = Patient.get(patientId)
         def service = ClinicalService.findByCode(serviceCode)
         def patientServiceIdentifier = PatientServiceIdentifier.findAllByPatientAndService(patient, service)
+        def freshEpisodes = Episode.findAllByIdInList(patientServiceIdentifier.episodes*.id.flatten())
         List<Pack> packsList = new ArrayList<Pack>()
 
         if (patient) {
-            def patientVisitDetails = PatientVisitDetails.findAllByPatientVisitInListAndEpisodeInList( PatientVisit.findAllByPatient(patient), patientServiceIdentifier.episodes)
+            def patientVisitDetails = PatientVisitDetails.findAllByPatientVisitInListAndEpisodeInList( PatientVisit.findAllByPatient(patient), freshEpisodes)
             packsList.addAll(patientVisitDetails.pack.toList().sort {it.packDate}.reverse())
         }
 

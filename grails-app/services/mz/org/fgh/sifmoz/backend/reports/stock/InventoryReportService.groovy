@@ -18,7 +18,7 @@ import java.text.SimpleDateFormat
 import java.util.stream.Collectors
 
 @Transactional
-@Service(InventoryReportTemp)
+@Service(InventoryReport)
 abstract class InventoryReportService implements IInventoryReportService {
 
     @Autowired
@@ -33,12 +33,12 @@ abstract class InventoryReportService implements IInventoryReportService {
     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd")
 
     @Override
-    InventoryReportTemp get(Serializable id) {
-        return InventoryReportTemp.findById(id as String)
+    InventoryReport get(Serializable id) {
+        return InventoryReport.findById(id as String)
     }
 
     @Override
-    List<InventoryReportTemp> list(Map args) {
+    List<InventoryReport> list(Map args) {
         return null
     }
 
@@ -48,41 +48,41 @@ abstract class InventoryReportService implements IInventoryReportService {
     }
 
     @Override
-    InventoryReportTemp delete(Serializable id) {
+    InventoryReport delete(Serializable id) {
         return null
     }
 
     @Override
-    void doSave(List<InventoryReportTemp> inventories) {
+    void doSave(List<InventoryReport> inventories) {
         for (inventoryReportTemp in inventories) {
             save(inventoryReportTemp)
         }
     }
 
     @Override
-    List<InventoryReportTemp> getReportDataByReportId(String reportId) {
-        def res = InventoryReportTemp.findAllByReportId(reportId)
+    List<InventoryReport> getReportDataByReportId(String reportId) {
+        def res = InventoryReport.findAllByReportId(reportId)
         return res
     }
 
     @Override
     List<InventoryReportResponse> getReportDataByInventoryId(String inventoryId, String reportId) {
-        def res = InventoryReportTemp.findAllByInventoryIdAndReportId(inventoryId, reportId)
+        def res = InventoryReport.findAllByInventoryIdAndReportId(inventoryId, reportId)
 
-        Map<String, List<InventoryReportTemp>> result = res.stream()
-                .collect(Collectors.groupingBy(InventoryReportTemp::getDrugName));
+        Map<String, List<InventoryReport>> result = res.stream()
+                .collect(Collectors.groupingBy(InventoryReport::getDrugName));
         List <InventoryReportResponse> response = new ArrayList<>()
 
-        for (Map.Entry<String, List<InventoryReportTemp>> entry : result.entrySet()) {
+        for (Map.Entry<String, List<InventoryReport>> entry : result.entrySet()) {
             String drugName = entry.getKey();
-            List<InventoryReportTemp> adjustments = entry.getValue();
+            List<InventoryReport> adjustments = entry.getValue();
 
             Long totalAdjustments = adjustments.stream()
-                    .mapToLong(InventoryReportTemp::getAdjustedValue)
+                    .mapToLong(InventoryReport::getAdjustedValue)
                     .sum();
 
             Long totalBalance = adjustments.stream()
-                    .mapToLong(InventoryReportTemp::getBalance)
+                    .mapToLong(InventoryReport::getBalance)
                     .sum();
 
             InventoryReportResponse item = new InventoryReportResponse()
@@ -97,9 +97,9 @@ abstract class InventoryReportService implements IInventoryReportService {
     }
 
     @Override
-    List<InventoryReportTemp> processamentoDados(ReportSearchParams reportSearchParams, ReportProcessMonitor processMonitor) {
+    List<InventoryReport> processamentoDados(ReportSearchParams reportSearchParams, ReportProcessMonitor processMonitor) {
 
-        List<InventoryReportTemp> resultList = new ArrayList<>()
+        List<InventoryReport> resultList = new ArrayList<>()
         String reportId = reportSearchParams.getId()
         Clinic clinic = Clinic.findById(reportSearchParams.clinicId)
 
@@ -111,7 +111,7 @@ abstract class InventoryReportService implements IInventoryReportService {
             double percUnit = 100.0 / result.size()
 
             for (item in result) {
-                InventoryReportTemp inventoryReportTemp = setGenericInfo(reportSearchParams, clinic)
+                InventoryReport inventoryReportTemp = setGenericInfo(reportSearchParams, clinic)
                 processMonitor.setProgress(processMonitor.getProgress() + percUnit)
                 generateAndSaveInventories(item as List, inventoryReportTemp, reportId, reportSearchParams)
                 resultList.add(inventoryReportTemp)
@@ -130,7 +130,7 @@ abstract class InventoryReportService implements IInventoryReportService {
             processMonitor.setProgress(100)
             processMonitor.setMsg("Processamento terminado")
             reportProcessMonitorService.save(processMonitor)
-            return new ArrayList<InventoryReportTemp>()
+            return new ArrayList<InventoryReport>()
         }
     }
 
@@ -148,8 +148,8 @@ abstract class InventoryReportService implements IInventoryReportService {
     }
 
 
-    private InventoryReportTemp setGenericInfo(ReportSearchParams searchParams, Clinic clinic) {
-        InventoryReportTemp inventoryReportTemp = new InventoryReportTemp()
+    private InventoryReport setGenericInfo(ReportSearchParams searchParams, Clinic clinic) {
+        InventoryReport inventoryReportTemp = new InventoryReport()
         inventoryReportTemp.setClinic(clinic.getClinicName())
         inventoryReportTemp.setStartDate(searchParams.startDate)
         inventoryReportTemp.setEndDate(searchParams.endDate)
@@ -163,7 +163,7 @@ abstract class InventoryReportService implements IInventoryReportService {
         return inventoryReportTemp
     }
 
-    void generateAndSaveInventories(List item, InventoryReportTemp inventoryReportTemp, String reportId, ReportSearchParams searchParams) {
+    void generateAndSaveInventories(List item, InventoryReport inventoryReportTemp, String reportId, ReportSearchParams searchParams) {
 
         inventoryReportTemp.setReportId(reportId)
         Date startDate =formatter.parse(item[0].toString())

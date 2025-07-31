@@ -19,7 +19,7 @@ class InventoryReportController  extends MultiThreadRestReportController {
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
     InventoryReportController() {
-        super(InventoryReportTemp)
+        super(InventoryReport)
     }
 
     def index(Integer max) {
@@ -32,7 +32,7 @@ class InventoryReportController  extends MultiThreadRestReportController {
     }
 
     @Transactional
-    def save(InventoryReportTemp inventoryReportTemp) {
+    def save(InventoryReport inventoryReportTemp) {
         if (inventoryReportTemp == null) {
             render status: NOT_FOUND
             return
@@ -53,7 +53,7 @@ class InventoryReportController  extends MultiThreadRestReportController {
     }
 
     @Transactional
-    def update(InventoryReportTemp inventoryReportTemp) {
+    def update(InventoryReport inventoryReportTemp) {
         if (inventoryReportTemp == null) {
             render status: NOT_FOUND
             return
@@ -99,12 +99,12 @@ class InventoryReportController  extends MultiThreadRestReportController {
     }
 
     def getProcessedData(String reportId) {
-        List<InventoryReportTemp> reportObjects = inventoryReportService.getReportDataByReportId(reportId)
+        List<InventoryReport> reportObjects = inventoryReportService.getReportDataByReportId(reportId)
         render reportObjects as JSON
     }
 
     def printReport(String reportId, String fileType) {
-        List<InventoryReportTemp> reportObjects = inventoryReportService.getReportDataByReportId(reportId)
+        List<InventoryReport> reportObjects = inventoryReportService.getReportDataByReportId(reportId)
         render reportObjects as JSON
     }
 

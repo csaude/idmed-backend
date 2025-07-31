@@ -425,6 +425,12 @@ class RoleController extends RestfulController {
                 updateRequestMapForMethod(apiUrlPattern, method, role)
                 continue
             }
+            if (method == HttpMethod.POST || method == HttpMethod.PATCH || method == HttpMethod.DELETE) {
+                if (apiUrlPattern.contains('Report'))  {
+                    updateRequestMapForMethod(apiUrlPattern, method, role)
+                    continue
+                }
+            }
 
             // Skip if uiSection is not provided
             if (!uiSection) {
