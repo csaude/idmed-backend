@@ -6,23 +6,23 @@ import mz.org.fgh.sifmoz.backend.reports.common.ReportProcessMonitor
 interface IInventoryReportService {
 
 
-    InventoryReportTemp get(Serializable id)
+    InventoryReport get(Serializable id)
 
-    List<InventoryReportTemp> list(Map args)
+    List<InventoryReport> list(Map args)
 
     Long count()
 
-    InventoryReportTemp delete(Serializable id)
+    InventoryReport delete(Serializable id)
 
-    List<InventoryReportTemp> processamentoDados (ReportSearchParams reportSearchParams, ReportProcessMonitor processMonitor)
+    List<InventoryReport> processamentoDados (ReportSearchParams reportSearchParams, ReportProcessMonitor processMonitor)
 
-    InventoryReportTemp save(InventoryReportTemp inventoryReportTemp)
+    InventoryReport save(InventoryReport inventoryReportTemp)
 
-    List<InventoryReportTemp> getReportDataByReportId(String reportId)
+    List<InventoryReport> getReportDataByReportId(String reportId)
 
-    void doSave(List<InventoryReportTemp> inventoryReportTemp)
+    void doSave(List<InventoryReport> inventoryReportTemp)
 
-    List<InventoryReportTemp> getInventoriesList(String reportId)
+    List<InventoryReport> getInventoriesList(String reportId)
 
     List<InventoryReportResponse> getReportDataByInventoryId(String inventoryId, String reportId)
 

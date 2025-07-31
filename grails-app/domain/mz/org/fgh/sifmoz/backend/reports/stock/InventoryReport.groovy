@@ -3,7 +3,7 @@ package mz.org.fgh.sifmoz.backend.reports.stock
 import mz.org.fgh.sifmoz.backend.base.BaseEntity
 import mz.org.fgh.sifmoz.backend.protection.Menu
 
-class InventoryReportTemp extends BaseEntity {
+class InventoryReport extends BaseEntity {
     String id //ReportId
     String reportId
     String pharmacyId

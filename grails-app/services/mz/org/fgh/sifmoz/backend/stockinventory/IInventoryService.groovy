@@ -2,7 +2,7 @@ package mz.org.fgh.sifmoz.backend.stockinventory
 
 
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
-import mz.org.fgh.sifmoz.backend.reports.stock.InventoryReportTemp
+import mz.org.fgh.sifmoz.backend.reports.stock.InventoryReport
 
 interface IInventoryService {
 
@@ -28,6 +28,6 @@ interface IInventoryService {
 
     List getInventoriesData(ReportSearchParams reportSearchParams)
 
-    List<InventoryReportTemp> getInventoryListByReportId(String reportId)
+    List<InventoryReport> getInventoryListByReportId(String reportId)
 
 }

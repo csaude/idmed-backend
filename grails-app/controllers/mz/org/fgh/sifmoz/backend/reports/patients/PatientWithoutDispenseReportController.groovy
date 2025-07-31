@@ -8,74 +8,77 @@ import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
 
-import static org.springframework.http.HttpStatus.*
+import static org.springframework.http.HttpStatus.CREATED
+import static org.springframework.http.HttpStatus.NOT_FOUND
+import static org.springframework.http.HttpStatus.NO_CONTENT
+import static org.springframework.http.HttpStatus.OK
 
-class ExpectedPatientsReportController extends MultiThreadRestReportController {
+class PatientWithoutDispenseReportController extends MultiThreadRestReportController {
 
-    IExpectedPatientReportService expectedPatientReportService
+    IPatientWithoutDispenseReportService patientWithoutDispenseReportService
 
     static responseFormats = ['json', 'xml']
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
-    ExpectedPatientsReportController() {
-        super(ExpectedPatientReport)
+    PatientWithoutDispenseReportController() {
+        super(PatientWithoutDispenseReport)
     }
 
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        respond expectedPatientReportService.list(params), model: [expectedPatientReportCount: expectedPatientReportService.count()]
+        respond patientWithoutDispenseReportService.list(params), model:[patientWithoutDispenseReportCount: patientWithoutDispenseReportService.count()]
     }
 
     def show(Long id) {
-        respond expectedPatientReportService.get(id)
+        respond patientWithoutDispenseReportService.get(id)
     }
 
     @Transactional
-    def save(ExpectedPatientReport expectedPatientReport) {
-        if (expectedPatientReport == null) {
+    def save(PatientWithoutDispenseReport patientWithoutDispenseReport) {
+        if (patientWithoutDispenseReport == null) {
             render status: NOT_FOUND
             return
         }
-        if (expectedPatientReport.hasErrors()) {
+        if (patientWithoutDispenseReport.hasErrors()) {
             transactionStatus.setRollbackOnly()
-            respond expectedPatientReport.errors
+            respond patientWithoutDispenseReport.errors
             return
         }
 
         try {
         } catch (ValidationException e) {
-            respond expectedPatientReport.errors
+            respond patientWithoutDispenseReport.errors
             return
         }
 
-        respond expectedPatientReport, [status: CREATED, view: "show"]
+        respond patientWithoutDispenseReport, [status: CREATED, view:"show"]
     }
 
     @Transactional
-    def update(ExpectedPatientReport expectedPatientReport) {
-        if (expectedPatientReport == null) {
+    def update(PatientWithoutDispenseReport patientWithoutDispenseReport) {
+        if (patientWithoutDispenseReport == null) {
             render status: NOT_FOUND
             return
         }
-        if (expectedPatientReport.hasErrors()) {
+        if (patientWithoutDispenseReport.hasErrors()) {
             transactionStatus.setRollbackOnly()
-            respond expectedPatientReport.errors
+            respond patientWithoutDispenseReport.errors
             return
         }
 
         try {
 
         } catch (ValidationException e) {
-            respond expectedPatientReport.errors
+            respond patientWithoutDispenseReport.errors
             return
         }
 
-        respond expectedPatientReport, [status: OK, view: "show"]
+        respond patientWithoutDispenseReport, [status: OK, view:"show"]
     }
 
     @Transactional
     def delete(Long id) {
-        if (id == null || expectedPatientReportService.delete(id) == null) {
+        if (id == null || patientWithoutDispenseReportService.delete(id) == null) {
             render status: NOT_FOUND
             return
         }
@@ -83,7 +86,7 @@ class ExpectedPatientsReportController extends MultiThreadRestReportController {
         render status: NO_CONTENT
     }
 
-    def initReportProcess(ReportSearchParams searchParams) {
+    def initReportProcess (ReportSearchParams searchParams) {
         super.initReportParams(searchParams)
         render getProcessStatus() as JSON
         doProcessReport()
@@ -94,16 +97,16 @@ class ExpectedPatientsReportController extends MultiThreadRestReportController {
      */
     @Override
     void run() {
-        expectedPatientReportService.doSave(expectedPatientReportService.processamentoDados(getSearchParams(), this.processStatus),)
+        patientWithoutDispenseReportService.doSave(patientWithoutDispenseReportService.processamentoDados(getSearchParams(),  this.processStatus),)
     }
 
     def getProcessedData(String reportId) {
-        List<ExpectedPatientReport> reportObjects = expectedPatientReportService.getReportDataByReportId(reportId)
+        List<PatientWithoutDispenseReport> reportObjects = patientWithoutDispenseReportService.getReportDataByReportId(reportId)
         render reportObjects as JSON
     }
 
     def printReport(String reportId, String fileType) {
-        List<ExpectedPatientReport> reportObjects = expectedPatientReportService.getReportDataByReportId(reportId)
+        List<PatientWithoutDispenseReport> reportObjects = patientWithoutDispenseReportService.getReportDataByReportId(reportId)
         render reportObjects as JSON
     }
 

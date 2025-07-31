@@ -5,7 +5,7 @@ import grails.gorm.transactions.Transactional
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.drug.Drug
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
-import mz.org.fgh.sifmoz.backend.reports.stock.InventoryReportTemp
+import mz.org.fgh.sifmoz.backend.reports.stock.InventoryReport
 import mz.org.fgh.sifmoz.backend.stock.IStockService
 import mz.org.fgh.sifmoz.backend.stock.Stock
 
@@ -125,7 +125,7 @@ abstract class InventoryService implements IInventoryService{
 
 
     @Override
-    List<InventoryReportTemp> getInventoryListByReportId(String reportId) {
+    List<InventoryReport> getInventoryListByReportId(String reportId) {
         def queryString = " select distinct i.inventory_id, i.inventory_end_date " +
                             "from inventory_report_temp i " +
                             "where i.report_id=:reportId "
