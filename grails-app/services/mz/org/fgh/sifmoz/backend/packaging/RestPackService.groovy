@@ -231,6 +231,9 @@ class RestPackService {
         String urlPath = '?personUuid=' + patient.getHisUuid()
         String openMrsReportingRest = new RestOpenMRSClient().getResponseOpenMRSClient(userProviderUuid, null, urlBaseReportingRest, urlPath, requestMethod_GET)
 
+        if(openMrsReportingRest == null)
+            return
+
         JSONObject resultsReportingRest = new JSONObject(openMrsReportingRest)
         JSONArray members = new JSONArray()
         if(resultsReportingRest.containsKey("members"))

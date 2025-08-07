@@ -925,21 +925,17 @@ class BootStrap {
         provincialServerList.add(new LinkedHashMap(id: '84383A39-0535-49EA-956C-FDAEA191D1F0', code: '11', urlPath: 'idmed-mc.csaude.org.mz', port: '50401', destination: 'DB', username: 'idmedmc', password: 'N/A', 'dbname':'idmedmc'))
         provincialServerList.add(new LinkedHashMap(id: '49896B8E-631D-4A4D-BC39-45B747688ECE', code: '12', urlPath: '172.16.60.20', port: '50420', destination: 'DB', username: 'postgres', password: 'N/A', 'dbname':'idmed_maputo'))
 
-        provincialServerList.add(new LinkedHashMap(id: '0231B69C-A7AC-4024-8DF7-E75E2828E578', code: '01', urlPath: 'https://be-idmedniassa.fgh.org.mz:', port: '5001', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '2C3B00F3-C8CB-4071-A070-54819C2F0962', code: '02', urlPath: 'https://be-idmedcabodelegado.fgh.org.mz:', port: '5002', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: 'C44CD2E8-DCB3-464A-9F0F-F6E6421E73C8', code: '03', urlPath: 'https://be-idmednampula.fgh.org.mz:', port: '5003', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '3C0BF87C-87F3-4AF6-B95B-2D93F6B274AE', code: '04', urlPath: 'https://be-idmedzambezia.fgh.org.mz:', port: '5004', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '2408211C-7ACD-42C5-AC52-A3ACBCA747CF', code: '05', urlPath: 'https://be-idmedtete.fgh.org.mz:', port: '5005', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '29467F85-6CE4-4757-8AC5-E18FCFE0784C', code: '06', urlPath: 'https://be-idmedmanica.fgh.org.mz:', port: '5006', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '668BD439-B176-4FF5-9525-81D9DFB84F6D', code: '07', urlPath: 'https://be-idmedsofala.fgh.org.mz:', port: '5007', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: 'EDE2C07E-EE4B-4DED-8A7D-16D58BFB3751', code: '08', urlPath: 'https://be-idmedinhambane.fgh.org.mz:', port: '5008', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '6C50D9EB-9165-49AE-8A33-C9C837F58084', code: '09', urlPath: 'https://be-idmedgaza.fgh.org.mz:', port: '5009', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: 'DFF5C2ED-FB41-4574-9C26-BB164605BC00', code: '10', urlPath: 'https://be-idmedmaputo-prov.fgh.org.mz:', port: '5010', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '9E0AD237-9C7E-4656-9E58-D311F5E47F28', code: '11', urlPath: 'https://be-idmedmaputo.cid.fgh.org.mz:', port: '5011', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: 'ec74926c-77c2-4c23-9124-9591d1670ab0', code: '12', urlPath: 'https://172.104.236.126:', port: '445', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '7036157a-61c3-4515-9ab8-fc68359d9402', code: '13', urlPath: 'https://idmed-metadata.fgh.org.mz:', port: '5012', destination: 'METADATA', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
-        provincialServerList.add(new LinkedHashMap(id: '257016e7-628d-4d72-8b50-c16c32380767', code: '99', urlPath: 'http://172.104.203.103:', port: '3030', destination: 'SIMAM', username: 'admin', password: 'N/A', 'dbname':'N/A'))
-
+        provincialServerList.add(new LinkedHashMap(id: '0231B69C-A7AC-4024-8DF7-E75E2828E578', code: '01', urlPath: 'https://idmed-ns.csaude.org.mz', port: '5001', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '2C3B00F3-C8CB-4071-A070-54819C2F0962', code: '02', urlPath: 'https://idmed-ca.csaude.org.mz', port: '5002', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'C44CD2E8-DCB3-464A-9F0F-F6E6421E73C8', code: '03', urlPath: 'https://idmed-np.csaude.org.mz', port: '5003', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '3C0BF87C-87F3-4AF6-B95B-2D93F6B274AE', code: '04', urlPath: 'https://idmed-zb.csaude.org.mz', port: '5004', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '2408211C-7ACD-42C5-AC52-A3ACBCA747CF', code: '05', urlPath: 'https://idmed-tt.csaude.org.mz', port: '5005', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '29467F85-6CE4-4757-8AC5-E18FCFE0784C', code: '06', urlPath: 'https://idmed-mn.csaude.org.mz', port: '5006', destination: 'IDMED', username: 'iDMED', password:'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '668BD439-B176-4FF5-9525-81D9DFB84F6D', code: '07', urlPath: 'https://idmed-sf.csaude.org.mz', port: '5007', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'EDE2C07E-EE4B-4DED-8A7D-16D58BFB3751', code: '08', urlPath: 'https://idmed-ib.csaude.org.mz', port: '5008', destination: 'IDMED', username: 'iDMED', password:'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '6C50D9EB-9165-49AE-8A33-C9C837F58084', code: '09', urlPath: 'https://idmed-gz.csaude.org.mz', port: '5009', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: 'DFF5C2ED-FB41-4574-9C26-BB164605BC00', code: '10', urlPath: 'https://idmed-mp.csaude.org.mz', port: '3302', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
+        provincialServerList.add(new LinkedHashMap(id: '9E0AD237-9C7E-4656-9E58-D311F5E47F28', code: '11', urlPath: 'https://idmed-mc.csaude.org.mz', port: '3300', destination: 'IDMED', username: 'iDMED', password: 'N/A', 'dbname':'N/A'))
         return provincialServerList
     }
 
@@ -1597,6 +1593,8 @@ class BootStrap {
         therapeuticRegimenList.add(new LinkedHashMap(id: '0765552C-7369-4281-BC8A-A8DD4E297A23', regimen_scheme: 'TDF+3TC+d4T+LPV/r', code: 'TDF14', openmrs_uuid: '', active: false, description: 'TDF+3TC+d4T+LPV/r', clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         therapeuticRegimenList.add(new LinkedHashMap(id: 'B9509EF0-D01D-47AF-961C-CED32A841E8D', regimen_scheme: 'TDF+AZT+3TC+SQV+RTV', code: 'C3A1', openmrs_uuid: '', active: false, description: 'TDF+AZT+3TC+SQV+RTV', clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
 
+        therapeuticRegimenList.add(new LinkedHashMap(id: 'cfccf8f9-9756-4ebc-9436-fa66460de797', regimen_scheme: 'ABC+3TC+DTG (3DFC DTG5mg)', code: 'X7BPed', openmrs_uuid: 'af15246d-30b8-4aff-8391-ca2b58e2c88b', active: true, description: 'ABC+3TC+DTG (3DFC DTG5mg)', clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
+
         therapeuticRegimenList.add(new LinkedHashMap(id: '346054c4-592d-41e9-a2f4-6cfd04f1be7a', regimen_scheme: 'TPT - 3HP Adultos (>30kg)', code: 'TPT - 3HP Adultos (>30kg)', openmrs_uuid: 'bce7d965-3396-4667-8294-aa5260c26334', active: true, description: 'TPT - 3HP Adultos (>30kg)', clinical_service_id: '6D12193B-7D5D-4665-8FC6-A03855986FBD'))
         therapeuticRegimenList.add(new LinkedHashMap(id: 'bb8641fb-cba0-4d0f-afba-8e854df9176b', regimen_scheme: 'TPT - 3HP Crianças (< 30kg)', code: 'TPT - 3HP Crianças (< 30kg)', openmrs_uuid: 'bce7d965-3396-4667-8294-aa5260c26334', active: true, description: 'TPT - 3HP Crianças (< 30kg)', clinical_service_id: '6D12193B-7D5D-4665-8FC6-A03855986FBD'))
         therapeuticRegimenList.add(new LinkedHashMap(id: '36efd422-455c-47aa-8939-6890e3f35b01', regimen_scheme: 'TPT - MR- LFX100', code: 'TPT - MR- LFX100', openmrs_uuid: 'e1d4b30a-1d5f-11e0-b929-000c29ad1d07', active: true, description: 'TPT - MR- LFX100', clinical_service_id: '6D12193B-7D5D-4665-8FC6-A03855986FBD'))
@@ -1700,6 +1698,10 @@ class BootStrap {
 
         listDrug.add(new LinkedHashMap(id: '04BCD7CD-5770-4140-BAA2-931DC70EA2E9', form_id: 'E8427B78-B4B2-4570-8721-03A60425909D', default_times: 1, pack_size: 3, name: '[CAB-LA] Cabotegravir 600mg/3ml Inj', uuid_openmrs: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', fnm_code: '08S18ZW', default_treatment: 1, default_period_treatment: 'Mês', active: false, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
         listDrug.add(new LinkedHashMap(id: 'E7C7B604-0C34-48B3-A941-6DF3ADBEA3A8', form_id: 'A19B6D0E-4F11-42C9-B720-9C8B617E29F8', default_times: 1, pack_size: 1, name: '[DPV-VR] Dapivirina anel vaginal 25mg', uuid_openmrs: 'e1e59e0e-1d5f-11e0-b929-000c29ad1d07', fnm_code: '08S18ZY', default_treatment: 1, default_period_treatment: 'Mês', active: false, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
+
+
+        listDrug.add(new LinkedHashMap(id: '640452ab-3978-48e0-94e6-16c9a426ce5a', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 90, name: 'Abacavir+Lamivudina+Dolutegravir; 60mg+30mg+5mg 90 Comp', uuid_openmrs: '08S01ZV-dce62-4881-9798-0274a32a5fab', fnm_code: '08S01ZV', default_treatment: 1, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
+        listDrug.add(new LinkedHashMap(id: '0060cdd3-44ee-4514-9ea4-5b283b7ea433', form_id: 'AB6442FF-6DA0-46F2-81E1-F28B1A44A31C', default_times: 1, pack_size: 180, name: 'Abacavir+Lamivudine+Dolutegravir; 60mg+30mg+5mg 180 Comp', uuid_openmrs: '08S01ZVI-731c-44c9-b1da-8507fecd55b8', fnm_code: '08S01ZVI', default_treatment: 1, default_period_treatment: 'Dia', active: true, clinical_service_id: '80A7852B-57DF-4E40-90EC-ABDE8403E01F'))
 
 
         return listDrug
@@ -1988,6 +1990,9 @@ class BootStrap {
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'TDF+3TC PrEP', drug_id: '08S18Z'))
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'PreEP', drug_id: '08S31'))
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'Cabotegravir PrEP', drug_id: '08S18ZW'))
+
+        listDrugRegimen.add(new LinkedHashMap(regimen_id: 'X7BPed', drug_id: '08S01ZV'))
+        listDrugRegimen.add(new LinkedHashMap(regimen_id: 'X7BPed', drug_id: '08S01ZVI'))
 
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'TPT - INH300', drug_id: '12D14'))
         listDrugRegimen.add(new LinkedHashMap(regimen_id: 'TPT - INH300', drug_id: '08L03'))

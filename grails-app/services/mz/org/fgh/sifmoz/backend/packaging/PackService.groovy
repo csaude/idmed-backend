@@ -1172,18 +1172,7 @@ abstract class PackService implements IPackService {
                      inner join clinical_service cs ON cs.id = psi.service_id
                      inner join clinic c on c.id = ep.clinic_id
                      where ((Date(pk.pickup_date) BETWEEN :startDate AND :endDate))
-                     AND ssr.code in ('NOVO_PACIENTE',
-                                     'INICIO_CCR',
-                                     'TRANSFERIDO_DE',
-                                     'REINICIO_TRATAMETO',
-                                     'MANUNTENCAO',
-                                     'OUTRO',
-                                     'VOLTOU_REFERENCIA', 
-                                     'REFERIDO_DC',
-                                     'TRANSITO',
-                                     'INICIO_MATERNIDADE'
-                                     'REFERIDO_PARA',
-                                     'VOLTOU_A_SER_REFERIDO_PARA')
+                     AND ssr.code in (select code from start_stop_reason)
                      AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
                      group by 1,4,5
                      order by 1
@@ -1929,7 +1918,7 @@ abstract class PackService implements IPackService {
                      COUNT
                      (
                      CASE 
-                     WHEN dt.code = 'DS'
+                     WHEN dt.code = 'DS' OR (dt.code != 'DB' AND dt.code != 'DM' AND dt.code != 'DT' AND dt.code != 'DS')
                      THEN 1  
                      END
                      ) AS DS,
@@ -2088,7 +2077,7 @@ abstract class PackService implements IPackService {
 
         if (service.isTARV()) {
             query =
-                    """
+            """
                     SELECT  
                     COUNT (
                         CASE  
@@ -2118,7 +2107,6 @@ abstract class PackService implements IPackService {
                         CASE  
                             WHEN ssr.code <> 'TRANSITO' AND ssr.code <> 'INICIO_MATERNIDADE'
                             AND (p.patient_type = 'N/A' OR p.patient_type IS null OR p.patient_type = 'Inicio') 
-                            AND dt.code = 'DM'
                             AND ssr.code = 'NOVO_PACIENTE'
                             AND extract(days from pack.pickup_date - ep.episode_date) <= 3  
                             THEN 1  
@@ -2199,7 +2187,7 @@ abstract class PackService implements IPackService {
                     ) AS DT,
                     COUNT (
                         CASE  
-                            WHEN dt.code = 'DS'  
+                            WHEN dt.code = 'DS' OR (dt.code != 'DB' AND dt.code != 'DM' AND dt.code != 'DT' AND dt.code != 'DS')
                             THEN 1  
                         END
                     ) AS DS,
@@ -2209,76 +2197,67 @@ abstract class PackService implements IPackService {
                             THEN 1  
                         END
                     ) AS DB
-                FROM 
-                (
-                    SELECT DISTINCT 
-                        pat.id,
-                        MAX(pk.pickup_date) AS pickupdate,
-                        MAX(pk.id) AS packid,
-                        pat.date_of_birth,
-                        cs.code AS service_code
                     FROM 
-                        patient_visit_details pvd
+                    (
+                        SELECT DISTINCT 
+                            pat.id,
+                            MAX(pk.pickup_date) AS pickupdate,
+                            MAX(pk.id) AS packid,
+                            pat.date_of_birth,
+                            cs.code AS service_code
+                        FROM 
+                            patient_visit_details pvd
+                        INNER JOIN 
+                            pack pk ON pk.id = pvd.pack_id
+                        INNER JOIN 
+                            episode ep ON ep.id = pvd.episode_id
+                        INNER JOIN 
+                            patient_visit pv ON pv.id = pvd.patient_visit_id
+                        INNER JOIN 
+                            patient pat ON pat.id = pv.patient_id
+                        INNER JOIN 
+                            patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
+                        INNER JOIN 
+                            start_stop_reason ssr ON ssr.id = ep.start_stop_reason_id
+                        INNER JOIN 
+                            clinical_service cs ON cs.id = psi.service_id
+                        INNER JOIN
+                            clinic c ON c.id = ep.clinic_id
+                        WHERE 
+                            ((Date(pk.pickup_date) BETWEEN :startDate AND :endDate))
+                            AND ssr.code in (select code from start_stop_reason)
+                            AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR') 
+                        GROUP BY 
+                            1,4,5
+                        ORDER BY 
+                            1
+                    ) patientstatistics
                     INNER JOIN 
-                        pack pk ON pk.id = pvd.pack_id
+                        pack pack ON pack.id = patientstatistics.packid
+                    INNER JOIN 
+                        patient_visit_details pvd ON pvd.pack_id = pack.id
+                    INNER JOIN 
+                        prescription p ON p.id = pvd.prescription_id
+                    INNER JOIN 
+                        prescription_detail pd ON pd.prescription_id = p.id
+                    INNER JOIN 
+                        therapeutic_line tl ON tl.id = pd.therapeutic_line_id
                     INNER JOIN 
                         episode ep ON ep.id = pvd.episode_id
                     INNER JOIN 
+                        start_stop_reason ssr ON ssr.id = ep.start_stop_reason_id
+                    INNER JOIN 
                         patient_visit pv ON pv.id = pvd.patient_visit_id
                     INNER JOIN 
-                        patient pat ON pat.id = pv.patient_id
+                        dispense_type dt ON dt.id = pd.dispense_type_id
+                    INNER JOIN 
+                        therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
                     INNER JOIN 
                         patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
                     INNER JOIN 
-                        start_stop_reason ssr ON ssr.id = ep.start_stop_reason_id
-                    INNER JOIN 
                         clinical_service cs ON cs.id = psi.service_id
-                    INNER JOIN
-                        clinic c ON c.id = ep.clinic_id
-                    WHERE 
-                        ((Date(pk.pickup_date) BETWEEN :startDate AND :endDate))
-                        AND ssr.code in ('NOVO_PACIENTE',
-                                     'INICIO_CCR',
-                                     'TRANSFERIDO_DE',
-                                     'REINICIO_TRATAMETO',
-                                     'MANUNTENCAO',
-                                     'OUTRO',
-                                     'VOLTOU_REFERENCIA', 
-                                     'REFERIDO_DC',
-                                     'TRANSITO',
-                                     'INICIO_MATERNIDADE')
-                        AND (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR') 
-                    GROUP BY 
-                        1,4,5
-                    ORDER BY 
-                        1
-                ) patientstatistics
-                INNER JOIN 
-                    pack pack ON pack.id = patientstatistics.packid
-                INNER JOIN 
-                    patient_visit_details pvd ON pvd.pack_id = pack.id
-                INNER JOIN 
-                    prescription p ON p.id = pvd.prescription_id
-                INNER JOIN 
-                    prescription_detail pd ON pd.prescription_id = p.id
-                INNER JOIN 
-                    therapeutic_line tl ON tl.id = pd.therapeutic_line_id
-                INNER JOIN 
-                    episode ep ON ep.id = pvd.episode_id
-                INNER JOIN 
-                    start_stop_reason ssr ON ssr.id = ep.start_stop_reason_id
-                INNER JOIN 
-                    patient_visit pv ON pv.id = pvd.patient_visit_id
-                INNER JOIN 
-                    dispense_type dt ON dt.id = pd.dispense_type_id
-                INNER JOIN 
-                    therapeutic_regimen tr ON tr.id = pd.therapeutic_regimen_id
-                INNER JOIN 
-                    patient_service_identifier psi ON psi.id = ep.patient_service_identifier_id
-                INNER JOIN 
-                    clinical_service cs ON cs.id = psi.service_id
-                WHERE (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
-                    """
+                    WHERE (cs.code = 'TARV' OR cs.code = 'PPE' OR cs.code = 'PREP' OR cs.code = 'CE' OR cs.code = 'CCR')
+            """
         } else {
             query =
                     """
