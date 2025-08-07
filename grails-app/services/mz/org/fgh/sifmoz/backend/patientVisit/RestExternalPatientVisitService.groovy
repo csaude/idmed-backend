@@ -9,11 +9,14 @@ import groovy.util.logging.Slf4j
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.episode.IEpisodeService
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.ISystemConfigsService
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigsService
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.IPatientVisitDetailsService
 import mz.org.fgh.sifmoz.backend.prescription.IPrescriptionService
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 
@@ -31,27 +34,33 @@ class RestExternalPatientVisitService {
     IPrescriptionService prescriptionService
     IPatientVisitDetailsService patientVisitDetailsService
     ExternalPatientVisitService externalPatientVisitService
+    @Autowired
+    ISystemConfigsService configsService
     IPackService packService
     IEpisodeService episodeService
 
     static lazyInit = false
 
-    @Scheduled(fixedDelay = 1800000L)
+//    final String SP_DISPENSA_TRANSITO_IDMED_ATIVO = true
+
+    @Scheduled(fixedDelay = 1800000L) // 30 minutos após terminar
     void schedulerRequestRunning() {
+        if (configsService.getRotineStatus('SP_DISPENSA_TRANSITO_IDMED_ATIVO')) {
         println  " - REST EXTERNAL PATIENT VISIT FROM PROVINCIAL TO IDMED " + new Date()
         PatientVisit.withTransaction {
             Clinic mainClinic = Clinic.findWhere(mainClinic: true)
 
-            List<ExternalPatientVisit> externalPatientVisitList = ExternalPatientVisit.findAllWhere(targetClinicId:mainClinic.id, syncStatus: syncStatusReady)
+            List<ExternalPatientVisit> externalPatientVisitList = ExternalPatientVisit.findAllWhere(targetClinicId: mainClinic.id, syncStatus: syncStatusReady)
 
             externalPatientVisitList.each { externalPatientVisit ->
                 PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findWhere(value: externalPatientVisit.nid)
                 def lastEpisode = episodeService.getLastWithVisitByIndentifier(patientServiceIdentifier, mainClinic)
 
-                if(patientServiceIdentifier){
+                if (patientServiceIdentifier) {
                     savePatientVisit(externalPatientVisit, patientServiceIdentifier, lastEpisode)
                 }
             }
+        }
 
         }
     }

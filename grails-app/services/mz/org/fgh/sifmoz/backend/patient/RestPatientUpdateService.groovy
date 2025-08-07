@@ -10,6 +10,8 @@ import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.District
 import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.Province
 import mz.org.fgh.sifmoz.backend.episode.IEpisodeService
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.ISystemConfigsService
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigsService
 import mz.org.fgh.sifmoz.backend.interoperabilityAttribute.InteroperabilityAttribute
 import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patientIdentifier.IPatientServiceIdentifierService
@@ -18,6 +20,7 @@ import mz.org.fgh.sifmoz.backend.patientUpdateOpenMrsErrorLog.PatientUpdateOpenM
 import mz.org.fgh.sifmoz.backend.restUtils.RestOpenMRSClient
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import org.grails.web.json.JSONObject
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 
@@ -31,16 +34,19 @@ class RestPatientUpdateService {
     RestOpenMRSClient restOpenMRSClient = new RestOpenMRSClient()
     IPatientService patientService
     IEpisodeService episodeService
+    @Autowired
+    ISystemConfigsService configsService
     final String requestMethod_GET = "GET"
     final String requestMethod_POST = "POST"
 
 
     static lazyInit = false
 
+//    final String PACIENTE_OPENMRS_IDMED_ATIVO = true
 
-    @Scheduled(fixedDelay = 300000L)
+    @Scheduled(fixedDelay = 300000L) // 5 minutos após terminar
     void schedulerRequestRunning() {
-
+        if (configsService.getRotineStatus('PACIENTE_OPENMRS_IDMED_ATIVO')) {
         Patient.withTransaction {
             println " - REST UPDATE PATIENT FROM OPENMRS TO IDMED " + new Date()
             // List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
@@ -55,7 +61,7 @@ class RestPatientUpdateService {
                     try {
                         // RestOpenMRSClient restPost = new RestOpenMRSClient()
                         String urlPath = "patient/info/updated-data?client_name=iDMED"
-                        def response =  RestOpenMRSClient.getResponseOpenMRSClient(universalUserProviderUUid, null, urlBase ,urlPath, requestMethod_GET)
+                        def response = RestOpenMRSClient.getResponseOpenMRSClient(universalUserProviderUUid, null, urlBase, urlPath, requestMethod_GET)
 
                         if (response?.entry && !response.entry.isEmpty()) {
                             response.entry.each { patient ->
@@ -85,7 +91,7 @@ class RestPatientUpdateService {
                                 }
                             }
                             String commitUrlPath = "patient/info/updated-data/commit?client_name=iDMED"
-                            RestOpenMRSClient.getResponseOpenMRSClient(universalUserProviderUUid, null, urlBase ,commitUrlPath, requestMethod_POST)
+                            RestOpenMRSClient.getResponseOpenMRSClient(universalUserProviderUUid, null, urlBase, commitUrlPath, requestMethod_POST)
                             sleep(3000)
                         } else {
                             hasMoreData = false
@@ -96,7 +102,7 @@ class RestPatientUpdateService {
                     }
                 }
             }
-
+        }
         }
     }
 

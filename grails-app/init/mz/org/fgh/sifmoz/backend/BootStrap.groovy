@@ -946,9 +946,24 @@ class BootStrap {
         systemConfigsList.add(new LinkedHashMap(id: 'C35CC29F-CA73-4B26-9AC1-BC440750F854', value: 'ON', key: 'STOCK_MIGRATION_ENGINE', description: 'Stock migration engine'))
         systemConfigsList.add(new LinkedHashMap(id: '570911CB-6D46-4A3A-8A56-906A73DF1062', value: 'ON', key: 'PARAMS_MIGRATION_ENGINE', description: 'Params migration engine'))
         // systemConfigsList.add(new LinkedHashMap(id: 'E6CDDA47-DC11-4DAA-8672-04B37DEE9703', value: 'LOCAL', key: 'INSTALATION_TYPE',  description: 'Local/Provincial Instalation'))
-        systemConfigsList.add(new LinkedHashMap(id: 'B5C44B42-3328-40D9-90D7-6DFF90A672D4', value: 'true', key: 'ACTIVATE_DATA_MIGRATION', description: 'Indica se a migração de dados está activa ou não'))
+        systemConfigsList.add(new LinkedHashMap(id: 'B5C44B42-3328-40D9-90D7-6DFF90A672D4', value: 'true', key: 'ACTIVATE_DATA_MIGRATION', description: 'Migração de dados'))
         systemConfigsList.add(new LinkedHashMap(id: '550e8400-e29b-41d4-a716-446655440000', value: '3', key: 'MAX_LOGIN_TRIES', description: 'Número máximo de tentativas para Login'))
         systemConfigsList.add(new LinkedHashMap(id: '3b241101-e2bb-4255-8caf-4136c566a964', value: '90', key: 'MAX_ACTIVE_DAYS_WITHOUT_LOGIN', description: 'Número máximo de dias em activo sem login'))
+        // Configuação padrao das rotinas
+        systemConfigsList.add(new LinkedHashMap(id: '8F2E4B1A-9C3D-4E5F-A1B2-C3D4E5F67890', value: 'true', key: 'DISPENSA_IDMED_OPENMRS_ATIVO', description: 'Envio de dispensas do IDMED para OpenMRS'))
+        systemConfigsList.add(new LinkedHashMap(id: '2A5B8C9D-1E4F-7A0B-3C6D-9E2F5A8B1C4D', value: 'true', key: 'PACIENTE_IDMED_OPENMRS_ATIVO', description: 'Envio de pacientes do IDMED para OpenMRS'))
+        systemConfigsList.add(new LinkedHashMap(id: '7F1E4D8A-2B5C-9E6F-0A3B-6C9D2E5F8A1B', value: 'true', key: 'PACIENTE_OPENMRS_IDMED_ATIVO', description: 'Atualização de dados do pacientes do OpenMRS para IDMED'))
+        systemConfigsList.add(new LinkedHashMap(id: '9E2B5E8A-1D4A-7C0D-3F6C-9C2F5A8D1E4A', value: 'true', key: 'LOGIN_STATUS_USUARIOS_ATIVO', description: 'Validação do estado de acesso de usuários'))
+
+        systemConfigsList.add(new LinkedHashMap(id: '3C6F9B2E-5D8A-1F4A-7B0C-3D6E9F2A5B8C', value: 'true', key: 'SP_DISPENSA_TRANSITO_IDMED_ATIVO', description: 'Carregamento de dispensas de Pacientes em Trânsito do Servidor Provincial para IDMED'))
+        systemConfigsList.add(new LinkedHashMap(id: '4A7D0B3C-6E9F-2B5E-8A1D-4E7A0D3C6F9B', value: 'true', key: 'SP_DISPENSA_REFERIDOS_IDMED_ATIVO', description: 'Carregamento de dispensas de Pacientes Referidos do Servidor Provincial para IDMED'))
+
+        systemConfigsList.add(new LinkedHashMap(id: '1D4A7D0B-3C6E-9F2B-5E8A-1D4E7A0D3C6F', value: 'true', key: 'EPISODIO_IDART_PROVINCIAL_IDMED_ATIVO', description: 'Carregamento de episódios de pacientes do Idart Provincial para IDMED'))
+        systemConfigsList.add(new LinkedHashMap(id: '8E1A4D7A-0C3D-6F9B-2C5E-8A1D4E7A0C3D', value: 'true', key: 'EPISODIO2_IDART_PROVINCIAL_IDMED_ATIVO', description: 'Atualização de episódios de pacientes do Idart Provincial para IDMED'))
+        systemConfigsList.add(new LinkedHashMap(id: '5B8E1A4D-7A0C-3D6F-9B2C-5E8A1D4E7A0C', value: 'true', key: 'PACIENTE_IDART_PROVINCIAL_IDMED_ATIVO', description: 'Carregamento de pacientes do Idart Provincial para IDMED'))
+
+        systemConfigsList.add(new LinkedHashMap(id: '2E5B8E1A-4D7A-0C3D-6F9B-2C5E8A1D4E7A', value: 'true', key: 'EPISODIO_IDMED_IDART_PROVINCIAL_ATIVO', description: 'Envio de episódios de pacientes do IDMED para Idart Provincial'))
+        systemConfigsList.add(new LinkedHashMap(id: '6C9B2E5B-8E1A-4D7A-0C3D-6F9B2C5E8A1D', value: 'true', key: 'REFERENCIA_IDMED_IDART_PROVINCIAL_ATIVO', description: 'Envio de referências de pacientes do IDMED para Idart Provincial'))
 
         return systemConfigsList
     }

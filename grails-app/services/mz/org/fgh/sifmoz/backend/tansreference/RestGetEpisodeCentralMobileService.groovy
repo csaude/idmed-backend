@@ -2,6 +2,8 @@ package mz.org.fgh.sifmoz.backend.tansreference
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.ISystemConfigsService
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigsService
 import mz.org.fgh.sifmoz.backend.task.SynchronizerTask
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
@@ -34,6 +36,8 @@ class RestGetEpisodeCentralMobileService extends SynchronizerTask {
     IPatientTransReferenceService patientTransReferenceService
     RestProvincialServerMobileClient restProvincialServerClient = new RestProvincialServerMobileClient()
 
+    @Autowired
+    ISystemConfigsService configsService
     static lazyInit = false
 
     private static final Logger LOGGER = LoggerFactory
@@ -46,66 +50,71 @@ class RestGetEpisodeCentralMobileService extends SynchronizerTask {
             "Id Episodio",
             "patientUuid");
 
-    @Scheduled(fixedDelay = 7200000L)
+//    final String EPISODIO_IDART_PROVINCIAL_IDMED_ATIVO = true
+
+    @Scheduled(fixedDelay = 7200000L) // 2 horas após terminar
     void execute() {
-        println  " - REST PATIENT EPISODE FROM PROVINCIAL TO IDMED " + new Date()
-        if (this.instalationConfig != null && !this.isProvincial()) {
+        if (configsService.getRotineStatus('EPISODIO_IDART_PROVINCIAL_IDMED_ATIVO')) {
+            println " - REST PATIENT EPISODE FROM PROVINCIAL TO IDMED " + new Date()
+            if (this.instalationConfig != null && !this.isProvincial()) {
 
-            Clinic clinic = Clinic.findById(this.getUsOrProvince())
-            ProvincialServer provincialServer = ProvincialServer.findByCodeAndDestination(clinic.getProvince().code, MOBILE_SERVER)
-            String urlPath = "/sync_temp_episode?usuuid=eq." + clinic.getUuid() + "&syncstatus=eq.S"; // addClinicUUid
-            LOGGER.info("Iniciando a Busca de Episodios de Fim")
-            def response = restProvincialServerClient.getRequestProvincialServerClient(provincialServer, urlPath)
+                Clinic clinic = Clinic.findById(this.getUsOrProvince())
+                ProvincialServer provincialServer = ProvincialServer.findByCodeAndDestination(clinic.getProvince().code, MOBILE_SERVER)
+                String urlPath = "/sync_temp_episode?usuuid=eq." + clinic.getUuid() + "&syncstatus=eq.S";
+                // addClinicUUid
+                LOGGER.info("Iniciando a Busca de Episodios de Fim")
+                def response = restProvincialServerClient.getRequestProvincialServerClient(provincialServer, urlPath)
 
-            ClinicalService clinicalService = ClinicalService.findByCode("TARV")
-            StartStopReason startStopReason = StartStopReason.findByCode("VOLTOU_REFERENCIA")
-            EpisodeType episodeType = EpisodeType.findByCode("INICIO")
+                ClinicalService clinicalService = ClinicalService.findByCode("TARV")
+                StartStopReason startStopReason = StartStopReason.findByCode("VOLTOU_REFERENCIA")
+                EpisodeType episodeType = EpisodeType.findByCode("INICIO")
 
-            LOGGER.info(MESSAGE)
-            for (Object episode : response) {
-                try {
-                    String message = " Episodio sem Identificador."
-                    if(episode.getAt("id") != null && episode.getAt("patientuuid") != null){
-                        message = String.format(FORMAT_STRING, episode.getAt("id").toString(), episode.getAt("patientuuid").toString())
+                LOGGER.info(MESSAGE)
+                for (Object episode : response) {
+                    try {
+                        String message = " Episodio sem Identificador."
+                        if (episode.getAt("id") != null && episode.getAt("patientuuid") != null) {
+                            message = String.format(FORMAT_STRING, episode.getAt("id").toString(), episode.getAt("patientuuid").toString())
+                        }
+
+                        LOGGER.info("Processando" + message)
+
+                        //GetPatientClinicService
+                        Patient patient = Patient.findByHisUuid(episode.getAt('patientuuid').toString())
+                        PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findByPatientAndService(patient, clinicalService)
+
+                        // Episode lastEpisode = Episode.findByPatientServiceIdentifier(patientServiceIdentifier,[sort: 'episodeDate', order: 'desc'])
+                        if (patient != null || patientServiceIdentifier != null) {
+                            Episode backReferenceEpisode = new Episode()
+                            backReferenceEpisode.setEpisodeDate(ConvertDateUtils.createDate(episode.getAt("startdate").toString(), "yyyy-MM-dd"))
+                            backReferenceEpisode.setEpisodeType(episodeType)
+                            backReferenceEpisode.setStartStopReason(startStopReason)
+                            backReferenceEpisode.setPatientServiceIdentifier(patientServiceIdentifier)
+                            backReferenceEpisode.setNotes(episode.getAt("startreason").toString())
+                            backReferenceEpisode.setClinic(Clinic.findByUuid(episode.getAt("usuuid").toString()))
+                            backReferenceEpisode.setClinicSector(ClinicSector.findByCode("TARV"))
+                            //Correct
+                            backReferenceEpisode.setCreationDate(new Date())
+                            backReferenceEpisode.setResidentInCountry(true)
+                            episodeService.save(backReferenceEpisode)
+
+                            //Send the episode to Update - Patch Server
+
+                            def path = "/sync_temp_episode?id=eq." + episode.getAt("id")
+                            String obj = '{"syncstatus":"U"}'
+                            println(obj)
+
+                            restProvincialServerClient.patchRequestProvincialServerClient(provincialServer, path, obj)
+                        } else {
+                            LOGGER.info("Patient com uuid:+" + episode.getAt("patientuuid").toString() + " nao encontrado");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace()
+                    } finally {
+                        continue
                     }
 
-                    LOGGER.info("Processando" + message)
-
-                    //GetPatientClinicService
-                    Patient patient = Patient.findByHisUuid(episode.getAt('patientuuid').toString())
-                    PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findByPatientAndService(patient, clinicalService)
-
-                    // Episode lastEpisode = Episode.findByPatientServiceIdentifier(patientServiceIdentifier,[sort: 'episodeDate', order: 'desc'])
-                    if (patient != null || patientServiceIdentifier != null) {
-                        Episode backReferenceEpisode = new Episode()
-                        backReferenceEpisode.setEpisodeDate(ConvertDateUtils.createDate(episode.getAt("startdate").toString(), "yyyy-MM-dd"))
-                        backReferenceEpisode.setEpisodeType(episodeType)
-                        backReferenceEpisode.setStartStopReason(startStopReason)
-                        backReferenceEpisode.setPatientServiceIdentifier(patientServiceIdentifier)
-                        backReferenceEpisode.setNotes(episode.getAt("startreason").toString())
-                        backReferenceEpisode.setClinic(Clinic.findByUuid(episode.getAt("usuuid").toString()))
-                        backReferenceEpisode.setClinicSector(ClinicSector.findByCode("TARV"))
-                        //Correct
-                        backReferenceEpisode.setCreationDate(new Date())
-                        backReferenceEpisode.setResidentInCountry(true)
-                        episodeService.save(backReferenceEpisode)
-
-                        //Send the episode to Update - Patch Server
-
-                        def path = "/sync_temp_episode?id=eq." + episode.getAt("id")
-                        String obj = '{"syncstatus":"U"}'
-                        println(obj)
-
-                        restProvincialServerClient.patchRequestProvincialServerClient(provincialServer, path, obj)
-                    } else {
-                        LOGGER.info("Patient com uuid:+" + episode.getAt("patientuuid").toString() + " nao encontrado");
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace()
-                }finally {
-                    continue
                 }
-
             }
         }
     }

@@ -5,6 +5,9 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.ISystemConfigsService
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigsService
 import mz.org.fgh.sifmoz.backend.interoperabilityTransation.InteroperabilityTransationService
 import mz.org.fgh.sifmoz.backend.interoperabilityTransationLog.InteroperabilityTransationLogService
 import mz.org.fgh.sifmoz.backend.openmrsErrorLog.OpenmrsErrorLog
@@ -19,6 +22,7 @@ import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import org.apache.commons.lang.StringUtils
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 
@@ -32,6 +36,8 @@ class RestPackService {
     RestOpenMRSClient restOpenMRSClient = new RestOpenMRSClient()
     PatientVisitDetailsService patientVisitDetailsService
     InteroperabilityTransationService interoperabilityTransationService
+    @Autowired
+    ISystemConfigsService configsService
     final String requestMethod_POST = "POST"
     final String requestMethod_PUT = "PUT"
     final String requestMethod_PATCH = "PATCH"
@@ -63,53 +69,57 @@ class RestPackService {
     final String GET_LOCATION = "location/";
     static lazyInit = false
 
-    @Scheduled(fixedDelay = 120000L)
+//    final String DISPENSA_IDMED_OPENMRS_ATIVO = true
+
+    @Scheduled(fixedDelay = 120000L) // 2 minutos após terminar
     void schedulerRequestRunning() {
-        Pack.withTransaction {
-            println  " - REST DISPENSE FROM IDMED TO OPENMRS - " + new Date()
-            List<Pack> packList = Pack.findAllWhere(syncStatus: 'R' as char)
-            for (Pack pack : packList) {
-                try {
-                    RestOpenMRSClient restPost = new RestOpenMRSClient()
-                    PatientVisitDetails patientVisitDetails = patientVisitDetailsService.getByPack(pack)
-                    PatientVisit patientVisit = PatientVisit.get(patientVisitDetails.patientVisit.id)
-                    Patient patient = Patient.get(patientVisit.patient.id)
-                    Episode episode = patientVisitDetails?.episode
-                    PatientServiceIdentifier patientServiceIdentifier = episode?.patientServiceIdentifier
-                    ClinicalService clinicalService = patientServiceIdentifier?.service
+        if (configsService.getRotineStatus('DISPENSA_IDMED_OPENMRS_ATIVO')) {
+            Pack.withTransaction {
+                println " - REST DISPENSE FROM IDMED TO OPENMRS - " + new Date()
+                List<Pack> packList = Pack.findAllWhere(syncStatus: 'R' as char)
+                for (Pack pack : packList) {
+                    try {
+                        RestOpenMRSClient restPost = new RestOpenMRSClient()
+                        PatientVisitDetails patientVisitDetails = patientVisitDetailsService.getByPack(pack)
+                        PatientVisit patientVisit = PatientVisit.get(patientVisitDetails.patientVisit.id)
+                        Patient patient = Patient.get(patientVisit.patient.id)
+                        Episode episode = patientVisitDetails?.episode
+                        PatientServiceIdentifier patientServiceIdentifier = episode?.patientServiceIdentifier
+                        ClinicalService clinicalService = patientServiceIdentifier?.service
 
-                    if (patient.his == null || clinicalService?.code?.equals('PREP') || episode?.startStopReason?.code?.equals("TRANSITO")) {
-                        pack.setSyncStatus('N' as char)
-                        pack.save(flush: true)
-                        return
-                    }
+                        if (patient.his == null || clinicalService?.code?.equals('PREP') || episode?.startStopReason?.code?.equals("TRANSITO")) {
+                            pack.setSyncStatus('N' as char)
+                            pack.save(flush: true)
+                            return
+                        }
 
-                    HealthInformationSystem his = HealthInformationSystem.get(patient.his.id)
-                    if (pack.providerUuid == null) {
-                        String providerUuid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_USER_PROVIDER_UUID" }.value
-                        pack.providerUuid = providerUuid
-                    }
-                    String urlBase = his.interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE" }.value
-                    String userProviderUUid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_USER_PROVIDER_UUID" }.value
-                    String urlBaseReportingRest = his.interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE_REPORTING_REST" }.value
-                    String openMRSUuuidLocation = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_LOCATION_UUID" }.value
-                    String patientNid = StringUtils.replace(patientServiceIdentifier.value, " ", "%20")
+                        HealthInformationSystem his = HealthInformationSystem.get(patient.his.id)
+                        if (pack.providerUuid == null) {
+                            String providerUuid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_USER_PROVIDER_UUID" }.value
+                            pack.providerUuid = providerUuid
+                        }
+                        String urlBase = his.interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE" }.value
+                        String userProviderUUid = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_USER_PROVIDER_UUID" }.value
+                        String urlBaseReportingRest = his.interoperabilityAttributes.find { it.interoperabilityType.code == "URL_BASE_REPORTING_REST" }.value
+                        String openMRSUuuidLocation = his.interoperabilityAttributes.find { it.interoperabilityType.code == "OPENMRS_LOCATION_UUID" }.value
+                        String patientNid = StringUtils.replace(patientServiceIdentifier.value, " ", "%20")
 //                    String convertToJson = restPost.createOpenMRSDispense(pack, patient)
 //                    interoperabilityTransationService.sendMessageToPOC(patientNid, convertToJson, ACTIVEMQ_DISPENSE_QUEUE)
 
-                    String nidUuid = fetchNidUuid( patient,  pack,  patientVisitDetails, patientServiceIdentifier,patientNid, urlBase, userProviderUUid)
-                    if (!isValidNidUuid(patient, pack, patientVisitDetails, nidUuid, patientServiceIdentifier)) return
+                        String nidUuid = fetchNidUuid(patient, pack, patientVisitDetails, patientServiceIdentifier, patientNid, urlBase, userProviderUUid)
+                        if (!isValidNidUuid(patient, pack, patientVisitDetails, nidUuid, patientServiceIdentifier)) return
 
-                    if (!isPatientActiveInProgram(patient, pack, patientVisitDetails,patientServiceIdentifier, urlBaseReportingRest, userProviderUUid)) return
+                        if (!isPatientActiveInProgram(patient, pack, patientVisitDetails, patientServiceIdentifier, urlBaseReportingRest, userProviderUUid)) return
 
-                    if (!isValidLocationUuid(pack,patientVisitDetails, urlBase, openMRSUuuidLocation)) return
+                        if (!isValidLocationUuid(pack, patientVisitDetails, urlBase, openMRSUuuidLocation)) return
 
-                    String convertToJson = restPost.createOpenMRSDispense(pack, patient)
-                    postDispenseData(pack, patient, convertToJson,patientVisitDetails, urlBase, userProviderUUid, restPost)
-                } catch (Exception e) {
-                    e.printStackTrace()
-                } finally {
-                    continue
+                        String convertToJson = restPost.createOpenMRSDispense(pack, patient)
+                        postDispenseData(pack, patient, convertToJson, patientVisitDetails, urlBase, userProviderUUid, restPost)
+                    } catch (Exception e) {
+                        e.printStackTrace()
+                    } finally {
+                        continue
+                    }
                 }
             }
         }

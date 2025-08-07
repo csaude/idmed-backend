@@ -12,4 +12,10 @@ abstract class SystemConfigsService implements ISystemConfigsService {
     SystemConfigs getByKey(String key) {
       return SystemConfigs.findByKey(key)
     }
+
+    boolean getRotineStatus(String key){
+        SystemConfigs keyValue = SystemConfigs.findWhere(key: key)
+        return keyValue.value.toBoolean()
+
+    }
 }
