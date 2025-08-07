@@ -111,7 +111,7 @@ environments:
   development:
     dataSource:
       dbCreate: update
-      url: jdbc:postgresql://10.10.2.8:9876/idmed
+      url: jdbc:postgresql://localhost:9876/namuinho
   test:
     dataSource:
       dbCreate: update
