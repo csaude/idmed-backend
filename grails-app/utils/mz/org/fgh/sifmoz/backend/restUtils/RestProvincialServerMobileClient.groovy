@@ -75,11 +75,12 @@ class RestProvincialServerMobileClient {
         String restUrl = provincialServer.getUrlPath().contains("https") ? restUrlBase.replaceAll(':'+provincialServer.getPort(),'') + urlPath : provincialServer.getUrlPath() + provincialServer.getPort() + urlPath
         String result = ""
         restUrlBase = provincialServer.getUrlPath().contains("https") ? restUrlBase.replaceAll(':'+provincialServer.getPort(),'') : restUrlBase
+        println(restUrlBase)
         try {
             String token =  PostgrestAuthenticationUtils.getJWTPermissionFromHttpsOrHttpServer(restUrlBase, provincialServer.getUsername(), provincialServer.getPassword(), provincialServer.destination)
 
             HttpRequest request
-            if (provincialServer.destination.contains("METADATA")) {
+            if (provincialServer.destination.contains("METADATA") || provincialServer.destination.contains("IDMED")) {
                  request = HttpRequest
                         .newBuilder()
                         .uri(new URI(restUrl))
