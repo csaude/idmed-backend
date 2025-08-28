@@ -1,7 +1,9 @@
 package mz.org.fgh.sifmoz.backend.healthInformationSystem
 
 import grails.converters.JSON
+import grails.rest.RestfulController
 import grails.validation.ValidationException
+import groovy.json.JsonSlurper
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.clinicSectorType.ClinicSectorType
 
@@ -9,6 +11,8 @@ import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.District
 import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.Province
 import mz.org.fgh.sifmoz.backend.facilityType.FacilityType
+import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.protection.SecUser
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.stockcenter.StockCenter
@@ -23,12 +27,16 @@ import grails.gorm.transactions.ReadOnly
 import grails.gorm.transactions.Transactional
 
 @ReadOnly
-class SystemConfigsController {
+class SystemConfigsController extends RestfulController{
 
     ISystemConfigsService systemConfigsService
 
     static responseFormats = ['json', 'xml']
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
+
+    SystemConfigsController() {
+        super(SystemConfigs)
+    }
 
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
@@ -71,11 +79,18 @@ class SystemConfigsController {
     }
 
     @Transactional
-    def update(SystemConfigs systemConfigs) {
+    def update() {
+        def objectJSON = request.JSON
+        def systemConfigsFromJSON = (parseTo(objectJSON.toString()) as Map) as SystemConfigs
+        SystemConfigs systemConfigs = SystemConfigs.get(objectJSON.id)
+
         if (systemConfigs == null) {
             render status: NOT_FOUND
             return
         }
+
+        systemConfigs.value = systemConfigsFromJSON.value
+
         if (systemConfigs.hasErrors()) {
             transactionStatus.setRollbackOnly()
             respond systemConfigs.errors
@@ -171,13 +186,13 @@ class SystemConfigsController {
     }
 
     List<Object> listClinicSectorInClinic() {
-     //   List<Object> clinicSectorList = new ArrayList<>()
-       // clinicSectorList.add(new LinkedHashMap(id: '8a8a823b81900fee0181901608880000', code: 'CPN', description: 'Consulta Pre-Natal', clinicSectorType_id: '8a8a823b81c7fa9d0181c801ab120000', uuid: '8a8a823b81900fee0181901608890000', active: 'true'))
-      //  clinicSectorList.add(new LinkedHashMap(id: '8a8a823b81900fee018190163i0c0001', code: 'TB', description: 'Tuberculose',  clinicSectorType_id: '8a8a823b81c7fa9d0181c801ab120000', uuid: '8a8a823b81900fee018190163e0c0001', active: 'true'))
-      //  clinicSectorList.add(new LinkedHashMap(id: '8a8a823b81900fee0181901074b20002', code: 'PREP', description: 'Profilaxia Pré-Exposição',  clinicSectorType_id: '8a8a823b81c7fa9d0181c801ab120000', uuid: '8a8a823b81900fee0181901674b20002', active: 'true'))
-      //  clinicSectorList.add(new LinkedHashMap(id: '8a8a823b81900fee0181902674b20003', code: 'SAAJ', description: 'Serviços Amigos dos Adolescentes e Jovens',  clinicSectorType_id: '8a8a823b81c7fa9d0181c801ab120000', uuid: '8a8a823b81900fee0181901674b20003', active: 'true'))
-     //   clinicSectorList.add(new LinkedHashMap(id: '8a8a823b81900fee0181902674b20005', code: 'CCR', description: 'Consulta Criança em Risco',  clinicSectorType_id: '8a8a823b81c7fa9d0181c801ab120000', uuid: '8a8a823b81900fee0181901674b20005', active: 'true'))
-      //  clinicSectorList.add(new LinkedHashMap(id: '8a8a823b81900fee0181902674b20004', code: 'NORMAL', description: 'Atendimento Geral',  clinicSectorType_id: '8a8a823b81c7fa9d0181c802d7ec0006', uuid: '8a8a823b81900fee0181901674b20004', active: 'true'))
+//        List<Object> clinicSectorList = new ArrayList<>()
+//        clinicSectorList.add(new LinkedHashMap(id: '8a8a823b81900fee0181901608880000', code: 'CPN', description: 'Consulta Pre-Natal', clinicSectorType_id: '8a8a823b81c7fa9d0181c801ab120000', uuid: '8a8a823b81900fee0181901608890000', active: 'true'))
+//        clinicSectorList.add(new LinkedHashMap(id: '8a8a823b81900fee018190163i0c0001', code: 'TB', description: 'Tuberculose',  clinicSectorType_id: '8a8a823b81c7fa9d0181c801ab120000', uuid: '8a8a823b81900fee018190163e0c0001', active: 'true'))
+//        clinicSectorList.add(new LinkedHashMap(id: '8a8a823b81900fee0181901074b20002', code: 'PREP', description: 'Profilaxia Pré-Exposição',  clinicSectorType_id: '8a8a823b81c7fa9d0181c801ab120000', uuid: '8a8a823b81900fee0181901674b20002', active: 'true'))
+//        clinicSectorList.add(new LinkedHashMap(id: '8a8a823b81900fee0181902674b20003', code: 'SAAJ', description: 'Serviços Amigos dos Adolescentes e Jovens',  clinicSectorType_id: '8a8a823b81c7fa9d0181c801ab120000', uuid: '8a8a823b81900fee0181901674b20003', active: 'true'))
+//        clinicSectorList.add(new LinkedHashMap(id: '8a8a823b81900fee0181902674b20005', code: 'CCR', description: 'Consulta Criança em Risco',  clinicSectorType_id: '8a8a823b81c7fa9d0181c801ab120000', uuid: '8a8a823b81900fee0181901674b20005', active: 'true'))
+//        clinicSectorList.add(new LinkedHashMap(id: '8a8a823b81900fee0181902674b20004', code: 'NORMAL', description: 'Atendimento Geral',  clinicSectorType_id: '8a8a823b81c7fa9d0181c802d7ec0006', uuid: '8a8a823b81900fee0181901674b20004', active: 'true'))
         List<Object> clinicSectorList = new ArrayList<>()
         clinicSectorList.add(new LinkedHashMap( uuid: '8a8a823b81900fee0181901608890000', code: 'CPN', clinicName: "Consulta Pre-Natal", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
         clinicSectorList.add(new LinkedHashMap( uuid: '8a8a823b81900fee018190163i0c0001', code: 'TB', clinicName: "Tuberculose", facilityType_id: '8a8a823b81c7fa9d0181c801ab120000'))
@@ -225,5 +240,9 @@ class SystemConfigsController {
 
         }
 
+    }
+
+    private static def parseTo(String jsonString) {
+        return new JsonSlurper().parseText(jsonString)
     }
 }

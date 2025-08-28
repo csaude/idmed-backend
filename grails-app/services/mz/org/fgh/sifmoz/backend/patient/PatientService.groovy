@@ -18,6 +18,7 @@ import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
+import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaRegimenSubReport
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
@@ -287,19 +288,34 @@ abstract class PatientService implements IPatientService {
         return list
     }
 
-    List<Patient> getAllPatientsIsAbandonment(int offset, int max) {
-        def patients = Patient.executeQuery("select distinct(p) from Episode ep " +
-                "inner join ep.startStopReason stp " +
-                "inner join ep.patientServiceIdentifier psi " +
-                "inner join psi.patient p " +
-                "inner join ep.clinic c " +
-                "where ep.isAbandonmentDC = true " +
-                "and ep.episodeDate = ( " +
-                "  SELECT MAX(e.episodeDate)" +
-                "  FROM Episode e" +
-                " inner join e.patientServiceIdentifier psi2" +
-                "  WHERE psi2 = ep.patientServiceIdentifier" +
-                ")",[max: max, offset: offset])
+    List<Patient> getAllPatientsIsAbandonment(int offset, int max, String clinic_id) {
+
+        def params = [max: max, offset: offset, clinic: clinic_id]
+        def sql = new Sql(dataSource as DataSource)
+        List<Patient> patients = new ArrayList<>()
+
+        def query =
+                """
+                    select distinct(lastEpisode.patient_id) from episode ep,
+                    (
+                      SELECT MAX(e.episode_date) lastEpisodeDate, psi.id patient_service_identifier_id, psi.patient_id
+                      FROM episode e
+                      inner join patient_service_identifier psi on psi.id = e.patient_service_identifier_id
+                      where e.clinic_id = :clinic
+                      group by 2,3
+                    )lastEpisode
+                    where ep.is_abandonmentdc = true 
+                    and ep.episode_date = lastEpisode.lastEpisodeDate 
+                    and ep.patient_service_identifier_id = lastEpisode.patient_service_identifier_id 
+                    and ep.clinic_id = :clinic LIMIT :max OFFSET :offset
+                """
+
+        def list = sql.rows(query, params)
+
+        if (Utilities.listHasElements(list as ArrayList<?>)) {
+            patients = Patient.findAllByIdInList(list)
+        }
+
         return patients
     }
 

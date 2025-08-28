@@ -13,6 +13,8 @@ import mz.org.fgh.sifmoz.backend.duration.Duration
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.episode.IEpisodeService
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.ISystemConfigsService
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigsService
 import mz.org.fgh.sifmoz.backend.packagedDrug.IPackagedDrugService
 import mz.org.fgh.sifmoz.backend.packagedDrug.PackagedDrug
 import mz.org.fgh.sifmoz.backend.packaging.IPackService
@@ -62,6 +64,8 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
     IPackService packService
     IPackagedDrugService packagedDrugService
     @Autowired
+    ISystemConfigsService configsService
+    @Autowired
     IPatientTransReferenceService patientTransReferenceService
     RestProvincialServerMobileClient restProvincialServerClient = new RestProvincialServerMobileClient()
 
@@ -78,12 +82,15 @@ class RestGetDispensesCentralMobileService extends SynchronizerTask {
 
     static lazyInit = false
 
+//    final String SP_DISPENSA_REFERIDOS_IDMED_ATIVO = true
 
-    @Scheduled(fixedDelay = 300000L)
+    @Scheduled(fixedDelay = 300000L) // 5 minutos após terminar
     void execute() {
-        println " - REST DISPENSES FROM PROVINCIAL TO IDMED " + new Date()
-        GetDispenseFromProvincialServer()
-        SyncDispenseToProvincialServer()
+        if (configsService.getRotineStatus('SP_DISPENSA_REFERIDOS_IDMED_ATIVO')) {
+            println " - REST DISPENSES FROM PROVINCIAL TO IDMED " + new Date()
+            GetDispenseFromProvincialServer()
+            SyncDispenseToProvincialServer()
+        }
     }
 
     void SyncDispenseToProvincialServer() {

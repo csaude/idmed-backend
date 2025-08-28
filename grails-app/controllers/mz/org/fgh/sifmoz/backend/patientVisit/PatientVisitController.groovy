@@ -347,16 +347,16 @@ class PatientVisitController extends RestfulController {
 
         render result as JSON
 
-        Thread.sleep(1000)
-        visit.refresh()
+//        Thread.sleep(1000)
+//        visit.refresh()
 
-        if (visit?.patient?.his !== null) {
-            PatientVisit.withTransaction {
-                PatientVisit patientVisit = PatientVisit.findById(visit.id)
-                String convertToJson = restPost.createPOCDispense(patientVisit)
-                interoperabilityTransationService.sendMessageToPOC(patientVisit?.patientVisitDetails?.first()?.prescription?.id, convertToJson.toString(), ACTIVEMQ_DISPENSE_QUEUE)
-            }
-        }
+//        if (visit?.patient?.his !== null) {
+//            PatientVisit.withTransaction {
+//                PatientVisit patientVisit = PatientVisit.findById(visit.id)
+//                String convertToJson = restPost.createPOCDispense(patientVisit)
+//                interoperabilityTransationService.sendMessageToPOC(patientVisit?.patientVisitDetails?.first()?.prescription?.id, convertToJson.toString(), ACTIVEMQ_DISPENSE_QUEUE)
+//            }
+//        }
 
     }
 

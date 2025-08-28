@@ -2,6 +2,8 @@ package mz.org.fgh.sifmoz.backend.tansreference
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.ISystemConfigsService
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigsService
 import mz.org.fgh.sifmoz.backend.task.SynchronizerTask
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
@@ -27,6 +29,8 @@ class RestGetEpisodeToCorrectCentralMobileService extends SynchronizerTask {
     IEpisodeService episodeService
     @Autowired
     IPatientTransReferenceService patientTransReferenceService
+    @Autowired
+    ISystemConfigsService configsService
     RestProvincialServerMobileClient restProvincialServerClient = new RestProvincialServerMobileClient()
     private static final NAME = "GetEpisodeToCorrectCentralMobile"
 
@@ -43,84 +47,88 @@ class RestGetEpisodeToCorrectCentralMobileService extends SynchronizerTask {
 
     static lazyInit = false
 
-    @Scheduled(fixedDelay = 10800000L)
+//    final String EPISODIO2_IDART_PROVINCIAL_IDMED_ATIVO = true
+
+    @Scheduled(fixedDelay = 10800000L) // 3 horas após terminar
     void execute() {
-        println  " - REST PATIENT EPISODE 2 FROM PROVINCIAL TO IDMED " + new Date()
-        if (this.instalationConfig != null && !this.isProvincial()) {
+        if (configsService.getRotineStatus('EPISODIO2_IDART_PROVINCIAL_IDMED_ATIVO')) {
+            println " - REST PATIENT EPISODE 2 FROM PROVINCIAL TO IDMED " + new Date()
+            if (this.instalationConfig != null && !this.isProvincial()) {
 
-            Clinic clinic = Clinic.findById(this.getUsOrProvince())
-            ProvincialServer provincialServer = ProvincialServer.findByCodeAndDestination(clinic.getProvince().code, MOBILE_SERVER)
-            String urlPath = "/sync_temp_patients?mainclinicuuid=eq." + clinic.getUuid() + "&modified=eq.T";
-            //addClinicuuid
-            def response = restProvincialServerClient.getRequestProvincialServerClient(provincialServer, urlPath)
-            LOGGER.info("Iniciando a Busca de Pacientes Para Corrigir")
+                Clinic clinic = Clinic.findById(this.getUsOrProvince())
+                ProvincialServer provincialServer = ProvincialServer.findByCodeAndDestination(clinic.getProvince().code, MOBILE_SERVER)
+                String urlPath = "/sync_temp_patients?mainclinicuuid=eq." + clinic.getUuid() + "&modified=eq.T";
+                //addClinicuuid
+                def response = restProvincialServerClient.getRequestProvincialServerClient(provincialServer, urlPath)
+                LOGGER.info("Iniciando a Busca de Pacientes Para Corrigir")
 
-            StartStopReason startStopReasonBack = StartStopReason.findByCode("VOLTOU_REFERENCIA")
-            StartStopReason startStopReasonReferred = StartStopReason.findByCode("REFERIDO_PARA")
-            EpisodeType episodeTypeInitial = EpisodeType.findByCode("INICIO")
-            EpisodeType episodeTypeEnding = EpisodeType.findByCode("FIM")
+                StartStopReason startStopReasonBack = StartStopReason.findByCode("VOLTOU_REFERENCIA")
+                StartStopReason startStopReasonReferred = StartStopReason.findByCode("REFERIDO_PARA")
+                EpisodeType episodeTypeInitial = EpisodeType.findByCode("INICIO")
+                EpisodeType episodeTypeEnding = EpisodeType.findByCode("FIM")
 
-            LOGGER.info(MESSAGE)
-            /// Object[] dispenses = response
-            for (Object patient : response) {
-                try {
-                    String message = " Paciente sem Identificador."
-                    if (patient.getAt("id") != null) {
-                        message = String.format(FORMAT_STRING,
-                                patient.getAt("id").toString(),
-                                patient.getAt("patientfirstname").toString(),
-                                patient.getAt("patientid").toString())
-                    }
-                    LOGGER.info("Processando" + message)
-
-                    if (patient.getAt('patientid') != null) {
-                        PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findByValue(patient.getAt('patientid').toString())
-                        if (patientServiceIdentifier != null) {
-                            Episode backReferenceEpisode = new Episode()
-                            backReferenceEpisode.setEpisodeDate(ConvertDateUtils.createDate(patient.getAt("prescriptiondate").toString(), "yyyy-MM-dd"))
-                            backReferenceEpisode.setEpisodeType(episodeTypeInitial)
-                            backReferenceEpisode.setStartStopReason(startStopReasonBack)
-                            backReferenceEpisode.setPatientServiceIdentifier(patientServiceIdentifier)
-                            backReferenceEpisode.setNotes(startStopReasonBack.reason)
-                            backReferenceEpisode.setClinic(Clinic.findByUuid(patient.getAt("mainclinicuuid").toString()))
-                            backReferenceEpisode.setClinicSector(ClinicSector.findByCode("TARV"))
-                            // to do get clinic
-                            backReferenceEpisode.setCreationDate(new Date())
-                            backReferenceEpisode.setResidentInCountry(true)
-
-                            episodeService.save(backReferenceEpisode)
-
-                            Episode newReferenceEpisode = new Episode()
-                            newReferenceEpisode.setEpisodeDate(ConvertDateUtils.createDate(patient.getAt("prescriptiondate").toString(), "yyyy-MM-dd"))
-                            newReferenceEpisode.setEpisodeType(episodeTypeEnding)
-                            newReferenceEpisode.setStartStopReason(startStopReasonReferred)
-                            newReferenceEpisode.setPatientServiceIdentifier(patientServiceIdentifier)
-                            newReferenceEpisode.setNotes(startStopReasonReferred.reason)
-                            newReferenceEpisode.setClinic(Clinic.findByUuid(patient.getAt("mainclinicuuid").toString()))
-                            newReferenceEpisode.setClinicSector(ClinicSector.findByCode("TARV"))
-                            // to do get clinic
-                            Clinic newRefferalClinic = Clinic.findByUuid(patient.getAt("clinicuuid").toString())
-                            newReferenceEpisode.setReferralClinic(newRefferalClinic)
-                            backReferenceEpisode.setCreationDate(new Date())
-                            backReferenceEpisode.setResidentInCountry(true)
-                            episodeService.save(newReferenceEpisode)
-                            //Send the patient to Update modified flag - Patch Server
-
-                            def path = "/sync_temp_patients?id=eq." + patient.getAt("id")
-                            //   patientEdit.put("modified", "F")
-                            String obj = '{"modified":"F"}'
-
-                            restProvincialServerClient.patchRequestProvincialServerClient(provincialServer, path, obj)
-                        } else {
-                            LOGGER.info("Servico de Saude Nao encontrado Para o paciente com o nid:" + patient.getAt("patientid").toString());
+                LOGGER.info(MESSAGE)
+                /// Object[] dispenses = response
+                for (Object patient : response) {
+                    try {
+                        String message = " Paciente sem Identificador."
+                        if (patient.getAt("id") != null) {
+                            message = String.format(FORMAT_STRING,
+                                    patient.getAt("id").toString(),
+                                    patient.getAt("patientfirstname").toString(),
+                                    patient.getAt("patientid").toString())
                         }
-                    } else {
-                        LOGGER.error("Paciente sem Identificador")
+                        LOGGER.info("Processando" + message)
+
+                        if (patient.getAt('patientid') != null) {
+                            PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findByValue(patient.getAt('patientid').toString())
+                            if (patientServiceIdentifier != null) {
+                                Episode backReferenceEpisode = new Episode()
+                                backReferenceEpisode.setEpisodeDate(ConvertDateUtils.createDate(patient.getAt("prescriptiondate").toString(), "yyyy-MM-dd"))
+                                backReferenceEpisode.setEpisodeType(episodeTypeInitial)
+                                backReferenceEpisode.setStartStopReason(startStopReasonBack)
+                                backReferenceEpisode.setPatientServiceIdentifier(patientServiceIdentifier)
+                                backReferenceEpisode.setNotes(startStopReasonBack.reason)
+                                backReferenceEpisode.setClinic(Clinic.findByUuid(patient.getAt("mainclinicuuid").toString()))
+                                backReferenceEpisode.setClinicSector(ClinicSector.findByCode("TARV"))
+                                // to do get clinic
+                                backReferenceEpisode.setCreationDate(new Date())
+                                backReferenceEpisode.setResidentInCountry(true)
+
+                                episodeService.save(backReferenceEpisode)
+
+                                Episode newReferenceEpisode = new Episode()
+                                newReferenceEpisode.setEpisodeDate(ConvertDateUtils.createDate(patient.getAt("prescriptiondate").toString(), "yyyy-MM-dd"))
+                                newReferenceEpisode.setEpisodeType(episodeTypeEnding)
+                                newReferenceEpisode.setStartStopReason(startStopReasonReferred)
+                                newReferenceEpisode.setPatientServiceIdentifier(patientServiceIdentifier)
+                                newReferenceEpisode.setNotes(startStopReasonReferred.reason)
+                                newReferenceEpisode.setClinic(Clinic.findByUuid(patient.getAt("mainclinicuuid").toString()))
+                                newReferenceEpisode.setClinicSector(ClinicSector.findByCode("TARV"))
+                                // to do get clinic
+                                Clinic newRefferalClinic = Clinic.findByUuid(patient.getAt("clinicuuid").toString())
+                                newReferenceEpisode.setReferralClinic(newRefferalClinic)
+                                backReferenceEpisode.setCreationDate(new Date())
+                                backReferenceEpisode.setResidentInCountry(true)
+                                episodeService.save(newReferenceEpisode)
+                                //Send the patient to Update modified flag - Patch Server
+
+                                def path = "/sync_temp_patients?id=eq." + patient.getAt("id")
+                                //   patientEdit.put("modified", "F")
+                                String obj = '{"modified":"F"}'
+
+                                restProvincialServerClient.patchRequestProvincialServerClient(provincialServer, path, obj)
+                            } else {
+                                LOGGER.info("Servico de Saude Nao encontrado Para o paciente com o nid:" + patient.getAt("patientid").toString());
+                            }
+                        } else {
+                            LOGGER.error("Paciente sem Identificador")
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace()
+                    } finally {
+                        continue
                     }
-                } catch (Exception e) {
-                    e.printStackTrace()
-                } finally {
-                    continue
                 }
             }
         }
