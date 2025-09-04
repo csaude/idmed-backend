@@ -18,9 +18,12 @@ import mz.org.fgh.sifmoz.backend.packaging.Pack
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifierService
 import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
+import mz.org.fgh.sifmoz.backend.provincialServer.ProvincialServer
 import mz.org.fgh.sifmoz.backend.restUtils.RestOpenMRSClient
+import mz.org.fgh.sifmoz.backend.restUtils.RestProvincialServerMobileClient
 import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
+import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,6 +39,7 @@ class PatientController extends RestfulController {
     LocalidadeService localidadeService
     PatientServiceIdentifierService patientServiceIdentifierService
 
+    public final static String IDMED_SERVER = "IDMED";
     DataSource dataSource
     def SessionFactory sessionFactory
 
@@ -105,10 +109,15 @@ class PatientController extends RestfulController {
                     identifier.patient = patient
                     identifier.origin = patient.origin
                     identifier.id = item.id
+                    identifier.episodes.each {epi ->
+                        item.episodes.each { it ->
+                            epi.id = it.id
+                            epi.patientServiceIdentifier = identifier
+                        }
+                    }
                     patientServiceIdentifierService.save(identifier)
                     patient.addToIdentifiers(identifier)
                 }
-
             }
 
         } catch (ValidationException e) {
@@ -411,5 +420,24 @@ class PatientController extends RestfulController {
 
     private static boolean checkHasNotOrigin(Patient patient) {
         return patient.origin == null || patient?.origin?.isEmpty()
+    }
+
+    def getPatientFromProvincialServer(String clinicId, String patientNid) {
+        RestProvincialServerMobileClient restProvincialServerClient = new RestProvincialServerMobileClient()
+        Clinic clinic = Clinic.findById(clinicId)
+        ProvincialServer provincialServer = ProvincialServer.findByCodeAndDestination(clinic.getProvince().code, IDMED_SERVER)
+
+
+        String urlPath = "/api/patient/searchByParam/" + patientNid + "/" + clinicId
+        def response = restProvincialServerClient.getRequestProvincialServerClient(provincialServer, urlPath) as JSONArray
+
+        response.each {r->
+            r.identifiers.each {i ->
+                i.startDate = new Date()
+                i.episodes = []
+            }
+        }
+        render response as JSON
+
     }
 }
