@@ -125,12 +125,11 @@ abstract class PatientService implements IPatientService {
         def sql = new Sql(dataSource as DataSource)
 
         def getPatientsSql = '''
-            SELECT p.id FROM patient p
-            INNER JOIN (SELECT max(e.episode_date), psi.patient_id FROM episode e
-                        INNER JOIN  patient_service_identifier psi on psi.id = e.patient_service_identifier_id
+            SELECT p.id FROM patient_service_identifier p
+            INNER JOIN (SELECT max(e.episode_date), e.patient_service_identifier_id FROM episode e
                         WHERE e.clinic_sector_id = :clinicSector
                         GROUP BY 2
-                        ) lastEpisode on lastEpisode.patient_id = p.id
+                        ) lastEpisode on lastEpisode.patient_service_identifier_id = p.id
                         LIMIT :max OFFSET :offset
         '''
 

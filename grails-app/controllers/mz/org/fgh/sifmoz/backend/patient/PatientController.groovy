@@ -309,7 +309,7 @@ class PatientController extends RestfulController {
 
     def getPatientsInClinicSector(String clinicSectorId, int offset, int max) {
         def allPatientResult = patientService.getAllPatientsInClinicSector(clinicSectorId, offset, max)
-        render JSONSerializer.setObjectListJsonResponse(Patient.findAllByIdInList(allPatientResult.id)) as JSON
+        render JSONSerializer.setObjectListJsonResponse(PatientServiceIdentifier.findAllByIdInList(allPatientResult.id)) as JSON
     }
 
     private static def parseTo(String jsonString) {
