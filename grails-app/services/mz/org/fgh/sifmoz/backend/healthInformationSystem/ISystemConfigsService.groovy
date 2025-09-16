@@ -16,4 +16,6 @@ interface ISystemConfigsService {
 
    SystemConfigs getByKey(String key)
 
+    boolean getRotineStatus(String key)
+
 }

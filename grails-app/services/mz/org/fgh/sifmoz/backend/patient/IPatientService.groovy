@@ -36,7 +36,7 @@ interface IPatientService {
 
     List findPossibleDuplicatePatients()
 
-    List<Patient> getAllPatientsIsAbandonment(int offset, int max)
+    List<Patient> getAllPatientsIsAbandonment(int offset, int max, String clinic_id)
 
     Patient savePatientFromPoc(def objectJSON)
 

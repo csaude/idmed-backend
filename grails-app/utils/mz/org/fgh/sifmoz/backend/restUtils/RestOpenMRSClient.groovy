@@ -260,7 +260,7 @@ class RestOpenMRSClient {
 
         for (PackagedDrug pd : pack.packagedDrugs) {
             //posologia
-            customizedDosage = "Tomar " + String.valueOf(pd.timesPerDay) + " " + pd.drug.form.description + " " + String.valueOf(pd.amtPerTime).replace(".0", "") + " vez(es) por " + pd.drug.defaultPeriodTreatment
+            customizedDosage = "Tomar " + String.valueOf(pd.amtPerTime) + " " + pd.drug.form.description + " " + String.valueOf(pd.timesPerDay).replace(".0", "") + " vez(es) por " + pd.drug.defaultPeriodTreatment
 
             String formulationString = "{\"" +
                     "person\":\"" + patient.hisUuid + "\"," +

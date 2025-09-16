@@ -165,7 +165,7 @@ class InteroperabilityTransationService {
         }
     }
 
-    @Scheduled(fixedDelay = 180000L)
+//    @Scheduled(fixedDelay = 180000L)
     void schedulerActiveMQRunning() {
         activeMQLoadNotProcessedMessages()
         activeMQLoadNotSentMessages()

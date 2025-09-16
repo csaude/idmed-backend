@@ -26,6 +26,9 @@ import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import org.grails.web.json.JSONArray
 import org.grails.web.json.JSONObject
 import org.hibernate.SessionFactory
+import org.springframework.beans.factory.annotation.Autowired
+
+import javax.sql.DataSource
 
 import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.NO_CONTENT
@@ -37,6 +40,7 @@ class PatientController extends RestfulController {
     PatientServiceIdentifierService patientServiceIdentifierService
 
     public final static String IDMED_SERVER = "IDMED";
+    DataSource dataSource
     def SessionFactory sessionFactory
 
     static responseFormats = ['json', 'xml']
@@ -406,8 +410,9 @@ class PatientController extends RestfulController {
         render status: NO_CONTENT
     }
 
-    def getAllPatientsIsAbandonment(int offset, int max) {
-        render JSONSerializer.setObjectListJsonResponse(patientService.getAllPatientsIsAbandonment(offset, max)) as JSON
+    def getAllPatientsIsAbandonment(int offset, int max, String clinic_id) {
+        def listpatientJson = JSONSerializer.setObjectListJsonResponse(patientService.getAllPatientsIsAbandonment(offset, max), clinic_id) as JSON
+        render listpatientJson
     }
 
     private static Patient configPatientOrigin(Patient patient) {

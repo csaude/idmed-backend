@@ -4,7 +4,10 @@ import grails.gorm.DetachedCriteria
 import grails.gorm.services.Service
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.ISystemConfigsService
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigs
+import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigsService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 
@@ -16,22 +19,28 @@ class SecUserService {
 
     static lazyInit = false
     private static final int DEFAULT_FALLBACK_EXPIRE_DAYS = 90
+//    final String LOGIN_STATUS_USUARIOS_ATIVO = true
+
+    @Autowired
+    ISystemConfigsService configsService
 
     @Scheduled(cron = "0 0 12 * * 1,5")
+    // Segunda e sexta às 12:00
     void schedulerUserMonitoringRunning() {
-        println('CRON FOR USERS UPDATE - DATE '+ new Date())
-        SecUser.withTransaction {
-            suspendInactiveUserAccounts()
+        if (configsService.getRotineStatus('LOGIN_STATUS_USUARIOS_ATIVO')) {
+            println('CRON FOR USERS UPDATE - DATE ' + new Date())
+            SecUser.withTransaction {
+                suspendInactiveUserAccounts()
+            }
         }
-
     }
 
     void suspendInactiveUserAccounts() {
         List<SecUser> secUserList = findAllUsersWithLastLoginBefore(getExpireDate())
         for (SecUser user : secUserList) {
-            if(!user.username.equalsIgnoreCase('iDMED') &&
+            if (!user.username.equalsIgnoreCase('iDMED') &&
                     !user.username.equalsIgnoreCase('admin'))
-            expireAndLockAccount(user)
+                expireAndLockAccount(user)
         }
     }
 
@@ -49,8 +58,8 @@ class SecUserService {
         DetachedCriteria<SecUser> criteria = new DetachedCriteria(SecUser).build {
             le('lastLogin', expireDate)
             eq('accountLocked', false)
-            ne('username','iDMED')
-            ne('username','admin')
+            ne('username', 'iDMED')
+            ne('username', 'admin')
         }
         return criteria.list()
     }
