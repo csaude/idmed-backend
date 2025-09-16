@@ -330,7 +330,13 @@ class PatientController extends RestfulController {
 
           if (patientServiceToDelete.episodes.size() > 0) {
               def sortedEpisodes = patientServiceToDelete.episodes.sort { a, b ->
-                  b.episodeDate <=> a.episodeDate
+                  def latestDateA = a.episodeDate instanceof Collection ?
+                          a.episodeDate.max() :
+                          a.episodeDate
+                  def latestDateB = b.episodeDate instanceof Collection ?
+                          b.episodeDate.max() :
+                          b.episodeDate
+                  latestDateB <=> latestDateA
               }
 
 
