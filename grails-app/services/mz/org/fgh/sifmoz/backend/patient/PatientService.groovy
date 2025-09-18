@@ -40,6 +40,9 @@ abstract class PatientService implements IPatientService {
     @Autowired
     DataSource dataSource
 
+    private static final String CODE_PATTERN = /^[0-9\/\-_]+$"/
+
+    private static final String NAME_PATTERN = /^[a-zA-ZÀ-ÿ\\s]+$"/
 
     @Override
     List<Patient> search(Patient patient,int offset, int limit) {
@@ -90,25 +93,37 @@ abstract class PatientService implements IPatientService {
 
     @Override
     List<Patient> search(String searchString, String clinicId) {
-        String mainQuery = "select p from Patient p " +
-                " where (lower(p.firstNames) like lower(:searchString) OR" +
-                " lower(p.middleNames) like lower(:searchString) OR " +
-                " lower(p.lastNames) like lower(:searchString)) " +
-                " AND p.clinic =:clinic"
-        String indentifierCondition = " OR EXISTS (select psi " +
-                "                   from PatientServiceIdentifier psi inner join psi.patient pt " +
-                "                   where pt.id = p.id and lower(psi.value) like lower(:searchString)) "
-        String searchQuery = mainQuery + indentifierCondition
+        def sql = new Sql(dataSource as DataSource)
+        String mainQuery = null
+        if (isCode(searchString)) {
+            mainQuery = " select psi.* "+
+                    " from patient p "+
+                    " inner join patient_service_identifier psi on psi.patient_id = p.id "+
+                    " where psi.value like '%"+searchString+"%' "+
+                    " AND psi.clinic_id = :clinicId "+
+                    " order by p.first_names "
 
-        searchQuery += " order by p.firstNames "
+        }else if (isName(searchString)) {
+            mainQuery = " select p from patient p " +
+                    " where (lower(p.first_names) like lower(:searchString) OR" +
+                    " lower(p.middle_names) like lower(:searchString) OR " +
+                    " lower(p.last_names) like lower(:searchString)) " +
+                    " AND p.clinic_id =:clinicId" +
+                    " order by p.first_names "
+        }else{
+            mainQuery = " select psi.* "+
+                    " from patient p "+
+                    " inner join patient_service_identifier psi on psi.patient_id = p.id "+
+                    " where psi.value like '%"+searchString+"%' "+
+                    " AND psi.clinic_id = :clinicId "+
+                    " order by p.first_names "
+        }
 
-        Clinic clinic = Clinic.findById(clinicId)
+        List patients = sql.rows(mainQuery, [clinicId: clinicId, searchString: searchString, max: 500])
 
-        return Patient.executeQuery(searchQuery,
-                [searchString: "%${searchString}%",
-                 clinic      : clinic, max: 400]
-        )
+        return patients
     }
+
 
     @Override
     Long count(Patient patient) {
@@ -415,4 +430,13 @@ abstract class PatientService implements IPatientService {
         //  psi.episodes.addAll(episode)
         //   psi.save(flush: true)
     }
+
+    static boolean isCode(String input) {
+        return input != null && input.matches(CODE_PATTERN);
+    }
+
+    static boolean isName(String input) {
+        return input != null && input.matches(NAME_PATTERN);
+    }
+
 }
