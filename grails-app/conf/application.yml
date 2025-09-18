@@ -116,6 +116,8 @@ dataSource:
   dialect: hibernate.MyPostgreSQLDialect
   username: '${DB_USER:postgres}'
   password: '${DB_PASS:postgres}'
+  useraccess: '${BACKEND_USER:iDMEDSYNC}'
+  userpassaccess: '${BACKEND_PASS:iDMED123}'
   pooled: true
   jmxExport: true
 hibernate:

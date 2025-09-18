@@ -1,6 +1,7 @@
 package mz.org.fgh.sifmoz.backend.restUtils
 
-
+import grails.core.GrailsApplication
+import grails.util.Holders
 import mz.org.fgh.sifmoz.backend.provincialServer.ProvincialServer
 
 import org.apache.http.client.methods.CloseableHttpResponse
@@ -17,6 +18,8 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 
 class RestProvincialServerMobileClient {
+
+    private final GrailsApplication grailsApplication = Holders.grailsApplication
 
     RestProvincialServerMobileClient() {
 
@@ -70,14 +73,18 @@ class RestProvincialServerMobileClient {
         return result
     }
 
-    static def getRequestProvincialServerClient(ProvincialServer provincialServer, String urlPath) {
+    def getRequestProvincialServerClient(ProvincialServer provincialServer, String urlPath) {
+        def credentials = [
+                username: grailsApplication.config.dataSource.useraccess,
+                password: grailsApplication.config.dataSource.userpassaccess
+        ]
         String restUrlBase = provincialServer.getUrlPath() + provincialServer.getPort()
-        String restUrl = provincialServer.getUrlPath().contains("https") ? restUrlBase.replaceAll(':'+provincialServer.getPort(),'') + urlPath : provincialServer.getUrlPath() + provincialServer.getPort() + urlPath
+        String restUrl = provincialServer.getUrlPath().contains("https") ? provincialServer.getUrlPath().replaceAll(':','').replace('https//','https://') + urlPath : provincialServer.getUrlPath() + provincialServer.getPort() + urlPath
         String result = ""
-        restUrlBase = provincialServer.getUrlPath().contains("https") ? restUrlBase.replaceAll(':'+provincialServer.getPort(),'') : restUrlBase
+        restUrlBase = provincialServer.getUrlPath().contains("https") ? provincialServer.getUrlPath().replaceAll(':','').replace('https//','https://') : restUrlBase
         println(restUrlBase)
         try {
-            String token =  PostgrestAuthenticationUtils.getJWTPermissionFromHttpsOrHttpServer(restUrlBase, provincialServer.getUsername(), provincialServer.getPassword(), provincialServer.destination)
+            String token =  PostgrestAuthenticationUtils.getJWTPermissionFromHttpsOrHttpServer(restUrlBase, credentials.username, credentials.password, provincialServer.destination)
 
             HttpRequest request
             if (provincialServer.destination.contains("METADATA") || provincialServer.destination.contains("IDMED")) {

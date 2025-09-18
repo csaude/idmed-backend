@@ -1231,6 +1231,7 @@ class BootStrap {
     List<Object> listHealthInformationSystem() {
         List<Object> healthInformationSystemList = new ArrayList<>()
         healthInformationSystemList.add(new LinkedHashMap(id: 'ff8080817d9aa854017d9e2809b50008', abbreviation: 'OpenMRS', description: 'OpenMRS', active: true))
+        healthInformationSystemList.add(new LinkedHashMap(id: '06e15e5c-d771-477a-9db5-130a038af290', abbreviation: 'Província', description: 'Servidor Provincial', active: true))
 
         return healthInformationSystemList
     }
