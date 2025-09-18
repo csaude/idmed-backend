@@ -118,8 +118,6 @@ abstract class PatientService implements IPatientService {
             patientsList.add(Patient.get(patientId?.id))
         }
 
-        println('Lista de pacientes size '+ patientsList.size())
-
         return patientsList
     }
 
