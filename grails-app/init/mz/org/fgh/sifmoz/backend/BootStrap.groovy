@@ -862,13 +862,9 @@ class BootStrap {
                 provincialServer.save(flush: true, failOnError: true)
             } else {
                 if (provincialServer.destination.equalsIgnoreCase("IDMED")) {
-                    provincialServer.username = "iDMED"
-                    provincialServer.password = "iDMED123"
+                    provincialServer.username = "N/A"
+                    provincialServer.password = "N/A"
                 }
-                provincialServer.urlPath = provincialServerObject.urlPath
-                provincialServer.port = provincialServerObject.port
-                provincialServer.username = provincialServerObject.username
-                provincialServer.save(flush: true, failOnError: true)
             }
         }
     }
