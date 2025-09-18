@@ -121,6 +121,8 @@ abstract class PatientService implements IPatientService {
 
         List patients = sql.rows(mainQuery, [clinicId: clinicId, searchString: searchString, max: 500])
 
+        println('Lista de pacientes size '+ patients.size())
+
         return patients
     }
 
