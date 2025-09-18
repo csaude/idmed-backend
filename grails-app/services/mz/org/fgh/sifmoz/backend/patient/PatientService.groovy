@@ -40,9 +40,7 @@ abstract class PatientService implements IPatientService {
     @Autowired
     DataSource dataSource
 
-    private static final String CODE_PATTERN = /^[0-9\/\-_]+$"/
-
-    private static final String NAME_PATTERN = /^[a-zA-ZÀ-ÿ\\s]+$"/
+    private static final String NAME_PATTERN = ~/^[\p{L}]+(?: [\p{L}]+)*$/
 
     @Override
     List<Patient> search(Patient patient,int offset, int limit) {
@@ -95,23 +93,16 @@ abstract class PatientService implements IPatientService {
     List<Patient> search(String searchString, String clinicId) {
         def sql = new Sql(dataSource as DataSource)
         String mainQuery = null
-        if (isCode(searchString)) {
-            mainQuery = " select psi.* "+
-                    " from patient p "+
+        if (isName(searchString)) {
+            mainQuery = " select p.id from patient p " +
                     " inner join patient_service_identifier psi on psi.patient_id = p.id "+
-                    " where psi.value like '%"+searchString+"%' "+
-                    " AND psi.clinic_id = :clinicId "+
-                    " order by p.first_names "
-
-        }else if (isName(searchString)) {
-            mainQuery = " select p from patient p " +
                     " where (lower(p.first_names) like lower(:searchString) OR" +
                     " lower(p.middle_names) like lower(:searchString) OR " +
                     " lower(p.last_names) like lower(:searchString)) " +
                     " AND p.clinic_id =:clinicId" +
                     " order by p.first_names "
         }else{
-            mainQuery = " select psi.* "+
+            mainQuery = " select p.id "+
                     " from patient p "+
                     " inner join patient_service_identifier psi on psi.patient_id = p.id "+
                     " where psi.value like '%"+searchString+"%' "+
@@ -119,11 +110,17 @@ abstract class PatientService implements IPatientService {
                     " order by p.first_names "
         }
 
-        List patients = sql.rows(mainQuery, [clinicId: clinicId, searchString: searchString, max: 500])
+        List patients = sql.rows(mainQuery, [clinicId: clinicId, searchString: searchString, max: 500]) as List<Patient>
 
-        println('Lista de pacientes size '+ patients.size())
+        List<Patient> patientsList = []
 
-        return patients
+        patients.forEach { patientId ->
+            patientsList.add(Patient.get(patientId?.id))
+        }
+
+        println('Lista de pacientes size '+ patientsList.size())
+
+        return patientsList
     }
 
 
@@ -431,10 +428,6 @@ abstract class PatientService implements IPatientService {
         episode.save(flush: true)
         //  psi.episodes.addAll(episode)
         //   psi.save(flush: true)
-    }
-
-    static boolean isCode(String input) {
-        return input != null && input.matches(CODE_PATTERN);
     }
 
     static boolean isName(String input) {

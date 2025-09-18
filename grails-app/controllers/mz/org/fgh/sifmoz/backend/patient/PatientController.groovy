@@ -199,7 +199,6 @@ class PatientController extends RestfulController {
         def objectJSON = request.JSON
         patient = objectJSON as Patient
 
-
         def limit = objectJSON.limit != null ? objectJSON.limit as int : 10 // Default limit to 10 if not provided
         def offset = objectJSON.offset != null ? objectJSON.offset as int : 0
 
@@ -217,7 +216,7 @@ class PatientController extends RestfulController {
 
 
     def searchByParam(String searchString, String clinicId) {
-        String replacedString = searchString.replace("-", "/");
+        String replacedString = searchString.replace("-", "/")
         List<Patient> patientList = patientService.search(replacedString, clinicId)
         render JSONSerializer.setObjectListJsonResponse(patientList) as JSON
     }
