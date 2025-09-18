@@ -148,7 +148,8 @@ class PatientVisitDetailsController extends RestfulController {
 
     def getLastByPatientId(String patientId) {
 
-        def patient = Patient.get(patientId)
+        def patientList = Patient.findAllById(patientId)
+        def patient = patientList?.first()
 
         def patientServiceIdentifierList = PatientServiceIdentifier.createCriteria().list {
             eq('patient', patient)

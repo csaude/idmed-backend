@@ -492,7 +492,9 @@ class PatientVisitController extends RestfulController {
 
     def getByPatientId(String patientId) {
 
-        def patient = Patient.get(patientId)
+        def patientList = Patient.findAllById(patientId)
+        def patient = patientList?.first()
+
         def patientVisitList = new ArrayList<PatientVisit>()
         def patientVisitToAdd = PatientVisit.createCriteria().list {
             eq('patient', patient)

@@ -109,15 +109,12 @@ abstract class PatientService implements IPatientService {
                     " AND psi.clinic_id = :clinicId "+
                     " order by p.first_names "
         }
-
         List patients = sql.rows(mainQuery, [clinicId: clinicId, searchString: searchString, max: 500]) as List<Patient>
 
         List<Patient> patientsList = []
-
         patients.forEach { patientId ->
             patientsList.add(Patient.get(patientId?.id))
         }
-
         return patientsList
     }
 
