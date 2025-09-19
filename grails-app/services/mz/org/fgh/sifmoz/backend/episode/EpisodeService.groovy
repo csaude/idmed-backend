@@ -2,23 +2,23 @@ package mz.org.fgh.sifmoz.backend.episode
 
 import grails.gorm.services.Service
 import grails.gorm.transactions.Transactional
-import groovy.transform.CompileStatic
+import groovy.sql.Sql
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
 import mz.org.fgh.sifmoz.backend.episodeType.EpisodeType
 import mz.org.fgh.sifmoz.backend.patient.Patient
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.patientVisitDetails.IPatientVisitDetailsService
-import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
-import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.reports.referralManagement.IReferredPatientsReportService
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
 import org.springframework.beans.factory.annotation.Autowired
 
+import javax.sql.DataSource
+
 @Transactional
 @Service(Episode)
-abstract class EpisodeService implements IEpisodeService{
+abstract class EpisodeService implements IEpisodeService {
 
     IReferredPatientsReportService referredPatientsReportService
     IPatientVisitDetailsService iPatientVisitDetailsService
@@ -26,25 +26,29 @@ abstract class EpisodeService implements IEpisodeService{
     @Override
     List<Episode> getAllByClinicId(String clinicId, int offset, int max) {
         Clinic clinic = Clinic.findWhere(id: clinicId)
-        List<Episode> episodes = Episode.findAllWhere(clinic: clinic,[offset: offset, max: max])
+        List<Episode> episodes = Episode.findAllWhere(clinic: clinic, [offset: offset, max: max])
         return episodes
     }
+
     @Override
     List<Episode> getAllByIndentifier(String identifierId, int offset, int max) {
-        PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findWhere(id:  identifierId)
+        PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findWhere(id: identifierId)
         def episodes = Episode.findAllWhere(patientServiceIdentifier: patientServiceIdentifier, [sort: ['episodeDate': 'desc'], max: 4])
         return episodes
     }
+
+    @Autowired
+    DataSource dataSource
 
     @Override
     List<Episode> getEpisodeOfReferralOrBackReferral(Clinic clinic, ClinicalService clinicalService, String startStopReasonCode, Date startDate, Date endDate) {
 
         StartStopReason startStop = StartStopReason.findWhere(code: startStopReasonCode)
-       // render Episode.findAllByStartStopReasonAndPatientServiceIdentifierInListAndEpisodeDateBetween(startStop,patients,startDate,endDate)
+        // render Episode.findAllByStartStopReasonAndPatientServiceIdentifierInListAndEpisodeDateBetween(startStop,patients,startDate,endDate)
         return Episode.executeQuery("select ep from Episode ep " +
                 "inner join ep.startStopReason stp " +
                 "inner join ep.patientServiceIdentifier psi " +
-                "inner join psi.patient p "+
+                "inner join psi.patient p " +
                 "inner join ep.clinic c " +
                 "where c.id= ?0 and stp.id = ?1 and psi.service.id = ?2 and ep.episodeDate >= ?3 and ep.episodeDate <= ?4 and ep.episodeDate = (select max(ep2.episodeDate) " +
                 "from Episode ep2 " +
@@ -56,40 +60,45 @@ abstract class EpisodeService implements IEpisodeService{
 
     @Override
     Episode getEpisodeOfReferralByPatientServiceIdentfierAndBelowEpisodeDate(PatientServiceIdentifier patientServiceIdentifier, Date episodeDate) {
-       // StartStopReason startStop = StartStopReason.findByCode("REFERIDO_PARA")
+        // StartStopReason startStop = StartStopReason.findByCode("REFERIDO_PARA")
 
         def episodes = Episode.executeQuery("select ep from Episode ep " +
                 "inner join ep.startStopReason stp " +
                 "inner join ep.patientServiceIdentifier psi " +
-                "inner join psi.patient p "+
+                "inner join psi.patient p " +
                 "inner join ep.clinic c " +
-                "where psi = :patientServiceIdentifier and stp.code = 'REFERIDO_PARA' and ep.episodeDate <= :episodeDate order by ep.episodeDate desc", [patientServiceIdentifier:patientServiceIdentifier, episodeDate:episodeDate])
+                "where psi = :patientServiceIdentifier and stp.code = 'REFERIDO_PARA' and ep.episodeDate <= :episodeDate order by ep.episodeDate desc", [patientServiceIdentifier: patientServiceIdentifier, episodeDate: episodeDate])
 
         return episodes.get(0)
     }
 
     @Override
     Episode getLastWithVisitByIndentifier(PatientServiceIdentifier patientServiceIdentifier, Clinic clinic) {
-        def episodes = Episode.executeQuery("select ep from Episode ep " +
-                "inner join ep.startStopReason stp " +
-                "inner join ep.patientServiceIdentifier psi " +
-                "inner join ep.clinic c " +
-                "where psi = :patientServiceIdentifier " +
-                "and exists (select pvd from PatientVisitDetails pvd where pvd.episode = ep ) " +
-                //"and ep.clinic = :clinic" +
-                "order by ep.episodeDate desc", [patientServiceIdentifier: patientServiceIdentifier])
-        Episode episode = episodes?.first() as Episode
-        PatientVisitDetails patientVisitDetails = iPatientVisitDetailsService.getLastVisitByEpisodeId(episode.id)
-        patientVisitDetails.setPrescription(Prescription.findWhere(id:  patientVisitDetails.prescription.id))
-       // episode.setPatientVisitDetails(new HashSet<PatientVisitDetails>())
-       // episode.getPatientVisitDetails().add(patientVisitDetails)
-        return episode
+        def sql = new Sql(dataSource as DataSource)
+        def mainQuery =
+                """
+                    select ep.id from episode ep 
+                    inner join start_Stop_Reason stp on stp.id = ep.start_stop_reason_id
+                    inner join patient_Service_Identifier psi on psi.id = ep.patient_service_identifier_id
+                    inner join clinic c on c.id = ep.clinic_id
+                    inner join patient_visit_details pvd on pvd.episode_id = ep.id
+                    where psi.value = :nid
+                    order by ep.episode_date desc
+                """
+        List episodes = sql.rows(mainQuery, [nid: patientServiceIdentifier?.value])
+
+        if (!episodes.isEmpty()) {
+            def lastEpisode = episodes?.first()
+            Episode episode = Episode.get(lastEpisode?.id as Serializable)
+            return episode
+        } else
+            return null
     }
 
     @Override
     Episode getLastInitialEpisodeByIdentifier(String identifierId) {
-       EpisodeType episodeType = EpisodeType.findWhere(code:  "INICIO")
-        PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findWhere(id:  identifierId)
+        EpisodeType episodeType = EpisodeType.findWhere(code: "INICIO")
+        PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findWhere(id: identifierId)
         def episode = Episode.findWhere(patientServiceIdentifier: patientServiceIdentifier, episodeType: episodeType, [sort: ['episodeDate': 'desc']])
 
         return episode
@@ -97,7 +106,7 @@ abstract class EpisodeService implements IEpisodeService{
 
     @Override
     Episode getLastEpisodeByIdentifier(Patient patient, String serviceCode) {
-        ClinicalService clinicalService = ClinicalService.findWhere(code:  serviceCode)
+        ClinicalService clinicalService = ClinicalService.findWhere(code: serviceCode)
         PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findWhere(patient: patient, service: clinicalService)
         Episode episode = Episode.findWhere(patientServiceIdentifier: patientServiceIdentifier, [sort: ['episodeDate': 'desc']])
         return episode
@@ -120,37 +129,37 @@ abstract class EpisodeService implements IEpisodeService{
                 //"and ep.clinic = :clinic" +
                 "order by ep.episodeDate desc", [clinicSector: clinicSector])
         episodes.each { it ->
-   //         PatientVisitDetails patientVisitDetails = iPatientVisitDetailsService.getLastVisitByEpisodeId(it.id)
-   //         patientVisitDetails.setPrescription(Prescription.findById(patientVisitDetails.prescription.id))
-      //      it.setPatientVisitDetails(new HashSet<PatientVisitDetails>())
-      //      it.getPatientVisitDetails().add(patientVisitDetails)
+            //         PatientVisitDetails patientVisitDetails = iPatientVisitDetailsService.getLastVisitByEpisodeId(it.id)
+            //         patientVisitDetails.setPrescription(Prescription.findById(patientVisitDetails.prescription.id))
+            //      it.setPatientVisitDetails(new HashSet<PatientVisitDetails>())
+            //      it.getPatientVisitDetails().add(patientVisitDetails)
         }
         return episodes
     }
 
-    public closePatientServiceIdentifierOfPatientWhenOpenMrsObit(Patient patient){
+    public closePatientServiceIdentifierOfPatientWhenOpenMrsObit(Patient patient) {
         def patientServiceIdentifiers = PatientServiceIdentifier.findAllByPatient(patient)
 
         patientServiceIdentifiers.each { item ->
-            Episode lastEpisode =  item.episodes.stream().reduce((prev, next) -> next).orElse(null)
-                Episode closureEpisode = new Episode()
-                closureEpisode.episodeDate = new Date()
-                closureEpisode.episodeType = EpisodeType.findByCode('FIM')
-                closureEpisode.patientServiceIdentifier = item
-                closureEpisode.clinic = item.clinic
-                closureEpisode.clinicSector = lastEpisode.getClinicSector()
-                closureEpisode.creationDate = new Date()
-                closureEpisode.notes = 'Fechado Devido ao' + StartStopReason.OBITO
-                closureEpisode.startStopReason =StartStopReason.findByCode(StartStopReason.OBITO)
-                closureEpisode.origin = lastEpisode.getClinic().getUuid()
-                closureEpisode.beforeInsert()
-                this.save(closureEpisode)
-                item.endDate = new Date()
-                item.state = 'Inactivo'
-                item.origin =  lastEpisode.getClinic().getUuid()
-                item.save(flush: true)
-            }
-
+            Episode lastEpisode = item.episodes.stream().reduce((prev, next) -> next).orElse(null)
+            Episode closureEpisode = new Episode()
+            closureEpisode.episodeDate = new Date()
+            closureEpisode.episodeType = EpisodeType.findByCode('FIM')
+            closureEpisode.patientServiceIdentifier = item
+            closureEpisode.clinic = item.clinic
+            closureEpisode.clinicSector = lastEpisode.getClinicSector()
+            closureEpisode.creationDate = new Date()
+            closureEpisode.notes = 'Fechado Devido ao' + StartStopReason.OBITO
+            closureEpisode.startStopReason = StartStopReason.findByCode(StartStopReason.OBITO)
+            closureEpisode.origin = lastEpisode.getClinic().getUuid()
+            closureEpisode.beforeInsert()
+            this.save(closureEpisode)
+            item.endDate = new Date()
+            item.state = 'Inactivo'
+            item.origin = lastEpisode.getClinic().getUuid()
+            item.save(flush: true)
         }
+
+    }
 
 }

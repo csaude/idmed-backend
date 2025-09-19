@@ -105,7 +105,7 @@ environments:
   development:
     dataSource:
       dbCreate: update
-      url: '${DB_URL:jdbc:postgresql://localhost:9876/idmed_maputo}'
+      url: '${DB_URL:jdbc:postgresql://10.10.2.30:9876/idmed_zambezia}'
   test:
     dataSource:
       dbCreate: update
