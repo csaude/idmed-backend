@@ -1,11 +1,10 @@
 package mz.org.fgh.sifmoz.backend.patientVisit
 
-import grails.converters.JSON
+
 import grails.gorm.transactions.Transactional
 import grails.validation.ValidationException
 import groovy.json.JsonBuilder
 import groovy.json.JsonSlurper
-import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.clinicSector.ClinicSector
@@ -22,7 +21,6 @@ import mz.org.fgh.sifmoz.backend.prescription.IPrescriptionService
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.provincialServer.ProvincialServer
 import mz.org.fgh.sifmoz.backend.restUtils.IdmedAuthenticationUtils
-import org.hibernate.criterion.CriteriaSpecification
 import org.springframework.http.HttpStatus
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
@@ -51,7 +49,7 @@ class RestExternalPatientVisitService {
 
     @Scheduled(fixedDelay = 120000L)
     void schedulerRequestRunning() {
-        println  " - REST EXTERNAL PATIENT VISIT FROM PROVINCIAL TO IDMED " + new Date()
+        println " - REST EXTERNAL PATIENT VISIT FROM PROVINCIAL TO IDMED " + new Date()
         PatientVisit.withTransaction {
             def uuidProvincial = configProvincialUUID()
 
@@ -61,16 +59,18 @@ class RestExternalPatientVisitService {
                 PatientServiceIdentifier patientServiceIdentifier = PatientServiceIdentifier.findWhere(value: externalPatientVisit.nid)
                 Episode lastEpisode = episodeService.getLastWithVisitByIndentifier(patientServiceIdentifier, patientServiceIdentifier?.clinic)
 
-                EpisodeType episodeType = EpisodeType.get(lastEpisode.episodeType.id)
-                Clinic clinic = Clinic.get(lastEpisode.clinic.id)
-                ClinicSector clinicSector = ClinicSector.get(lastEpisode.clinicSector.id)
+                if (lastEpisode !== null) {
+                    EpisodeType episodeType = EpisodeType.get(lastEpisode.episodeType.id)
+                    Clinic clinic = Clinic.get(lastEpisode.clinic.id)
+                    ClinicSector clinicSector = ClinicSector.get(lastEpisode.clinicSector.id)
 
-                lastEpisode.episodeType = episodeType
-                lastEpisode.clinicSector = clinicSector
-                lastEpisode.clinic = clinic
+                    lastEpisode.episodeType = episodeType
+                    lastEpisode.clinicSector = clinicSector
+                    lastEpisode.clinic = clinic
 
-                if(patientServiceIdentifier){
-                    savePatientVisit(externalPatientVisit, patientServiceIdentifier, lastEpisode)
+                    if (patientServiceIdentifier) {
+                        savePatientVisit(externalPatientVisit, patientServiceIdentifier, lastEpisode)
+                    }
                 }
             }
         }
@@ -79,7 +79,7 @@ class RestExternalPatientVisitService {
     @Transactional
     void savePatientVisit(ExternalPatientVisit externalPatientVisit, PatientServiceIdentifier patientServiceIdentifier, Episode lastEpisode) {
         PatientVisit visit = new PatientVisit(parseTo(externalPatientVisit.jsonObject) as Map)
-                     visit.patient = patientServiceIdentifier.patient
+        visit.patient = patientServiceIdentifier.patient
         def objectJSON = new JsonSlurper().parseText(externalPatientVisit.jsonObject)
 
         if (!visit?.patientVisitDetails?.isEmpty()) {
@@ -102,11 +102,11 @@ class RestExternalPatientVisitService {
             item.episode = lastEpisode
             item.patientVisit = visit
             item.prescription.id = UUID.fromString(objectJSON.patientVisitDetails[index].prescription.id)
-            Prescription prescriptionCheck = Prescription.findWhere(id:  item.prescription.id)
+            Prescription prescriptionCheck = Prescription.findWhere(id: item.prescription.id)
 
-            if (prescriptionCheck){
+            if (prescriptionCheck) {
                 item.prescription.origin = prescriptionCheck.origin
-            }else{
+            } else {
                 item.prescription.origin = visit.origin
                 item.prescription.clinic = visit.clinic
             }
@@ -180,7 +180,7 @@ class RestExternalPatientVisitService {
         }
 
         try {
-            PatientVisit existingPatientVisit = PatientVisit.findWhere(visitDate:  visit.visitDate, patient:  visit.patient)
+            PatientVisit existingPatientVisit = PatientVisit.findWhere(visitDate: visit.visitDate, patient: visit.patient)
             if (existingPatientVisit != null) {
                 visit.vitalSignsScreenings.each { item ->
                     item.visit = existingPatientVisit
@@ -220,7 +220,7 @@ class RestExternalPatientVisitService {
                     item.episode = lastEpisode
                     item.origin = existingPatientVisit.origin
                     item.clinic = existingPatientVisit.clinic
-                    Prescription existingPrescription = Prescription.findWhere(id:  item.prescription.id)
+                    Prescription existingPrescription = Prescription.findWhere(id: item.prescription.id)
                     if (existingPrescription == null) {
                         item.prescription.origin = existingPatientVisit.origin
                         item.prescription.clinic = existingPatientVisit.clinic
@@ -246,11 +246,11 @@ class RestExternalPatientVisitService {
                     item.pack.clinic = visit.clinic
                     item.pack.syncStatus = syncStatusNotApplicable
 
-                    Prescription existingPrescription = Prescription.findWhere(id:  item.prescription.id)
+                    Prescription existingPrescription = Prescription.findWhere(id: item.prescription.id)
                     if (existingPrescription != null) {
                         item.prescription = existingPrescription
                         //
-                    }else{
+                    } else {
                         Doctor doctor = Doctor.findWhere(id: '3F2D1A4B-9C6E-4F89-B5D3-8A2E7F1D0CBA')
                         item.prescription.doctor = doctor
                         item.prescription.origin = visit.origin
@@ -270,7 +270,7 @@ class RestExternalPatientVisitService {
                 }
             }
             visit.validate()
-            if(patientVisitService.save(visit)){
+            if (patientVisitService.save(visit)) {
                 externalPatientVisit.syncStatus = syncStatusUPDATED
                 externalPatientVisitService.save(externalPatientVisit)
             }
@@ -293,14 +293,14 @@ class RestExternalPatientVisitService {
 
     @Scheduled(fixedDelay = 60000L)
     void dispensesFromUSToProvinceRunning() {
-        println  " - REST EXTERNAL PATIENT VISIT FROM IDMED TO PROVINCIAL " + new Date()
+        println " - REST EXTERNAL PATIENT VISIT FROM IDMED TO PROVINCIAL " + new Date()
         def uuidProvincial = configProvincialUUID()
         PatientVisit.withTransaction {
             List<ExternalPatientVisit> externalPatientVisitList = ExternalPatientVisit.findAllWhere(sourceProvinceId: uuidProvincial, syncStatus: syncStatusReady)
 
             externalPatientVisitList.each { externalPatientVisit ->
                 try {
-                    if(externalPatientVisit?.targetProvinceId){
+                    if (externalPatientVisit?.targetProvinceId) {
                         if (!uuidProvincial.equalsIgnoreCase(externalPatientVisit.targetProvinceId)) {
                             Province province = Province.findWhere(id: externalPatientVisit.targetProvinceId)
                             ProvincialServer provincialServer = ProvincialServer.findWhere(code: province.code, destination: "IDMED")
@@ -315,7 +315,7 @@ class RestExternalPatientVisitService {
                                 externalPatientVisit.save(flush: true)
                             }
                         }
-                    }else{
+                    } else {
                         externalPatientVisit.syncStatus = 'U'.toCharacter()
                         externalPatientVisit.save(flush: true)
                     }

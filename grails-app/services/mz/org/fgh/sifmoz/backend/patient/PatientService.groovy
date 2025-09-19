@@ -96,6 +96,7 @@ abstract class PatientService implements IPatientService {
         if (isName(searchString)) {
             mainQuery = " select p.id from patient p " +
                     " inner join patient_service_identifier psi on psi.patient_id = p.id "+
+                    " inner join episode e on e.patient_service_identifier_id = psi.id "+
                     " where (lower(p.first_names) like lower(:searchString) OR" +
                     " lower(p.middle_names) like lower(:searchString) OR " +
                     " lower(p.last_names) like lower(:searchString)) " +
@@ -105,6 +106,7 @@ abstract class PatientService implements IPatientService {
             mainQuery = " select p.id "+
                     " from patient p "+
                     " inner join patient_service_identifier psi on psi.patient_id = p.id "+
+                    " inner join episode e on e.patient_service_identifier_id = psi.id "+
                     " where psi.value like '%"+searchString+"%' "+
                     " AND psi.clinic_id = :clinicId "+
                     " order by p.first_names "
@@ -332,28 +334,6 @@ abstract class PatientService implements IPatientService {
 
         return patients
     }
-
-//    List findPossibleDuplicatePatients() {
-//        String sqlQuery = "SELECT records.value, p.first_names, p.last_names, " +
-//                "p.date_of_birth, p.gender, records.amount " +
-//                "FROM PatientServiceView p, " +
-//                "(SELECT a.value, a.first_names, a.last_names, " +
-//                "COUNT(a.value) AS amount " +
-//                "FROM PatientServiceView a, PatientServiceView b " +
-//                "WHERE a.first_names = b.first_names " +
-//                "AND a.last_names = b.last_names " +
-//                "GROUP BY a.value, a.first_names, a.last_names) AS records " +
-//                "WHERE p.value = records.value " +
-//                "AND records.amount > 1 " +
-//                "GROUP BY records.value, p.first_names, p.last_names, " +
-//                "records.amount, p.date_of_birth, p.gender " +
-//                "ORDER BY p.first_names, p.last_names";
-//
-//        Session session = sessionFactory.getCurrentSession()
-//        def query = session.createSQLQuery(sqlQuery)
-//        List<Object[]> list = query.list()
-//        return list
-//    }
 
     Patient savePatientFromPoc(def objectJSON) {
         if (!objectJSON?.empty && objectJSON) {
