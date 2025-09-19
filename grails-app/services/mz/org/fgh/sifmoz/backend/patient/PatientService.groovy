@@ -100,7 +100,7 @@ abstract class PatientService implements IPatientService {
                     " where (lower(p.first_names) like lower(:searchString) OR" +
                     " lower(p.middle_names) like lower(:searchString) OR " +
                     " lower(p.last_names) like lower(:searchString)) " +
-                    " AND p.clinic_id =:clinicId" +
+                    " AND psi.clinic_id =:clinicId" +
                     " order by p.first_names "
         }else{
             mainQuery = " select p.id "+
