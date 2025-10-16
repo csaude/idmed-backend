@@ -1,6 +1,6 @@
 package mz.org.fgh.sifmoz.backend.patient
 
-import grails.converters.JSON
+
 import grails.gorm.services.Service
 import grails.gorm.transactions.Transactional
 import groovy.sql.Sql
@@ -12,23 +12,16 @@ import mz.org.fgh.sifmoz.backend.distribuicaoAdministrativa.Province
 import mz.org.fgh.sifmoz.backend.episode.Episode
 import mz.org.fgh.sifmoz.backend.episodeType.EpisodeType
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.HealthInformationSystem
-import mz.org.fgh.sifmoz.backend.identifierType.IdentifierType
 import mz.org.fgh.sifmoz.backend.multithread.ReportSearchParams
 import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
-import mz.org.fgh.sifmoz.backend.patientVisit.PatientVisit
-import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
-import mz.org.fgh.sifmoz.backend.prescription.Prescription
-import mz.org.fgh.sifmoz.backend.reports.pharmacyManagement.mmia.MmiaRegimenSubReport
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
 import org.hibernate.Session
 import org.hibernate.SessionFactory
 import org.springframework.beans.factory.annotation.Autowired
-import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 
 import javax.sql.DataSource
-
 
 @Transactional
 @Service(Patient)
@@ -40,9 +33,12 @@ abstract class PatientService implements IPatientService {
     @Autowired
     DataSource dataSource
 
+    private static final String CODE_PATTERN = /^[0-9\/\-_]+$"/
+
+    private static final String NAME_PATTERN = /^[a-zA-ZÀ-ÿ\\s]+$"/
 
     @Override
-    List<Patient> search(Patient patient,int offset, int limit) {
+    List<Patient> search(Patient patient, int offset, int limit) {
         def queryString = "select p from Patient p where 1 = 1"
         Map<String, Object> parameters = [:]
 
@@ -90,24 +86,30 @@ abstract class PatientService implements IPatientService {
 
     @Override
     List<Patient> search(String searchString, String clinicId) {
-        String mainQuery = "select p from Patient p " +
-                " where (lower(p.firstNames) like lower(:searchString) OR" +
-                " lower(p.middleNames) like lower(:searchString) OR " +
-                " lower(p.lastNames) like lower(:searchString)) " +
-                " AND p.clinic =:clinic"
-        String indentifierCondition = " OR EXISTS (select psi " +
-                "                   from PatientServiceIdentifier psi inner join psi.patient pt " +
-                "                   where pt.id = p.id and lower(psi.value) like lower(:searchString)) "
-        String searchQuery = mainQuery + indentifierCondition
+        def sql = new Sql(dataSource as DataSource)
+        String mainQuery = null
+        if (isCode(searchString)) {
+            mainQuery = " select psi.* "+
+                        " from patient p "+
+                        " inner join patient_service_identifier psi on psi.patient_id = p.id "+
+                        " where psi.value like '%"+searchString+"%' "+
+                        " AND psi.clinic_id = :clinicId "+
+                        " order by p.first_names "
 
-        searchQuery += " order by p.firstNames "
+        }
 
-        Clinic clinic = Clinic.findById(clinicId)
+        if (isName(searchString)) {
+            mainQuery = " select p from patient p " +
+                        " where (lower(p.first_names) like lower(:searchString) OR" +
+                        " lower(p.middle_names) like lower(:searchString) OR " +
+                        " lower(p.last_names) like lower(:searchString)) " +
+                        " AND p.clinic_id =:clinicId" +
+                        " order by p.first_names "
+        }
 
-        return Patient.executeQuery(searchQuery,
-                [searchString: "%${searchString}%",
-                 clinic      : clinic, max: 400]
-        )
+        List patients = sql.rows(mainQuery, [clinicId: clinicId, searchString: searchString, max: 500])
+
+        return patients
     }
 
     @Override
@@ -125,12 +127,11 @@ abstract class PatientService implements IPatientService {
         def sql = new Sql(dataSource as DataSource)
 
         def getPatientsSql = '''
-            SELECT p.id FROM patient p
-            INNER JOIN (SELECT max(e.episode_date), psi.patient_id FROM episode e
-                        INNER JOIN  patient_service_identifier psi on psi.id = e.patient_service_identifier_id
+            SELECT p.id FROM patient_service_identifier p
+            INNER JOIN (SELECT max(e.episode_date), e.patient_service_identifier_id FROM episode e
                         WHERE e.clinic_sector_id = :clinicSector
                         GROUP BY 2
-                        ) lastEpisode on lastEpisode.patient_id = p.id
+                        ) lastEpisode on lastEpisode.patient_service_identifier_id = p.id
                         LIMIT :max OFFSET :offset
         '''
 
@@ -189,8 +190,8 @@ abstract class PatientService implements IPatientService {
                 "                tl.description as t_line,  " +
                 "                tr.description as t_regimen,  " +
                 "                pre.patient_type, " +
-                "                dt.code as dtcode, "+
-                   "             dt.description as dt_description " +
+                "                dt.code as dtcode, " +
+                "             dt.description as dt_description " +
                 "                from prescription pre  " +
                 "                inner join prescription_detail pd on pd.prescription_id = pre.id  " +
                 "                inner join therapeutic_line tl on pd.therapeutic_line_id = tl.id  " +
@@ -351,12 +352,12 @@ abstract class PatientService implements IPatientService {
                 patient.firstNames = objectJSON.firstName
                 patient.middleNames = objectJSON.middleName
                 patient.lastNames = objectJSON.lastName
-                patient.dateOfBirth = Boolean.parseBoolean(objectJSON.birthdateEstimated) == false ? ConvertDateUtils.createDate(objectJSON.birthDate,"yyyy-MM-dd") : ConvertDateUtils.getDateFromDayAndMonthAndYear(1,1,Integer.parseInt(objectJSON.birthDate))
+                patient.dateOfBirth = Boolean.parseBoolean(objectJSON.birthdateEstimated) == false ? ConvertDateUtils.createDate(objectJSON.birthDate, "yyyy-MM-dd") : ConvertDateUtils.getDateFromDayAndMonthAndYear(1, 1, Integer.parseInt(objectJSON.birthDate))
                 patient.gender = objectJSON.gender == 'Male' ? 'Masculino' : 'Feminino'
                 patient.province = Province.findByDescription(objectJSON.province) == null ? patient.clinic.province : Province.findByDescription(objectJSON.province)
                 patient.district = District.findByDescription(objectJSON.district) == null ? patient.clinic.district : District.findByDescription(objectJSON.district)
-               // patient.postoAdministrativo = ''
-               // patient.bairro = ''
+                // patient.postoAdministrativo = ''
+                // patient.bairro = ''
                 patient.cellphone = objectJSON.phoneNumber?.replaceFirst('^\\+', '')
                 patient.alternativeCellphone = objectJSON.phoneNumber?.replaceFirst('^\\+', '')
                 patient.id = objectJSON.patientUuid
@@ -366,11 +367,11 @@ abstract class PatientService implements IPatientService {
                 patient.his = HealthInformationSystem.findByAbbreviation('OpenMRS')
                 patient.hisSyncStatus = 'N'
                 patient.save(flush: true)
-             //   Thread.sleep(2000)
-            //    patient.refresh()
+                //   Thread.sleep(2000)
+                //    patient.refresh()
                 objectJSON?.clinicalHistory?.each { clinicalHistory ->
-                    def psi = createPatientServiceIdentifier(patient,clinicalHistory)
-                    createEpisode(psi,clinicalHistory)
+                    def psi = createPatientServiceIdentifier(patient, clinicalHistory)
+                    createEpisode(psi, clinicalHistory)
                 }
                 return patient
             }
@@ -378,14 +379,14 @@ abstract class PatientService implements IPatientService {
     }
 
 
-    PatientServiceIdentifier createPatientServiceIdentifier(Patient patient , def clinicalHistory) {
+    PatientServiceIdentifier createPatientServiceIdentifier(Patient patient, def clinicalHistory) {
         PatientServiceIdentifier psi = new PatientServiceIdentifier()
         psi.beforeInsert()
         psi.value = clinicalHistory.nid
-        psi.startDate = ConvertDateUtils.createDate(clinicalHistory.admissionDate,"yyyy-MM-dd")
+        psi.startDate = ConvertDateUtils.createDate(clinicalHistory.admissionDate, "yyyy-MM-dd")
         psi.prefered = true
         psi.service = ClinicalService.get(clinicalHistory.serviceCode)
-        psi.identifierType =  ClinicalService.get(clinicalHistory.serviceCode).identifierType
+        psi.identifierType = ClinicalService.get(clinicalHistory.serviceCode).identifierType
         psi.patient = patient
         psi.state = 'Activo'
         psi.origin = psi.clinic
@@ -393,10 +394,10 @@ abstract class PatientService implements IPatientService {
         return psi
     }
 
-    void createEpisode(PatientServiceIdentifier psi , def clinicalHistory) {
+    void createEpisode(PatientServiceIdentifier psi, def clinicalHistory) {
         Episode episode = new Episode()
         episode.beforeInsert()
-        episode.episodeDate =  ConvertDateUtils.createDate(clinicalHistory.admissionDate,"yyyy-MM-dd")
+        episode.episodeDate = ConvertDateUtils.createDate(clinicalHistory.admissionDate, "yyyy-MM-dd")
         episode.startStopReason = StartStopReason.findByCode(clinicalHistory.programStatus)
         episode.episodeType = EpisodeType.findByCode('INICIO')
         episode.clinicSector = ClinicSector.get(clinicalHistory.clinicalSector)
@@ -406,8 +407,17 @@ abstract class PatientService implements IPatientService {
         episode.residentInCountry = true
         episode.notes = clinicalHistory.programStatus
         episode.validate()
-       episode.save(flush: true)
-      //  psi.episodes.addAll(episode)
-     //   psi.save(flush: true)
+        episode.save(flush: true)
+        //  psi.episodes.addAll(episode)
+        //   psi.save(flush: true)
     }
+
+    static boolean isCode(String input) {
+        return input != null && input.matches(CODE_PATTERN);
+    }
+
+    static boolean isName(String input) {
+        return input != null && input.matches(NAME_PATTERN);
+    }
+
 }

@@ -24,6 +24,22 @@ spring:
 #    broker-url: '${MQ_URL:tcp://10.10.2.74:61616}'
 #    user: '${MQ_USER:artemis}'
 #    password: '${MQ_PASS:artemis}'
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          keycloak:
+#            client-id: idmed
+#            client-secret: 'Xr3spPYYXSUTQ8BoawtPXJjprsCnGNIA' # for confidential clients
+#            authorization-grant-type: 'authorization_code'
+#            redirect-uri: 'https://idmedreg.csaude.org.mz/login/oauth2/code/keycloak'
+#            scope: 'openid, profile, email'
+#            provider:
+#              keycloak:
+#                issuer-uri: https://auth.csaude.org.mz/realms/healthapps-dev
+#                  resourceserver:
+#                    jwt:
+#                      issuer-uri: https://auth.csaude.org.mz/realms/healthapps-dev
   jms:
     listener:
       acknowledge-mode: auto
@@ -100,6 +116,8 @@ dataSource:
   dialect: hibernate.MyPostgreSQLDialect
   username: '${DB_USER:postgres}'
   password: '${DB_PASS:postgres}'
+  useraccess: '${BACKEND_USER:iDMEDSYNC}'
+  userpassaccess: '${BACKEND_PASS:iDMED123}'
   pooled: true
   jmxExport: true
 hibernate:

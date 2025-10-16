@@ -795,14 +795,19 @@ class BootStrap {
 
     void initSystemConfigs() {
         for (systemConfigsObject in listSystemConfigs()) {
-            if (!SystemConfigs.findById(systemConfigsObject.id)) {
-                SystemConfigs systemConfigs = new SystemConfigs()
+            SystemConfigs systemConfigs = SystemConfigs.findById(systemConfigsObject.id)
+            if (!systemConfigs) {
+                systemConfigs = new SystemConfigs()
                 systemConfigs.id = systemConfigsObject.id
                 systemConfigs.value = systemConfigsObject.value
                 systemConfigs.description = systemConfigsObject.description
                 systemConfigs.key = systemConfigsObject.key
-                systemConfigs.save(flush: true, failOnError: true)
+            }else{
+                if(systemConfigs.key.equalsIgnoreCase("APP_VERSION")){
+                    systemConfigs.value = systemConfigsObject.value
+                }
             }
+            systemConfigs.save(flush: true, failOnError: true)
         }
     }
 
@@ -857,13 +862,9 @@ class BootStrap {
                 provincialServer.save(flush: true, failOnError: true)
             } else {
                 if (provincialServer.destination.equalsIgnoreCase("IDMED")) {
-                    provincialServer.username = "iDMED"
-                    provincialServer.password = "iDMED123"
+                    provincialServer.username = "N/A"
+                    provincialServer.password = "N/A"
                 }
-                provincialServer.urlPath = provincialServerObject.urlPath
-                provincialServer.port = provincialServerObject.port
-                provincialServer.username = provincialServerObject.username
-                provincialServer.save(flush: true, failOnError: true)
             }
         }
     }
@@ -949,6 +950,8 @@ class BootStrap {
         systemConfigsList.add(new LinkedHashMap(id: 'B5C44B42-3328-40D9-90D7-6DFF90A672D4', value: 'true', key: 'ACTIVATE_DATA_MIGRATION', description: 'Migração de dados'))
         systemConfigsList.add(new LinkedHashMap(id: '550e8400-e29b-41d4-a716-446655440000', value: '3', key: 'MAX_LOGIN_TRIES', description: 'Número máximo de tentativas para Login'))
         systemConfigsList.add(new LinkedHashMap(id: '3b241101-e2bb-4255-8caf-4136c566a964', value: '90', key: 'MAX_ACTIVE_DAYS_WITHOUT_LOGIN', description: 'Número máximo de dias em activo sem login'))
+        systemConfigsList.add(new LinkedHashMap(id: 'ff98828d-0e91-468c-809f-d391edf8cd24', value: '1.8.0', key: 'APP_VERSION', description: 'Versão do iDMED'))
+
         // Configuação padrao das rotinas
         systemConfigsList.add(new LinkedHashMap(id: '8F2E4B1A-9C3D-4E5F-A1B2-C3D4E5F67890', value: 'true', key: 'DISPENSA_IDMED_OPENMRS_ATIVO', description: 'Envio de dispensas do IDMED para OpenMRS'))
         systemConfigsList.add(new LinkedHashMap(id: '2A5B8C9D-1E4F-7A0B-3C6D-9E2F5A8B1C4D', value: 'true', key: 'PACIENTE_IDMED_OPENMRS_ATIVO', description: 'Envio de pacientes do IDMED para OpenMRS'))
@@ -1224,6 +1227,7 @@ class BootStrap {
     List<Object> listHealthInformationSystem() {
         List<Object> healthInformationSystemList = new ArrayList<>()
         healthInformationSystemList.add(new LinkedHashMap(id: 'ff8080817d9aa854017d9e2809b50008', abbreviation: 'OpenMRS', description: 'OpenMRS', active: true))
+        healthInformationSystemList.add(new LinkedHashMap(id: '06e15e5c-d771-477a-9db5-130a038af290', abbreviation: 'Província', description: 'Servidor Provincial', active: true))
 
         return healthInformationSystemList
     }

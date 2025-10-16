@@ -318,7 +318,7 @@ class PatientController extends RestfulController {
 
     def getPatientsInClinicSector(String clinicSectorId, int offset, int max) {
         def allPatientResult = patientService.getAllPatientsInClinicSector(clinicSectorId, offset, max)
-        render JSONSerializer.setObjectListJsonResponse(Patient.findAllByIdInList(allPatientResult.id)) as JSON
+        render JSONSerializer.setObjectListJsonResponse(PatientServiceIdentifier.findAllByIdInList(allPatientResult.id)) as JSON
     }
 
     private static def parseTo(String jsonString) {
@@ -429,21 +429,30 @@ class PatientController extends RestfulController {
     }
 
     def getPatientFromProvincialServer(String clinicId, String patientNid) {
-        RestProvincialServerMobileClient restProvincialServerClient = new RestProvincialServerMobileClient()
-        Clinic clinic = Clinic.findById(clinicId)
-        ProvincialServer provincialServer = ProvincialServer.findByCodeAndDestination(clinic.getProvince().code, IDMED_SERVER)
+        def jsonArray = new JSONArray()
 
+        try{
+            RestProvincialServerMobileClient restProvincialServerClient = new RestProvincialServerMobileClient()
+            Clinic clinic = Clinic.findById(clinicId)
+            ProvincialServer provincialServer = ProvincialServer.findByCodeAndDestination(clinic.getProvince().code, IDMED_SERVER)
 
-        String urlPath = "/api/patient/searchByParam/" + patientNid + "/" + clinicId
-        def response = restProvincialServerClient.getRequestProvincialServerClient(provincialServer, urlPath) as JSONArray
+            String urlPath = "/api/patient/searchByParam/" + patientNid + "/" + clinicId
+            def response = restProvincialServerClient.getRequestProvincialServerClient(provincialServer, urlPath)
 
-        response.each {r->
-            r.identifiers.each {i ->
-                i.startDate = new Date()
-                i.episodes = []
+            if (response && response?.toString()?.trim() != "") {
+                jsonArray = response as JSONArray
             }
-        }
-        render response as JSON
 
+            jsonArray.each {r->
+                r.identifiers.each {i ->
+                    i.startDate = new Date()
+                    i.episodes = []
+                }
+            }
+            render response as JSON
+        }catch (Exception e){
+            e.stackTrace()
+            return jsonArray
+        }
     }
 }
