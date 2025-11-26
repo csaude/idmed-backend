@@ -136,6 +136,7 @@ class UrlMappings {
         get "/api/prescription/getAllPrescriptionFromPoc/$patientId(.$format)?"(controller:'prescription', action:'getAllPrescriptionFromPocByPatientId')
         get "/api/requestmap/getUserPermissions(.$format)?"(controller:'requestmap', action:'getUserPermissions')
         get "/api/patient/getPatientFromProvincialServer/$clinicId/$patientNid(.$format)?"(controller:'patient', action:'getPatientFromProvincialServer')
+        get "/api/clinic/getMainClinic(.$format)?"(controller:'clinic', action:'getMainClinicAndSectors')
         "/"(view:"/login/auth")
         "500"(view: '/error')
         "404"(view: '/notFound')
