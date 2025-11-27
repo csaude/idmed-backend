@@ -132,4 +132,16 @@ class ClinicController extends RestfulController{
     def geClinicsFromProvincialServer(int offset) {
         render JSONSerializer.setObjectListJsonResponse(clinicRestService.loadClinicsFromProvincial(offset)) as JSON
     }
+
+    def getMainClinicAndSectors() {
+        def mainClinic = Clinic.findByMainClinic(true)
+
+        if (mainClinic) {
+            def childClinics = Clinic.findAllByParentClinic(mainClinic)
+            def allClinics = [mainClinic] + childClinics
+            render JSONSerializer.setObjectListJsonResponse(allClinics) as JSON
+        } else {
+            render JSONSerializer.setObjectListJsonResponse([]) as JSON
+        }
+    }
 }

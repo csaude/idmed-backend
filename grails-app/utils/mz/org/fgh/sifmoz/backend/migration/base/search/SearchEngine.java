@@ -7,7 +7,7 @@ import java.util.List;
 
 public class SearchEngine<T extends AbstractMigrationRecord> {
 
-    public static final long RECORDS_PER_SEARCH = 1000;
+    public static final long RECORDS_PER_SEARCH = 5000;
 
     public static final String PREPARING_SEARCH = "PREPARING_SEARCH";
 
