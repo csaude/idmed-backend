@@ -27,7 +27,11 @@ class DrugController extends RestfulController{
 
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        render JSONSerializer.setObjectListJsonResponse(drugService.list(params)) as JSON
+        def drugs = drugService.list(params)
+        drugs.each {it ->
+         it.stockList = []
+        }
+        render JSONSerializer.setObjectListJsonResponse(drugs) as JSON
     }
 
     def show(String id) {
