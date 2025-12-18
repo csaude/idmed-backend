@@ -59,7 +59,7 @@ class RestPostEpisodeCentralMobileService extends SynchronizerTask {
 
 //    final String EPISODIO_IDMED_IDART_PROVINCIAL_ATIVO = true
 
-    //@Scheduled(fixedDelay = 14400000L) // 4 horas após terminar
+    @Scheduled(fixedDelay = 14400000L) // 4 horas após terminar
     void execute() {
         if (configsService.getRotineStatus('EPISODIO_IDMED_IDART_PROVINCIAL_ATIVO')) {
             println " - REST PATIENT EPISODE FROM IDMED TO PROVINCIAL " + new Date()
