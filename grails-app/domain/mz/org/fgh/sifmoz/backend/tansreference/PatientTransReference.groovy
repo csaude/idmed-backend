@@ -7,7 +7,7 @@ import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.protection.Menu
 import mz.org.fgh.sifmoz.backend.tansreference.PatientTransReferenceType
 
-class PatientTransReference extends BaseEntity{
+class  PatientTransReference extends BaseEntity{
 
     String id
     Clinic origin
@@ -29,6 +29,7 @@ class PatientTransReference extends BaseEntity{
     static constraints = {
         matchId nullable: true
         patientStatus nullable: true, blank: true
+        destination nullable: false
     }
 
     def beforeInsertId() {
