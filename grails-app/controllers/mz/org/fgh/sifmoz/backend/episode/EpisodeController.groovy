@@ -83,7 +83,9 @@ class EpisodeController extends RestfulController {
             if (episode.startStopReason.code.equalsIgnoreCase(StartStopReason.REFERIDO_SECTOR_CLINICO) ||
                     episode.startStopReason.code.equalsIgnoreCase("REFERIDO_PARA") ||
                 episode.startStopReason.code.equalsIgnoreCase("REFERIDO_DC")) {
-                patientTransReferenceCloseMobileEpisode(episode).save()
+                if (!episode.startStopReason.code.equalsIgnoreCase(StartStopReason.REFERIDO_SECTOR_CLINICO)) {
+                    patientTransReferenceCloseMobileEpisode(episode).save()
+                }
                 createCloseEpisodeForOtherPatientIdentifiersWhenPatientReferred(episode)
                 createStartEpisodeOnSectorAfterReferingToSector(episode)
             }
@@ -170,32 +172,33 @@ class EpisodeController extends RestfulController {
 
     private static PatientTransReference patientTransReferenceCloseMobileEpisode(Episode episode) {
 
-        def operationType = null
-        def destination = episode.referralClinic
-        if (episode.startStopReason.code.equalsIgnoreCase("TRANSFERIDO_PARA"))
-            operationType = PatientTransReferenceType.findByCode("TRANSFERENCIA")
-        else if (episode.startStopReason.code.equalsIgnoreCase("REFERIDO_DC")) {
-            operationType = PatientTransReferenceType.findByCode("REFERENCIA_DC")
-            destination = episode.clinicSector.uuid
-        } else if (episode.startStopReason.code.equalsIgnoreCase("REFERIDO_PARA"))
-            operationType = PatientTransReferenceType.findByCode("REFERENCIA_FP")
-        else if (episode.startStopReason.code.equalsIgnoreCase("VOLTOU_REFERENCIA"))
-            operationType = PatientTransReferenceType.findByCode("VOLTOU_DA_REFERENCIA")
+
+            def operationType = null
+            def destination = episode.referralClinic
+            if (episode.startStopReason.code.equalsIgnoreCase("TRANSFERIDO_PARA"))
+                operationType = PatientTransReferenceType.findByCode("TRANSFERENCIA")
+            else if (episode.startStopReason.code.equalsIgnoreCase("REFERIDO_DC")) {
+                operationType = PatientTransReferenceType.findByCode("REFERENCIA_DC")
+                destination = episode.clinicSector.uuid
+            } else if (episode.startStopReason.code.equalsIgnoreCase("REFERIDO_PARA"))
+                operationType = PatientTransReferenceType.findByCode("REFERENCIA_FP")
+            else if (episode.startStopReason.code.equalsIgnoreCase("VOLTOU_REFERENCIA"))
+                operationType = PatientTransReferenceType.findByCode("VOLTOU_DA_REFERENCIA")
 
 
-        def transReference = new PatientTransReference()
-        transReference.id = UUID.randomUUID().toString()
-        transReference.syncStatus = 'P'
-        transReference.operationDate = episode.episodeDate
-        transReference.creationDate = new Date()
-        transReference.operationType = operationType
-        transReference.origin = episode.clinic
-        transReference.destination = destination
-        transReference.patient = episode.patientServiceIdentifier.patient
-        transReference.identifier = episode.patientServiceIdentifier
-        transReference.patientStatus = 'Activo'
-        transReference.validate()
-        return transReference
+            def transReference = new PatientTransReference()
+            transReference.id = UUID.randomUUID().toString()
+            transReference.syncStatus = 'P'
+            transReference.operationDate = episode.episodeDate
+            transReference.creationDate = new Date()
+            transReference.operationType = operationType
+            transReference.origin = episode.clinic
+            transReference.destination = destination
+            transReference.patient = episode.patientServiceIdentifier.patient
+            transReference.identifier = episode.patientServiceIdentifier
+            transReference.patientStatus = 'Activo'
+            transReference.validate()
+            return transReference
     }
 
 
@@ -222,6 +225,7 @@ class EpisodeController extends RestfulController {
                 closureEpisode.origin = episode.origin
                 closureEpisode.residentInCountry = episode.residentInCountry
                 closureEpisode.beforeInsert()
+                closureEpisode.validate()
                 episodeService.save(closureEpisode)
             }
         }
@@ -242,6 +246,7 @@ class EpisodeController extends RestfulController {
             openingEpisode.origin = episode.origin
             openingEpisode.residentInCountry = episode.residentInCountry
             openingEpisode.beforeInsert()
+            openingEpisode.validate()
             episodeService.save(openingEpisode)
         }
     }
