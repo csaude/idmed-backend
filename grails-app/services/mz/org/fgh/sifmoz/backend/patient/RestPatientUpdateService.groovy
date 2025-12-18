@@ -81,7 +81,7 @@ class RestPatientUpdateService {
                                 if (nid) {
                                     def idmedPatient = findPatientToUpdate(uuid, nid)
                                     if (idmedPatient) {
-                                        populatePatientDetails(idmedPatient, patient)
+                                        populatePatientDetails(idmedPatient, patient,nid)
                                         idmedPatient.validate()
                                         if (!idmedPatient.hasErrors()) {
                                             patientService.save(idmedPatient)
