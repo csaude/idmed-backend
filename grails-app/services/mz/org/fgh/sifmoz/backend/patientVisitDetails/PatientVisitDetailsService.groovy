@@ -562,7 +562,7 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
                     eq('pv.patient.id', patientId)
                     eq('e.patientServiceIdentifier.id',patientServiceIdentifier.id)
                     order('p.prescriptionDate', 'desc')
-                    maxResults(2)
+                    maxResults(1)
                 }
 
                 last3PatientVisitDetailsFromlast3Prescription.each { patientVisitDetails ->
