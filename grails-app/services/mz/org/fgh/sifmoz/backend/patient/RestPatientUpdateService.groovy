@@ -44,7 +44,7 @@ class RestPatientUpdateService {
 
 //    final String PACIENTE_OPENMRS_IDMED_ATIVO = true
 
-    //@Scheduled(fixedDelay = 300000L) // 5 minutos após terminar
+    @Scheduled(fixedDelay = 300000L) // 5 minutos após terminar
     void schedulerRequestRunning() {
      //   if (configsService.getRotineStatus('PACIENTE_OPENMRS_IDMED_ATIVO')) {
         Patient.withTransaction {
