@@ -139,11 +139,16 @@ class BootStrap {
 
         MigrationStage.withTransaction { initMigration() }
 
-        SpringSecurityUtils.clientRegisterFilter("corsFilterTest", SecurityFilterPosition.SECURITY_CONTEXT_FILTER.order - 1)
+        Menu.withTransaction {
+            initMenus()
+
+        }
 
         UiSection.withTransaction {
             initUiSections()
         }
+
+        SpringSecurityUtils.clientRegisterFilter("corsFilterTest", SecurityFilterPosition.SECURITY_CONTEXT_FILTER.order - 1)
 
         Requestmap.withTransaction {
             initRequestMaps()
@@ -153,17 +158,13 @@ class BootStrap {
             initClinicalServiceAttribute()
         }
 
-        Menu.withTransaction {
-            initMenus()
-
-        }
 
         SecUser.withTransaction {
             initUserManagement()
             springSecurityService.clearCachedRequestmaps()
         }
         Episode.withTransaction {
-            getEpisodesWithSameStartStopReason()
+         //   getEpisodesWithSameStartStopReason()
         }
 
         ClinicSector.withTransaction {
@@ -2996,7 +2997,7 @@ class BootStrap {
     List<Object> listUiSection() {
         List<Object> uiSections = new ArrayList<>()
         uiSections.add(new LinkedHashMap(id:'3fb1aa37-f527-4040-b2d1-acd55f61e440',requestMapUrl: '/ui/prescription/add', name: 'add-prescription', menu: 'Pacientes', action: 'add', displayName: 'Adicionar',category:'Prescription'))
-        uiSections.add(new LinkedHashMap(id:'88f4022b-4257-4f6a-93f2-55577bd74757',requestMapUrl: '/ui/prescription/delete', name: 'remove-prescription', menu: 'Pacientes', action: 'add', displayName: 'Apagar',category:'Prescription'))
+        uiSections.add(new LinkedHashMap(id:'88f4022b-4257-4f6a-93f2-55577bd74757',requestMapUrl: '/ui/prescription/delete', name: 'remove-prescription', menu: 'Pacientes', action: 'remove', displayName: 'Apagar',category:'Prescription'))
         uiSections.add(new LinkedHashMap(id:'3280068d-3867-4be0-87ee-1e6886247c81',requestMapUrl: '/ui/episode/add', name: 'add-episode', menu: 'Pacientes', action: 'add', displayName: 'Adicionar',category:'Episode'))
         uiSections.add(new LinkedHashMap(id:'1de4360f-f84a-4745-8a9b-16b94450e330',requestMapUrl: '/ui/episode/edit', name: 'edit-episode', menu: 'Pacientes', action: 'add', displayName: 'Editar',category:'Episode'))
         uiSections.add(new LinkedHashMap(id:'5353a3cb-5b25-478f-ae77-fb2199c9edb2',requestMapUrl: '/ui/episode/close', name: 'close-episode', menu: 'Pacientes', action: 'close', displayName: 'Fechar',category:'Episode'))
@@ -3006,14 +3007,16 @@ class BootStrap {
         uiSections.add(new LinkedHashMap(id:'9b57f474-f11f-4eb5-91a9-aabb9e760556',requestMapUrl: '/ui/patientServiceIdentifier/close', name: 'close-patient-service-identifier', menu: 'Pacientes', action: 'close', displayName: 'Fechar',category:'PatientServiceIdentifier'))
         uiSections.add(new LinkedHashMap(id:'f1531ab8-1dd0-4106-a122-9626740eb153',requestMapUrl: '/ui/pharmaceuticalAttention/add', name: 'add-pharmaceuticalAttention', menu: 'Pacientes', action: 'add', displayName: 'Adicionar',category:'PharmaceuticalAttention'))
         uiSections.add(new LinkedHashMap(id:'6f0f169a-d83d-44a8-a629-f4dae3c247f8',requestMapUrl: '/ui/pharmaceuticalAttention/delete', name: 'remove-pharmaceuticalAttention', menu: 'Pacientes', action: 'remove', displayName: 'Remover',category:'PharmaceuticalAttention'))
-        uiSections.add(new LinkedHashMap(id:'f1033876-0b91-480c-8a7f-51df982d66f3',requestMapUrl: '/ui/patient/unitDuplicates', name: 'unit-dup-patient', menu: 'Pacientes', action: 'unitDuplicates', displayName: 'Unir Duplicados',category:'Patient'))
         uiSections.add(new LinkedHashMap(id:'33682e87-75c3-44c0-8a98-d54fc7c59594',requestMapUrl: '/ui/patient/add', name: 'add-patient', menu: 'Pacientes', action: 'add', displayName: 'Adicionar',category:'Patient'))
         uiSections.add(new LinkedHashMap(id:'68683bf1-b51a-4cb9-ba78-a71dd3a58bb6',requestMapUrl: '/ui/patient/edit', name: 'edit-patient', menu: 'Pacientes', action: 'edit', displayName: 'Editar',category:'Patient'))
+        uiSections.add(new LinkedHashMap(id:'f1033876-0b91-480c-8a7f-51df982d66f3',requestMapUrl: '/ui/patient/unitDuplicates', name: 'unit-dup-patient', menu: 'Pacientes', action: 'unitDuplicates', displayName: 'Unir Duplicados',category:'Patient'))
         uiSections.add(new LinkedHashMap(id:'a5eafa7a-4f81-4c39-9dfd-ee3b7ecec039',requestMapUrl: '/ui/stockFile/open', name: 'open-stockFile', menu: 'Stock', action: 'open', displayName: 'Abrir Ficha de Medicamento',category:'Stock'))
         uiSections.add(new LinkedHashMap(id:'5843dcfd-964e-449c-99c5-664330c2addc',requestMapUrl: '/ui/distribution/add', name: 'add-distribution', menu: 'Stock', action: 'open', displayName: 'Distribuicao',category:'Distribution'))
         uiSections.add(new LinkedHashMap(id:'cedfab3b-5fd4-4268-bc67-67d0c88ad16e',requestMapUrl: '/ui/inventory/add', name: 'add-inventory', menu: 'Stock', action: 'open', displayName: 'Abrir Inventario',category:'Inventory'))
         uiSections.add(new LinkedHashMap(id:'45413a45-e90a-4117-9480-4e95b659d895',requestMapUrl: '/ui/inventory/edit', name: 'edit-inventory', menu: 'Stock', action: 'edit', displayName: 'Editar/Fechar Inventario',category:'Inventory'))
         uiSections.add(new LinkedHashMap(id:'8ca809b5-1bdd-4f69-b963-c082b9a0ccbb',requestMapUrl: '/ui/stockEntrance/add', name: 'add-stock-entrance', menu: 'Stock', action: 'add', displayName: 'Adicionar',category:'Stock'))
+        uiSections.add(new LinkedHashMap(id:'6c0b6e4c-8fe2-44b3-a0ff-8558b73a46eb',requestMapUrl: '/ui/patient/load', name: 'load-patient', menu: 'Pacientes', action: 'load', displayName: 'Carregar Paciente',category:'Patient'))
+
         return uiSections
     }
 

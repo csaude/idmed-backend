@@ -194,7 +194,7 @@ class EpisodeController extends RestfulController {
         transReference.patient = episode.patientServiceIdentifier.patient
         transReference.identifier = episode.patientServiceIdentifier
         transReference.patientStatus = 'Activo'
-
+        transReference.validate()
         return transReference
     }
 

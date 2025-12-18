@@ -81,7 +81,7 @@ class RestPatientUpdateService {
                                 if (nid) {
                                     def idmedPatient = findPatientToUpdate(uuid, nid)
                                     if (idmedPatient) {
-                                        populatePatientDetails(idmedPatient, patient, nid)
+                                        populatePatientDetails(idmedPatient, patient)
                                         idmedPatient.validate()
                                         if (!idmedPatient.hasErrors()) {
                                             patientService.save(idmedPatient)
@@ -197,6 +197,10 @@ class RestPatientUpdateService {
                     case 'OBITO':
                     case 'TRANSFERIDO_PARA':
                         episodeService.closePatientServiceIdentifierOfPatientWhenOpenMrsObitOrTransferred(idmedPatient, String.valueOf(groupedData.valueCode),ConvertDateUtils.createDate(groupedData.valueDate,'yyyy-MM-dd'))
+                        break
+                    case 'ACTIVO':
+                    case 'TRANSFERIDO_DE':
+                        episodeService.reopenEpisodeAndServiceWhenPatientActiveInSesp(idmedPatient)
                         break
                     default:
                         println "Unhandled extension valueCode: ${groupedData.valueCode}"

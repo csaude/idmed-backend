@@ -38,10 +38,10 @@ class RoleController extends RestfulController {
             "Pack": ["PatientVisit", "Pack", "Prescription","PrescriptionDetail" , "PatientVisitDetails","PrescribedDrug","PackagedDrug","PackagedDrugStock" ],
             "PharmaceuticalAttention": ["Tbscreening", "VitalSignsScreening", "AdherenceScreening","RamScreenings" , "PregnancyScreenings","PatientVisit"],
             "Patient": ["Patient", "PostoAdministrativo","Localidade"],
-            "Episode": ["Episode"],
+            "Episode": ["Episode","PatientTransReference"],
             "PatientServiceIdentifier": ["PatientServiceIdentifier"],
             "Stock": ["Stock","StockEntrance","StockAdjustment","StockCenter"],
-            "Inventory": ["Stock","StockEntrance","StockAdjustment","StockCenter", "Inventory"],
+            "Inventory": ["Stock","StockEntrance","StockAdjustment","StockCenter", "Inventory","InventoryStockAdjustment"],
             "Distribution": ["Stock", "StockEntrance", "StockAdjustment", "StockCenter", "Inventory", "StockDistributor", "StockDistributorBatch","StockLevel"],
     ]
 
@@ -77,15 +77,18 @@ class RoleController extends RestfulController {
             "Stock": [
                     (HttpMethod.POST): ["add"],
                     (HttpMethod.PUT): ["edit"],
-                    (HttpMethod.PATCH): ["edit"]
+                    (HttpMethod.PATCH): ["edit"],
+
             ],
             "Inventory": [
                     (HttpMethod.POST): ["add"],
+                    (HttpMethod.POST): ["open"],
                     (HttpMethod.PUT): ["edit"],
                     (HttpMethod.PATCH): ["edit"]
             ],
             "Distribution": [
                     (HttpMethod.POST): ["add"],
+                    (HttpMethod.POST): ["open"],
                     (HttpMethod.PUT): ["edit"],
                     (HttpMethod.PATCH): ["edit"]
             ]
@@ -221,6 +224,7 @@ class RoleController extends RestfulController {
             // Process added UI sections
             for (UiSection uiSection : addedUiSections) {
                 saveRequestMapsUiSection(role, uiSection)
+                processMenuAddition(role, uiSection.menu)
             }
 
             // Process removed menus
@@ -446,6 +450,14 @@ class RoleController extends RestfulController {
                 if (isInSection(sectionDescription, simpleName)) {
                     updateRequestMapForMethod(apiUrlPattern, method, role)
                 }
+                /*
+                if (simpleName == 'Inventory' && method == HttpMethod.POST && sectionDescription == 'Inventory'){
+                    if (isInSection(sectionDescription, simpleName)) {
+                        updateRequestMapForMethod(apiUrlPattern, method, role)
+                    }
+                }
+                 */
+
             }
         }
     }
@@ -458,7 +470,7 @@ class RoleController extends RestfulController {
 
 // Helper method to check if a simpleName is in a section's list
     private boolean isInSection(String sectionDescription, String simpleName) {
-        return sectionMap.containsKey(sectionDescription) &&
+       return sectionMap.containsKey(sectionDescription) &&
                 sectionMap[sectionDescription].contains(simpleName)
     }
 

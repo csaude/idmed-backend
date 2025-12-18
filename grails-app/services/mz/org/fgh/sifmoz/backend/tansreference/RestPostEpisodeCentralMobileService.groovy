@@ -1,9 +1,16 @@
 package mz.org.fgh.sifmoz.backend.tansreference
 
+import com.google.gson.Gson
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.ISystemConfigsService
 import mz.org.fgh.sifmoz.backend.healthInformationSystem.SystemConfigsService
+import mz.org.fgh.sifmoz.backend.packaging.Pack
+import mz.org.fgh.sifmoz.backend.patient.Patient
+import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
+import mz.org.fgh.sifmoz.backend.prescription.Prescription
+import mz.org.fgh.sifmoz.backend.prescriptionDetail.PrescriptionDetail
+import mz.org.fgh.sifmoz.backend.service.ClinicalService
 import mz.org.fgh.sifmoz.backend.task.SynchronizerTask
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.episode.Episode
@@ -14,6 +21,7 @@ import mz.org.fgh.sifmoz.backend.patientVisitDetails.PatientVisitDetails
 import mz.org.fgh.sifmoz.backend.provincialServer.ProvincialServer
 import mz.org.fgh.sifmoz.backend.restUtils.RestProvincialServerMobileClient
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
+import org.apache.http.entity.StringEntity
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -73,8 +81,10 @@ class RestPostEpisodeCentralMobileService extends SynchronizerTask {
                         char syncStatus = 'S'
                         SyncTempEpisode syncTempEpisode = new SyncTempEpisode()
 
-                        Episode episode = episodeService.getLastInitialEpisodeByIdentifier(pt.identifier.id)
-                        PatientVisitDetails lastVisitDetails = visitDetailsService.getLastVisitByEpisodeId(episode.id)
+                     //   Episode episode = episodeService.getLastInitialEpisodeByIdentifier(pt.identifier.id)
+
+                        Episode episode = episodeService.getLastEpisodeByIdentifier(pt.patient,pt.identifier.service.code)
+                     //   PatientVisitDetails lastVisitDetails = visitDetailsService.getLastVisitByEpisodeId(episode.id)
 
                         //Set realData on startDate
                         syncTempEpisode.setId(pt.matchId) //correct
