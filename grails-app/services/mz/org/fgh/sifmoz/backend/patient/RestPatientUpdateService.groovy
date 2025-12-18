@@ -46,7 +46,7 @@ class RestPatientUpdateService {
 
     @Scheduled(fixedDelay = 300000L) // 5 minutos após terminar
     void schedulerRequestRunning() {
-        if (configsService.getRotineStatus('PACIENTE_OPENMRS_IDMED_ATIVO')) {
+     //   if (configsService.getRotineStatus('PACIENTE_OPENMRS_IDMED_ATIVO')) {
         Patient.withTransaction {
             println " - REST UPDATE PATIENT FROM OPENMRS TO IDMED " + new Date()
             // List<InteroperabilityAttribute> interoperabilityAttributes = InteroperabilityAttribute.findAll()
@@ -81,7 +81,7 @@ class RestPatientUpdateService {
                                 if (nid) {
                                     def idmedPatient = findPatientToUpdate(uuid, nid)
                                     if (idmedPatient) {
-                                        populatePatientDetails(idmedPatient, patient)
+                                        populatePatientDetails(idmedPatient, patient,nid)
                                         idmedPatient.validate()
                                         if (!idmedPatient.hasErrors()) {
                                             patientService.save(idmedPatient)
@@ -103,7 +103,7 @@ class RestPatientUpdateService {
                 }
             }
         }
-        }
+       // }
     }
 
 
