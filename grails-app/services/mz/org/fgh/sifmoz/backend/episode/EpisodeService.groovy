@@ -161,7 +161,12 @@ abstract class EpisodeService implements IEpisodeService{
     @Override
     closeEpisodeWhenOpenmrsStatusCodeAbandonAndSuspended(Patient patient, String statusCode,Date statusDate){
         def patientServiceIdentifiers = PatientServiceIdentifier.findAllByPatient(patient)
-     StartStopReason startStopReason = StartStopReason.findByCode(statusCode)
+        StartStopReason startStopReason
+        if (statusCode == 'SUSPENSO') {
+             startStopReason = StartStopReason.findByCode("TSPC")
+        } else {
+             startStopReason = StartStopReason.findByCode(statusCode)
+        }
         patientServiceIdentifiers.each { item ->
             Episode lastEpisode =  item.episodes.stream().reduce((prev, next) -> next).orElse(null)
             if (!isValidStatusDate(patient, statusCode, statusDate, item, lastEpisode)) {
