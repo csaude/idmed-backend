@@ -60,50 +60,50 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
     List<Object[]> getReferralPatients(String clinicId, Date startDate, Date endDate, String refIdaOuVolta) {
         def queryString =
                 "with ResultTable AS( " +
-                "SELECT p.id as patient_id, e.id as episode_id, psi.value as nid, e.referral_clinic_id referral_clinic_id, e.notes, MAX(e.episode_date) as last_episode_date " +
-                "  FROM episode e " +
-                "  inner join patient_service_identifier psi on e.patient_service_identifier_id = psi.id " +
-                "  inner join clinical_service cs on cs.id =  psi.service_id and  cs.code = 'TARV' " +
-                "  inner join patient p on p.id = psi.patient_id  " +
-                "  inner join start_stop_reason ssr on ssr.id = e.start_stop_reason_id " +
-                "  where ssr.code = :refIdaOuVolta and e.episode_date between :startDate and :endDate and psi.clinic_id = :clinicId " +
-                "  group by p.id, e.episode_date, e.id, psi.value, e.clinic_id, e.notes " +
-                "  order by e.episode_date desc  " +
-                ") " +
-                "select distinct on (p2.id)  " +
-                "r1.last_episode_date,  " +
-                "r1.nid,  " +
-                "p2.first_names || ' ' || last_names as Pat_name, " +
-                "EXTRACT(year FROM age(:endDate, p2.date_of_birth)) as idade, " +
-                "r2.last_presc as last_prescription_date, " +
-                "tr.description as regime, " +
-                "tl.description as linha, " +
-                "dt.code as dispense_type, " +
-                "pack.pickup_date, " +
-                "pack.next_pick_up_date, " +
-                "r1.last_episode_date as referrence_date, " +
-                "cl.clinic_name as referral_pharmacy, " +
-                "r1.notes, " +
-                "p2.cellphone || '  ' || p2.alternative_cellphone as contact, " +
-                "r1.episode_id " +
-                "from patient p2  " +
-                "inner join ResultTable r1 on r1.patient_id = p2.id " +
-                "inner join patient_visit_details pvd on r1.episode_id = pvd.episode_id " +
-                "inner join prescription pre on pre.id = pvd.prescription_id " +
-                "inner join ( " +
-                "select pat.id as pat_id, max(pre.prescription_date) as last_presc " +
-                "from patient pat " +
-                "inner join patient_visit pv on pv.patient_id = pat.id " +
-                "inner join patient_visit_details pvd on pv.id = pvd.patient_visit_id  " +
-                "inner join prescription pre on pvd.prescription_id = pre.id  " +
-                "group by pat.id, pre.prescription_date " +
-                "order by pre.prescription_date) r2 on r2.pat_id = p2.id and r2.last_presc = pre.prescription_date " +
-                "inner join prescription_detail pd on pd.prescription_id = pre.id " +
-                "inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id " +
-                "inner join therapeutic_line tl on tl.id = pd.therapeutic_line_id " +
-                "inner join dispense_type dt on pd.dispense_type_id = dt.id " +
-                "inner join pack pack on pack.id = pvd.pack_id " +
-                "left join clinic cl on cl.id = r1.referral_clinic_id "
+                        "SELECT p.id as patient_id, e.id as episode_id, psi.value as nid, e.referral_clinic_id referral_clinic_id, e.notes, MAX(e.episode_date) as last_episode_date " +
+                        "  FROM episode e " +
+                        "  inner join patient_service_identifier psi on e.patient_service_identifier_id = psi.id " +
+                        "  inner join clinical_service cs on cs.id =  psi.service_id and  cs.code = 'TARV' " +
+                        "  inner join patient p on p.id = psi.patient_id  " +
+                        "  inner join start_stop_reason ssr on ssr.id = e.start_stop_reason_id " +
+                        "  where ssr.code = :refIdaOuVolta and e.episode_date between :startDate and :endDate and psi.clinic_id = :clinicId " +
+                        "  group by p.id, e.episode_date, e.id, psi.value, e.clinic_id, e.notes " +
+                        "  order by e.episode_date desc  " +
+                        ") " +
+                        "select distinct on (p2.id)  " +
+                        "r1.last_episode_date,  " +
+                        "r1.nid,  " +
+                        "p2.first_names || ' ' || last_names as Pat_name, " +
+                        "EXTRACT(year FROM age(:endDate, p2.date_of_birth)) as idade, " +
+                        "r2.last_presc as last_prescription_date, " +
+                        "tr.description as regime, " +
+                        "tl.description as linha, " +
+                        "dt.code as dispense_type, " +
+                        "pack.pickup_date, " +
+                        "pack.next_pick_up_date, " +
+                        "r1.last_episode_date as referrence_date, " +
+                        "cl.clinic_name as referral_pharmacy, " +
+                        "r1.notes, " +
+                        "p2.cellphone || '  ' || p2.alternative_cellphone as contact, " +
+                        "r1.episode_id " +
+                        "from patient p2  " +
+                        "inner join ResultTable r1 on r1.patient_id = p2.id " +
+                        "inner join patient_visit_details pvd on r1.episode_id = pvd.episode_id " +
+                        "inner join prescription pre on pre.id = pvd.prescription_id " +
+                        "inner join ( " +
+                        "select pat.id as pat_id, max(pre.prescription_date) as last_presc " +
+                        "from patient pat " +
+                        "inner join patient_visit pv on pv.patient_id = pat.id " +
+                        "inner join patient_visit_details pvd on pv.id = pvd.patient_visit_id  " +
+                        "inner join prescription pre on pvd.prescription_id = pre.id  " +
+                        "group by pat.id, pre.prescription_date " +
+                        "order by pre.prescription_date) r2 on r2.pat_id = p2.id and r2.last_presc = pre.prescription_date " +
+                        "inner join prescription_detail pd on pd.prescription_id = pre.id " +
+                        "inner join therapeutic_regimen tr on tr.id = pd.therapeutic_regimen_id " +
+                        "inner join therapeutic_line tl on tl.id = pd.therapeutic_line_id " +
+                        "inner join dispense_type dt on pd.dispense_type_id = dt.id " +
+                        "inner join pack pack on pack.id = pvd.pack_id " +
+                        "left join clinic cl on cl.id = r1.referral_clinic_id "
 
         Session session = sessionFactory.getCurrentSession()
         def query = session.createSQLQuery(queryString)
@@ -115,7 +115,7 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
         List<Object[]> list = query.list()
         return list
     }
-    
+
     List<Object> getAbsentReferredPatientsByClinicalServiceAndClinicOnPeriod(String clinicId, Date startDate, Date endDate) {
         def queryString =
                 "with ResultTable AS( " +
@@ -303,8 +303,8 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
     List<PatientVisitDetails> getAllByPatientId(String patientId) {
         List<PatientVisit> patientVisitList = PatientVisit.findAllByPatient(Patient.findById(patientId))
         List<PatientVisitDetails> patientVisitDetailsList = new ArrayList<>();
-        patientVisitList.each {it ->
-            it.patientVisitDetails.each {pvd ->
+        patientVisitList.each { it ->
+            it.patientVisitDetails.each { pvd ->
                 patientVisitDetailsList.add(pvd)
             }
 
@@ -562,7 +562,7 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
                     eq('pv.patient.id', patientId)
                     eq('e.patientServiceIdentifier.id',patientServiceIdentifier.id)
                     order('p.prescriptionDate', 'desc')
-                    maxResults(3)
+                    maxResults(2)
                 }
 
                 last3PatientVisitDetailsFromlast3Prescription.each { patientVisitDetails ->
@@ -601,6 +601,49 @@ abstract class PatientVisitDetailsService implements IPatientVisitDetailsService
 //                  }
 
                   return patientVisitDetailsList
+
     }
 
+
+/*
+    List<PatientVisitDetails> getLastAllByListPatientId(List<String> patientIds) {
+        if (!patientIds) return []
+
+        // all PSI ids for the requested patients
+        List<Long> psiIds = PatientServiceIdentifier.createCriteria().list {
+            projections { property 'id' }
+            inList('patient.id', patientIds)
+        }
+        if (!psiIds) return []
+
+        // pull every visit detail keyed by PSI + prescription, ordered by prescription date
+        def rows = PatientVisitDetails.createCriteria().list {
+            createAlias('episode', 'e')
+            createAlias('prescription', 'p')
+            projections {
+                property 'e.patientServiceIdentifier.id'
+                property 'p.id'
+            }
+            inList('e.patientServiceIdentifier.id', psiIds)
+            order('e.patientServiceIdentifier.id', 'asc')
+            order('p.prescriptionDate', 'desc')
+        }
+        // keep last 3 prescriptions per PSI
+        List<Long> latestPrescriptionIds = rows.groupBy { it[0] as String }
+                .collectMany { entry -> entry.value.take(3).collect { it[1] as String } }
+
+        if (!latestPrescriptionIds) return []
+
+        // expand to the actual visit details in a single criteria call
+        return PatientVisitDetails.createCriteria().list {
+            createAlias('prescription', 'p')
+            inList('p.id', latestPrescriptionIds)
+            fetchMode 'prescription', FetchMode.JOIN
+            fetchMode 'patientVisit', FetchMode.JOIN
+            fetchMode 'episode', FetchMode.JOIN
+            order('p.prescriptionDate', 'desc')
+        } as List<PatientVisitDetails>
+    }
+
+ */
 }
