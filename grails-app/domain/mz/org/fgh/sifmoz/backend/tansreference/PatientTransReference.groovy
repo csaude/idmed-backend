@@ -29,7 +29,7 @@ class  PatientTransReference extends BaseEntity{
     static constraints = {
         matchId nullable: true
         patientStatus nullable: true, blank: true
-        destination nullable: false
+        destination nullable: true
     }
 
     def beforeInsertId() {
