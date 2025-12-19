@@ -11,6 +11,7 @@ import mz.org.fgh.sifmoz.backend.patientIdentifier.PatientServiceIdentifier
 import mz.org.fgh.sifmoz.backend.prescription.Prescription
 import mz.org.fgh.sifmoz.backend.prescriptionDetail.PrescriptionDetail
 import mz.org.fgh.sifmoz.backend.service.ClinicalService
+import mz.org.fgh.sifmoz.backend.startStopReason.StartStopReason
 import mz.org.fgh.sifmoz.backend.task.SynchronizerTask
 import mz.org.fgh.sifmoz.backend.clinic.Clinic
 import mz.org.fgh.sifmoz.backend.episode.Episode
@@ -59,7 +60,7 @@ class RestPostEpisodeCentralMobileService extends SynchronizerTask {
 
 //    final String EPISODIO_IDMED_IDART_PROVINCIAL_ATIVO = true
 
-    @Scheduled(fixedDelay = 14400000L) // 4 horas após terminar
+    //@Scheduled(fixedDelay = 14400000L) // 4 horas após terminar
     void execute() {
         if (configsService.getRotineStatus('EPISODIO_IDMED_IDART_PROVINCIAL_ATIVO')) {
             println " - REST PATIENT EPISODE FROM IDMED TO PROVINCIAL " + new Date()
@@ -84,6 +85,9 @@ class RestPostEpisodeCentralMobileService extends SynchronizerTask {
                      //   Episode episode = episodeService.getLastInitialEpisodeByIdentifier(pt.identifier.id)
 
                         Episode episode = episodeService.getLastEpisodeByIdentifier(pt.patient,pt.identifier.service.code)
+                        StartStopReason startStopReason = StartStopReason.findByCode('REFERIDO_PARA')
+
+                        Episode lastReferralEpisode = Episode.findByStartStopReasonAndPatientServiceIdentifier(startStopReason,pt.identifier)
                      //   PatientVisitDetails lastVisitDetails = visitDetailsService.getLastVisitByEpisodeId(episode.id)
 
                         //Set realData on startDate
@@ -95,7 +99,7 @@ class RestPostEpisodeCentralMobileService extends SynchronizerTask {
                         syncTempEpisode.setStopreason(episode.startStopReason.reason)
                         syncTempEpisode.setStopnotes(episode.notes)
                         syncTempEpisode.setPatientuuid(pt.identifier.patient.hisUuid)  //pt.identifier.patient.hisUuid
-                        syncTempEpisode.setClinicuuid(pt.identifier.clinic.uuid) //pt.identifier.clinic.uuid
+                        syncTempEpisode.setClinicuuid(lastReferralEpisode?.referralClinic?.uuid) //pt.identifier.clinic.uuid
                         syncTempEpisode.setUsuuid(pt.identifier.clinic.uuid)
                         syncTempEpisode.setSyncstatus(syncStatus)
 
