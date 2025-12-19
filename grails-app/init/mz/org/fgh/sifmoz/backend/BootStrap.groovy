@@ -2997,11 +2997,11 @@ class BootStrap {
     List<Object> listUiSection() {
         List<Object> uiSections = new ArrayList<>()
         uiSections.add(new LinkedHashMap(id:'3fb1aa37-f527-4040-b2d1-acd55f61e440',requestMapUrl: '/ui/prescription/add', name: 'add-prescription', menu: 'Pacientes', action: 'add', displayName: 'Adicionar',category:'Prescription'))
-        uiSections.add(new LinkedHashMap(id:'88f4022b-4257-4f6a-93f2-55577bd74757',requestMapUrl: '/ui/prescription/delete', name: 'remove-prescription', menu: 'Pacientes', action: 'remove', displayName: 'Apagar',category:'Prescription'))
+        uiSections.add(new LinkedHashMap(id:'88f4022b-4257-4f6a-93f2-55577bd74757',requestMapUrl: '/ui/prescription/delete', name: 'remove-prescription', menu: 'Pacientes', action: 'remove', displayName: 'Remover',category:'Prescription'))
         uiSections.add(new LinkedHashMap(id:'3280068d-3867-4be0-87ee-1e6886247c81',requestMapUrl: '/ui/episode/add', name: 'add-episode', menu: 'Pacientes', action: 'add', displayName: 'Adicionar',category:'Episode'))
         uiSections.add(new LinkedHashMap(id:'1de4360f-f84a-4745-8a9b-16b94450e330',requestMapUrl: '/ui/episode/edit', name: 'edit-episode', menu: 'Pacientes', action: 'add', displayName: 'Editar',category:'Episode'))
         uiSections.add(new LinkedHashMap(id:'5353a3cb-5b25-478f-ae77-fb2199c9edb2',requestMapUrl: '/ui/episode/close', name: 'close-episode', menu: 'Pacientes', action: 'close', displayName: 'Fechar',category:'Episode'))
-        uiSections.add(new LinkedHashMap(id:'3103c833-08bc-43a5-b00b-f9c094e4d9bc',requestMapUrl: '/ui/episode/remove', name: 'remove-episode', menu: 'Pacientes', action: 'remove', displayName: 'Apagar',category:'Episode'))
+        uiSections.add(new LinkedHashMap(id:'3103c833-08bc-43a5-b00b-f9c094e4d9bc',requestMapUrl: '/ui/episode/remove', name: 'remove-episode', menu: 'Pacientes', action: 'remove', displayName: 'Remover',category:'Episode'))
         uiSections.add(new LinkedHashMap(id:'bac0a7a2-01ad-4d10-9029-38eac4324758',requestMapUrl: '/ui/patientServiceIdentifier/add', name: 'add-patient-service-identifier', menu: 'Pacientes', action: 'add', displayName: 'Adicionar',category:'PatientServiceIdentifier'))
         uiSections.add(new LinkedHashMap(id:'35c1c977-9ec8-4d38-b218-1edd7fcde439',requestMapUrl: '/ui/patientServiceIdentifier/edit', name: 'edit-patient-service-identifier', menu: 'Pacientes', action: 'edit', displayName: 'Editar',category:'PatientServiceIdentifier'))
         uiSections.add(new LinkedHashMap(id:'9b57f474-f11f-4eb5-91a9-aabb9e760556',requestMapUrl: '/ui/patientServiceIdentifier/close', name: 'close-patient-service-identifier', menu: 'Pacientes', action: 'close', displayName: 'Fechar',category:'PatientServiceIdentifier'))
