@@ -9,14 +9,13 @@ import mz.org.fgh.sifmoz.backend.stock.StockService
 import mz.org.fgh.sifmoz.backend.utilities.JSONSerializer
 import mz.org.fgh.sifmoz.backend.utilities.Utilities
 
-import static org.springframework.http.HttpStatus.CREATED
 import static org.springframework.http.HttpStatus.NOT_FOUND
 import static org.springframework.http.HttpStatus.NO_CONTENT
 import static org.springframework.http.HttpStatus.OK
 
 import grails.gorm.transactions.Transactional
 
-class InventoryController extends RestfulController{
+class StockInventoryController extends RestfulController{
 
     IInventoryService inventoryService
     StockService stockService
@@ -26,7 +25,7 @@ class InventoryController extends RestfulController{
     static responseFormats = ['json', 'xml']
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
-    InventoryController() {
+    StockInventoryController() {
         super(Inventory)
     }
 
