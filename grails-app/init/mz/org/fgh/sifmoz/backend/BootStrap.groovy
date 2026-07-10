@@ -951,7 +951,7 @@ class BootStrap {
         systemConfigsList.add(new LinkedHashMap(id: 'B5C44B42-3328-40D9-90D7-6DFF90A672D4', value: 'true', key: 'ACTIVATE_DATA_MIGRATION', description: 'Migração de dados'))
         systemConfigsList.add(new LinkedHashMap(id: '550e8400-e29b-41d4-a716-446655440000', value: '3', key: 'MAX_LOGIN_TRIES', description: 'Número máximo de tentativas para Login'))
         systemConfigsList.add(new LinkedHashMap(id: '3b241101-e2bb-4255-8caf-4136c566a964', value: '90', key: 'MAX_ACTIVE_DAYS_WITHOUT_LOGIN', description: 'Número máximo de dias em activo sem login'))
-        systemConfigsList.add(new LinkedHashMap(id: 'ff98828d-0e91-468c-809f-d391edf8cd24', value: '1.8.0', key: 'APP_VERSION', description: 'Versão do iDMED'))
+        systemConfigsList.add(new LinkedHashMap(id: 'ff98828d-0e91-468c-809f-d391edf8cd24', value: '2.0.0', key: 'APP_VERSION', description: 'Versão do iDMED'))
 
         // Configuação padrao das rotinas
         systemConfigsList.add(new LinkedHashMap(id: '8F2E4B1A-9C3D-4E5F-A1B2-C3D4E5F67890', value: 'true', key: 'DISPENSA_IDMED_OPENMRS_ATIVO', description: 'Envio de dispensas do IDMED para OpenMRS'))
@@ -1101,13 +1101,14 @@ class BootStrap {
 
     List<Object> listDuration() {
         List<Object> durationList = new ArrayList<>()
-        durationList.add(new LinkedHashMap(id: 'ff8081817cbbce66017cbbd136bf0006', description: 'Uma dia', weeks: 0))
+        durationList.add(new LinkedHashMap(id: 'ff8081817cbbce66017cbbd136bf0006', description: 'Um dia', weeks: 0))
         durationList.add(new LinkedHashMap(id: 'ff8081817cbbce66017cbbcecfe30000', description: 'Uma Semana', weeks: 1))
         durationList.add(new LinkedHashMap(id: 'ff8081817cbbce66017cbbcf41280001', description: 'Duas Semanas', weeks: 2))
         durationList.add(new LinkedHashMap(id: 'ff8081817cbbce66017cbbcf9a550002', description: 'Um mês', weeks: 4))
         durationList.add(new LinkedHashMap(id: 'ff8081817cbbce66017cbbd02e620003', description: 'Dois meses', weeks: 8))
         durationList.add(new LinkedHashMap(id: 'ff8081817cbbce66017cbbd079e20004', description: 'Três meses', weeks: 12))
         durationList.add(new LinkedHashMap(id: 'ff8081817cbbce66017cbbd136bf0005', description: 'Seis meses', weeks: 24))
+        durationList.add(new LinkedHashMap(id: 'ff8081817cbbce66017cbbd136bf0007', description: ' Um ano', weeks: 48))
 
         return durationList
     }
